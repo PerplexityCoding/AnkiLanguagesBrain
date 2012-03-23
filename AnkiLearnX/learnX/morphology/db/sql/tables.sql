@@ -25,6 +25,7 @@ CREATE TABLE Decks (
 	known_treshold INTEGER,
 	learn_treshold INTEGER,
 	total_morphemes INTEGER,
+	learnt_morphemes INTEGER,
 	known_morphemes INTEGER,
 	mature_morphemes INTEGER
 );

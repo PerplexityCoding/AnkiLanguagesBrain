@@ -85,9 +85,10 @@ class LearnX(QDialog):
         
         decksGrid.addWidget(self.tableTitle("Deck"), 0, 0)
         decksGrid.addWidget(self.tableTitle("Total"), 0, 1, Qt.AlignHCenter)
-        decksGrid.addWidget(self.tableTitle("Known"), 0, 2, Qt.AlignHCenter)
-        decksGrid.addWidget(self.tableTitle("Mature"), 0, 3, Qt.AlignHCenter)
-        decksGrid.addWidget(self.tableTitle("Actions"), 0, 4, 1, 3, Qt.AlignHCenter)
+        decksGrid.addWidget(self.tableTitle("Mature"), 0, 2, Qt.AlignHCenter)
+        decksGrid.addWidget(self.tableTitle("Known"), 0, 3, Qt.AlignHCenter)
+        decksGrid.addWidget(self.tableTitle("Learnt"), 0, 4, Qt.AlignHCenter)
+        decksGrid.addWidget(self.tableTitle("Actions"), 0, 5, 1, 3, Qt.AlignHCenter)
         
         self.languagesTitle = languagesTitle = QGroupBox('Languages')
         
@@ -136,8 +137,9 @@ class LearnX(QDialog):
             
             if deck.enabled:
                 decksGrid.addWidget(QLabel(str(deck.totalMorphemes)), i, 1, Qt.AlignHCenter)
-                decksGrid.addWidget(QLabel(str(deck.knownMorphemes)), i, 2, Qt.AlignHCenter)
-                decksGrid.addWidget(QLabel(str(deck.matureMorphemes)), i, 3, Qt.AlignHCenter)
+                decksGrid.addWidget(QLabel(str(deck.matureMorphemes)), i, 2, Qt.AlignHCenter)
+                decksGrid.addWidget(QLabel(str(deck.knownMorphemes)), i, 3, Qt.AlignHCenter)
+                decksGrid.addWidget(QLabel(str(deck.learntMorphemes)), i, 4, Qt.AlignHCenter)
             
             conf = QPushButton("Conf")
             self.confButtons.append(conf)
@@ -145,18 +147,18 @@ class LearnX(QDialog):
             
             self.connect(conf, SIGNAL("clicked()"), lambda d=deck: self.configDeck(d))
             
-            decksGrid.addWidget(conf, i, 4)
+            decksGrid.addWidget(conf, i, 5)
         
             # on peux browse meme si desactivé, si le total de morphemes n'ai pas nulle
             analyze = QPushButton("Analyze")
             analyze.setEnabled(deck.enabled and deck.language != None)
-            self.connect(analyze, SIGNAL("clicked()"), lambda d=deck: self.mainController.launchAnalyze(d))
-            decksGrid.addWidget(analyze, i, 5)
+            self.connect(analyze, SIGNAL("clicked()"), lambda d=deck: self.mainController.analyze(d))
+            decksGrid.addWidget(analyze, i, 6)
             
             more = QPushButton("More")
             more.setEnabled(deck.enabled and deck.language != None and deck.totalMorphemes > 0)
             self.connect(more, SIGNAL("clicked()"), lambda d=deck: self.morphemesController.launchBrowserMorphemes(d))
-            decksGrid.addWidget(more, i, 6)
+            decksGrid.addWidget(more, i, 7)
             i += 1
         
         decksGrid.setRowStretch(1, 1)

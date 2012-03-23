@@ -1,5 +1,6 @@
 from learnX.morphology.db.LearnXdB import *
 from learnX.morphology.db.dto.Fact import *
+from learnX.morphology.db.dto.Morpheme import *
 
 from learnX.utils.Log import *
 
@@ -161,20 +162,5 @@ class FactDao:
         db.commit()
         c.close()
         
-    def countMorphemes(self, deck):
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
         
-        totalMorphemes = 0
-        t = (deck.id,)
-        c.execute("Select count (distinct fm.morpheme_id) From FactsMorphemes fm, Facts f "
-                  "Where f.id = fm.fact_id and f.deck_id = ?", t)
-        row = c.fetchone()
-        if row:
-            totalMorphemes = row[0]
-        c.close
-        
-        return totalMorphemes
-    
-    
     

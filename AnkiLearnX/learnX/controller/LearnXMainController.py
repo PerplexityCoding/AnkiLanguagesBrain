@@ -52,6 +52,8 @@ class LearnXMainController:
         if len(modifiedCards) > 0:
             self.morphemesService.computeMorphemesMaturity(modifiedCards)
         
+        self.decksService.countMorphemes(deck)
+        
         self.factsService.computeCardsMaturity()
 
         log("End")

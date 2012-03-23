@@ -35,9 +35,11 @@ class DecksService:
         if deck.languageId != None:
             deck.language = self.languagesService.getLanguageByCode(deck.languageId)
         
-        self.factsService.countMorphemes(deck)
-        
         return deck
+    
+    def countMorphemes(self, deck):
+        self.deckDao.countMorphemes(deck)
+        self.deckDao.update(deck)
     
     def changeLanguage(self, deck, languageName):
 

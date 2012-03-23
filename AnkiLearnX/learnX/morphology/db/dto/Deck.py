@@ -3,7 +3,7 @@ class Deck:
     
     def __init__(self, name, path, enabled, languageId, expressionField,
                  fields, id = -1, matureTreshold = 21, knownTreshold = 7, learnTreshold = 3, 
-                 total = 0, known = 0, mature = 0):
+                 total = 0, learnt = 0, known = 0, mature = 0):
         self.id = id
         self.name = str(name)
         self.path = str(path)
@@ -28,6 +28,7 @@ class Deck:
                 ("Copy i+0 Mature", "sentenceExpression", False)
             }
         self.totalMorphemes = total
+        self.learntMorphemes = learnt
         self.knownMorphemes = known
         self.matureMorphemes = mature
 

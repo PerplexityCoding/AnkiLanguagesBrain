@@ -128,7 +128,6 @@ class FactsService:
         
         fact.morphemes = morphemes
         return fact
-    
-    def countMorphemes(self, deck):
-        deck.totalMorphemes = self.fact_dao.countMorphemes(deck)
+
+
         
