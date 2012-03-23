@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-learnXPath = 'E:\Project\Workspaces\AnkiPlugins\AnkiLearnX'
+learnXPath = 'E:\Project\Git\AnkiLearnX\AnkiLearnX'
 #learnXPath = mw.pluginsFolder()
 
 dbPath = os.path.join(learnXPath, 'learnX', 'db', 'db.learnX')

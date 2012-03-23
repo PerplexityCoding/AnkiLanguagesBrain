@@ -12,6 +12,7 @@ from learnX.interface.LanguageChooser import *
 from learnX.interface.DeckConfig import *
 
 from learnX.controller.LearnXMainController import *
+from learnX.controller.MorphemesBrowserController import *
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -31,7 +32,8 @@ class LearnX(QDialog):
         self.languagesService = LanguagesService()
         self.morphemesService = MorphemesService()
         
-        self.controller = LearnXMainController()
+        self.mainController = LearnXMainController()
+        self.morphemesController = MorphemesBrowserController()
         
         self.mainVBox = mainVBox = QVBoxLayout(self)
         
@@ -148,19 +150,17 @@ class LearnX(QDialog):
             # on peux browse meme si desactivé, si le total de morphemes n'ai pas nulle
             analyze = QPushButton("Analyze")
             analyze.setEnabled(deck.enabled and deck.language != None)
-            self.connect(analyze, SIGNAL("clicked()"), lambda d=deck: self.launchAnalyze(d))
+            self.connect(analyze, SIGNAL("clicked()"), lambda d=deck: self.mainController.launchAnalyze(d))
             decksGrid.addWidget(analyze, i, 5)
             
             more = QPushButton("More")
             more.setEnabled(deck.enabled and deck.language != None and deck.totalMorphemes > 0)
+            self.connect(more, SIGNAL("clicked()"), lambda d=deck: self.morphemesController.launchBrowserMorphemes(d))
             decksGrid.addWidget(more, i, 6)
             i += 1
         
         decksGrid.setRowStretch(1, 1)
         decksGrid.setRowStretch(1, 0)
-    
-    def launchAnalyze(self, deck):
-        self.controller.analyze(deck)
     
     def refreshLanguages(self):
         

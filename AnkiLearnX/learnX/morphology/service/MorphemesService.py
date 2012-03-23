@@ -100,3 +100,42 @@ class MorphemesService:
         
         return morphemes
         
+    def getAllPOS(self):
+        return self.mecabDao.getAllPOS()
+  
+    def getAllSubPOS(self):
+        return self.mecabDao.getAllSubPOS()
+    
+    def getMorphemes(self, searchText = None):
+        
+        if searchText == None or searchText == "":
+            return self.mecabDao.getMorphemes()
+        else:
+            searchExpressions = searchText.split(" ")
+            status_changed = None
+            status = None
+            pos = None
+            subPos = None
+            expressions = []
+            
+            for searchExpression in searchExpressions:
+                uni = unicode(searchExpression)
+                if searchExpression == "is:changed":
+                    status_changed = True
+                elif searchExpression == "-is:changed":
+                    status_changed = False
+                elif searchExpression == "status:None":
+                    status = Morpheme.STATUS_NONE
+                elif searchExpression == "status:Learnt":
+                    status = Morpheme.STATUS_LEARNT
+                elif searchExpression == "status:Known":
+                    status = Morpheme.STATUS_KNOWN
+                elif searchExpression == "status:Mature":
+                    status = Morpheme.STATUS_MATURE
+                elif uni.startswith("pos:"):
+                    pos = uni.split(":")[1]                    
+                elif uni.startswith("sub_pos:"):
+                    subPos = uni.split(":")[1]
+                else:
+                    expressions.append(uni)
+            return self.mecabDao.getMorphemes(expressions, status, status_changed, pos, subPos)

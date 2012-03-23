@@ -32,4 +32,15 @@ class Morpheme:
         
     def __repr__(self):
         return u'\t'.join([str(self.id), str(self.status), str(self.status), str(self.type), str(self.morph)])
-
+    
+    def getStatusName(self):
+        if self.status == self.STATUS_NONE:
+            return "None"
+        if self.status == self.STATUS_LEARNT:
+            return "Learnt"
+        if self.status == self.STATUS_KNOWN:
+            return "Known"
+        if self.status == self.STATUS_MATURE:
+            return "Mature"
+        return "None"
+        

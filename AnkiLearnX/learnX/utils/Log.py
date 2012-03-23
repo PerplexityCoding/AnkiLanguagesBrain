@@ -4,7 +4,7 @@
 import datetime, os
 import codecs
 
-learnXPath = 'E:\Project\Workspaces\AnkiPlugins\AnkiLearnX'
+learnXPath = 'E:\Project\Git\AnkiLearnX\AnkiLearnX'
 logPath = os.path.join(learnXPath, 'learnX', 'log', 'main.log')
 #logPath = os.path.join(mw.pluginsFolder(), 'learnX', 'log', 'main.log')
 
