@@ -33,6 +33,8 @@ class DeckConfig(QDialog):
         languageCombo.addItem("------------------------")
         for languageName in languagesNameAvailable:
             languageCode = self.parent.languagesService.getCodeFromLanguageName(languageName)
+            log(languageCode)
+            log(deck.language)
             if deck.language != None and deck.language.nameId == languageCode:
                 currentIndex = languageCombo.count()
             languageCombo.addItem(languageName)

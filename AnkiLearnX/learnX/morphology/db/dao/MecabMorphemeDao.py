@@ -80,15 +80,16 @@ class MecabMorphemeDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        sql = "Select base, pos, sub_pos, read, m.id, status, status_changed, mm.id, count(fm.fact_id) as c "
+        sql = "Select base, pos, sub_pos, read, m.id, status, status_changed, mm.id, count(fm.fact_id) as c, m.score "
         sql += "From Morphemes m, FactsMorphemes fm, MecabMorphemes mm "
         sql += "Where mm.id = m.morph_impl_id and m.id = fm.morpheme_id "
         
         t = list()
         if expressions != None:
             for expression in expressions:
-                sql += " and mm.base like ? " 
-                t.append(expression)
+                sql += " and (mm.base like ? or mm.read like ?) " 
+                t.append("%" + expression + "%")
+                t.append("%" + expression + "%")
         if status != None:
             sql += "and m.status = ? " 
             t.append(status)
@@ -115,7 +116,7 @@ class MecabMorphemeDao:
         morphemes = []
         for row in c:
             mecabMorpheme = MecabMorpheme(row[0], None, row[1], row[2], row[3], row[4])
-            morpheme = Morpheme(row[5], row[6], Morpheme.TYPE_MECAB, row[7], mecabMorpheme, row[4])
+            morpheme = Morpheme(row[5], row[6], Morpheme.TYPE_MECAB, row[7], mecabMorpheme, row[9], row[4])
             morpheme.factsCount = row[8]
             morphemes.append(morpheme)
         

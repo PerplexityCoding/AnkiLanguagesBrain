@@ -3,12 +3,15 @@ from learnX.morphology.db.dto.Deck import *
 
 from learnX.morphology.db.dto.Morpheme import *
 
+from learnX.utils.Log import *
+
 import pickle
 
 class DeckDao:
     def __init__(self):
         self.learnXdB = LearnXdB.getInstance()
     
+    # Unused
     def list(self):
         db = self.learnXdB.openDataBase()
         

@@ -15,7 +15,7 @@ class MecabMorphemeModel(QAbstractTableModel):
         self.initMorphemesLen = len(self.morphemes)
         self.currentMorphemesLen = len(self.morphemes)
         
-        self.columns = ["Expression", "Reading", "Part of Speech", "Sub P-o-S", "Status", "Changed", "Facts Count"]
+        self.columns = ["Expression", "Reading", "Part of Speech", "Sub P-o-S", "Status", "Changed", "Facts Count", "Score"]
         
     # Model interface
     ######################################################################
@@ -24,7 +24,7 @@ class MecabMorphemeModel(QAbstractTableModel):
         return len(self.morphemes)
 
     def columnCount(self, index):
-        return 7
+        return 8
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Vertical:
@@ -69,7 +69,9 @@ class MecabMorphemeModel(QAbstractTableModel):
                 else:
                     s = "no"
             elif columnId == 6:
-                s = morpheme.factsCount            
+                s = morpheme.factsCount  
+            elif columnId == 7:
+                s = int(morpheme.score * 100)          
             return QVariant(s)
         #elif role == Qt.UserRole:
             

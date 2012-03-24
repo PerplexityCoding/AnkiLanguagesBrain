@@ -59,7 +59,8 @@ CREATE TABLE Morphemes (
 	status INTEGER(4) NOT NULL,
 	status_changed INTEGER(1),
 	morph_type INTEGER(4) NOT NULL,
-	morph_impl_id INTEGER NOT NULL
+	morph_impl_id INTEGER NOT NULL,
+	score INTEGER
 );
 
 CREATE TABLE FactsMorphemes (

@@ -27,7 +27,7 @@ class MorphemesService:
         mecabMorphemes = self.mecab.getMorphemes(expression)
         morphemes = set()
         for mecabMorpheme in mecabMorphemes:
-            morphemes.add(Morpheme(Morpheme.STATUS_NONE, False, Morpheme.TYPE_MECAB, mecabMorpheme.id, mecabMorpheme))
+            morphemes.add(Morpheme(Morpheme.STATUS_NONE, False, Morpheme.TYPE_MECAB, mecabMorpheme.id, mecabMorpheme, 0))
         
         return morphemes
     
@@ -69,21 +69,67 @@ class MorphemesService:
     def computeMorphemesMaturity(self, cards):
         
         log("computeMorphemesMaturity")
-        morphemes_modified = list()
+        modifiedMorphemes = list()
         for card in cards:
             morphemes = self.morphemeDao.getMorphemesFromCard(card)
             for morpheme in morphemes:
-                if morpheme is not morphemes_modified:
+                if morpheme is not modifiedMorphemes:
                     status = self.morphemeDao.getNewStatus(morpheme)
                     if morpheme.status != status:
                         log("status modified")
                         morpheme.status = status
                         morpheme.statusChanged = True
-                        morphemes_modified.append(morpheme)
+                        modifiedMorphemes.append(morpheme)
             card.lastUpdated = card.ankiLastModified
 
-        self.morphemeDao.updateAll(morphemes_modified)
+        self.morphemeDao.updateAll(modifiedMorphemes)
         self.cardDao.updateAll(cards)
+    
+    def computeMorphemesScore(self):
+        
+        rankDb = self.morphemeDao.getAllKnownSimpleMorphemes()
+        
+        allMorphemes = self.mecabDao.getMorphemes()
+        modifiedMorphemes = list()
+        for morpheme in allMorphemes:
+            score = self.rankMorpheme(rankDb, morpheme.morph.base, morpheme.morph.read)
+            if morpheme.score != score:
+                morpheme.score = score
+                morpheme.scoreModified = True
+                modifiedMorphemes.append(morpheme)
+        
+        self.morphemeDao.updateAll(modifiedMorphemes)
+        
+        return modifiedMorphemes
+
+    # Taken from MorphMan 2
+    def rankMorpheme(self, knownDb, expr, read):
+        wordEase = 0
+        numCharsConsidered = 0
+        hasKanji = False
+        if (expr, read) in knownDb: return 0
+        for i,c in enumerate( expr ):
+            # skip non-kanji
+            if c < u'\u4E00' or c > u'\u9FBF': continue
+    
+            hasKanji = True
+            charEase = 20
+            npow = 0
+            numCharsConsidered += 1
+            for (e,r) in knownDb:
+                # has same kanji
+                if c in e:
+                    if npow > -0.5: npow -= 0.1
+                    # has same kanji at same pos
+                    if len(e) > i and c == e[i]:
+                        if npow > -1.0: npow -= 0.1
+                        # has same kanji at same pos with similar reading
+                        if i == 0 and read[0] == r[0] or i == len(expr)-1 and read[-1] == r[-1]:
+                            npow -= 0.8
+            wordEase += charEase * pow(2, npow)
+        if not hasKanji:
+            return 1
+        return wordEase
     
     def analyze(self, fact):
         

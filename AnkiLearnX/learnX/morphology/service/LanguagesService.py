@@ -33,6 +33,9 @@ class LanguagesService:
     def getLanguageByCode(self, code):
         return self.languageDao.findByCode(code)
     
+    def getLanguageById(self, id):
+        return self.languageDao.findById(id)
+    
     def getLanguageByName(self, name):
         #log("getlbyName: " + str(self.languagesName[name]))
         return self.languageDao.findByCode(self.languagesName[name])

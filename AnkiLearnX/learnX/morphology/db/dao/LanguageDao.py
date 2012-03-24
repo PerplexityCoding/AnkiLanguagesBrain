@@ -42,6 +42,22 @@ class LanguageDao:
         
         return language
 
+    def findById(self, id):
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        t = (id,)
+        c.execute("Select * From Languages Where id = ?", t)
+        
+        language = None
+        for row in c:
+            language = Language(row[1], row[2], row[0])
+            
+        db.commit()
+        c.close()
+
+        return language
+
     def findByCode(self, code):
         db = self.learnXdB.openDataBase()
         c = db.cursor()

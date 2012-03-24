@@ -5,12 +5,15 @@ from learnX.morphology.db.dao.DeckDao import *
 from learnX.morphology.service.LanguagesService import *
 from learnX.morphology.service.FactsService import *
 
+from learnX.utils.Log import *
+
 class DecksService:
     
     deckDao = DeckDao()
     languagesService = LanguagesService()
     factsService = FactsService()
     
+    # Unused
     def listDecks(self):
         list = self.deckDao.list()
     
@@ -33,7 +36,7 @@ class DecksService:
             deck = self.createDeck(deckName, deckPath)
         
         if deck.languageId != None:
-            deck.language = self.languagesService.getLanguageByCode(deck.languageId)
+            deck.language = self.languagesService.getLanguageById(deck.languageId)
         
         return deck
     

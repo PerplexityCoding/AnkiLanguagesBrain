@@ -9,13 +9,14 @@ class Morpheme:
     
     TYPE_MECAB = 1
     
-    def __init__(self, status, statusChanged, type, morphId, morph, id = -1):
+    def __init__(self, status, statusChanged, type, morphId, morph, score, id = -1):
         self.id = id
         self.status = status
         self.statusChanged = statusChanged
         self.type = type
         self.morphId = morphId
         self.morph = morph
+        self.score = score
         if self.morph:
             self.morph.parent = self
     
@@ -31,7 +32,7 @@ class Morpheme:
         return hash(self.morph)
         
     def __repr__(self):
-        return u'\t'.join([str(self.id), str(self.status), str(self.status), str(self.type), str(self.morph)])
+        return u'\t'.join([str(self.id), str(self.status), str(self.status), str(self.type), str(self.morph), str(self.score)])
     
     def getStatusName(self):
         if self.status == self.STATUS_NONE:
