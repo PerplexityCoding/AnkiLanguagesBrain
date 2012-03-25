@@ -71,7 +71,7 @@ class MecabMorphemeModel(QAbstractTableModel):
             elif columnId == 6:
                 s = morpheme.factsCount  
             elif columnId == 7:
-                s = int(morpheme.score * 100)          
+                s = int(morpheme.score)          
             return QVariant(s)
         #elif role == Qt.UserRole:
             

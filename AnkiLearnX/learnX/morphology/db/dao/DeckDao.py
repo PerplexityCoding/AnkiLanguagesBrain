@@ -29,6 +29,21 @@ class DeckDao:
         
         return decks
     
+    def listDeckPathWithFactsModified(self):
+        
+        db = self.learnXdB.openDataBase()
+        
+        c = db.cursor()
+        c.execute("select distinct d.deck_path from Facts f, Decks d Where f.deck_id = d.id and f.status_changed = 1")
+        
+        decksPath = []
+        for row in c:
+           decksPath.append(row[0])
+        
+        c.close()
+        
+        return decksPath
+        
     def insert(self, deck):
         db = self.learnXdB.openDataBase()
         c = db.cursor()
@@ -87,6 +102,43 @@ class DeckDao:
         
         t = (name, path)
         c.execute("Select * From Decks Where deck_name = ? and deck_path = ?", t)
+        
+        deck = None
+        for row in c:
+            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13])
+            if deck.fields:
+                deck.fields = pickle.loads(str(deck.fields))
+            
+        db.commit()
+        c.close()
+
+        return deck
+    
+    def findByPath(self, path):
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        t = (path,)
+        c.execute("Select * From Decks Where deck_path = ?", t)
+        
+        deck = None
+        for row in c:
+            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13])
+            if deck.fields:
+                deck.fields = pickle.loads(str(deck.fields))
+            
+        db.commit()
+        c.close()
+
+        return deck
+    
+    
+    def findById(self, id):
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        t = (id,)
+        c.execute("Select * From Decks Where id = ?", t)
         
         deck = None
         for row in c:

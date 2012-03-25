@@ -53,6 +53,25 @@ class CardDao:
         
         return card
     
+    def getCardsOrderByScore(self):
+        
+        db = self.learnXdB.openDataBase()
+        
+        c = db.cursor()
+        
+        c.execute("Select c.id, c.deck_id, c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.deck_path "
+                  "From Decks d, Cards c, Facts f "
+                  "Where c.fact_id = f.id and c.deck_id = d.id order by f.score asc")
+        cards = []
+        for row in c:
+            card = Card(row[1],row[2],row[3],row[5],row[6],row[0])
+            card.deckPath = row[7]
+            cards.append(card)
+
+        c.close()
+        
+        return cards
+    
     def getCardsByMorphemeId(self, morphemeId):
         
         db = self.learnXdB.openDataBase()

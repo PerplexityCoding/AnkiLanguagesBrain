@@ -9,6 +9,7 @@ from ankiqt import mw
 from anki.models import Model, CardModel, FieldModel
 
 from learnX.morphology.service.LanguagesService import *
+from learnX.morphology.db.dto.Deck import *
 
 from learnX.utils.AnkiHelper import *
 
@@ -93,11 +94,13 @@ class DeckConfig(QDialog):
         fieldsGrid.setHorizontalSpacing(25)
         
         self.fieldsComponents = []
-        if self.deck.fields:
+        fields = self.deck.fields
+        if fields:
             i = 0
             j = 0
-            for field in self.deck.fields:
-                fieldsGrid.addLayout(self.createField(field[0], field[1], field[2]), j, i)
+            
+            for fieldKey in self.deck.fieldsList:
+                fieldsGrid.addLayout(self.createField(fieldKey, fields[fieldKey][0], fields[fieldKey][1]), j, i)
                 i += 1
                 if i == 3:
                     i = 0
@@ -142,23 +145,29 @@ class DeckConfig(QDialog):
         realDeck = AnkiHelper.getDeck(deck.path)
         
         # Save Fields
-        fields = []
         for fieldsGrid in self.fieldsComponents:
             
             isEnabled = fieldsGrid[0].isChecked()
             value = str(fieldsGrid[1].text())
+            key = str(fieldsGrid[0].text())
             
+            numeric = deck.fields[key][2]
+
             models = realDeck.models
+            
+            deck.fields[key] = (value, isEnabled, numeric)
             
             if isEnabled:
                 for model in models:
                     
-                    field = FieldModel(unicode(value, "utf-8"), True, True)
+                    field = FieldModel(unicode(value, "utf-8"), False, False)
                     font = u"Arial"
                     field.quizFontSize = 22
                     field.quizFontFamily = font
                     field.editFontSize = 20
                     field.editFontFamily = font
+                    field.numeric = numeric
+
                     log("add fields")
                     try:
                         fieldModelAlreadyAdded = False
@@ -184,9 +193,6 @@ class DeckConfig(QDialog):
                             realDeck.deleteFieldModel(model, fieldToDelete)
                     except Exception as e:
                         log(e)
-            
-            fields.append((str(fieldsGrid[0].text()), value, isEnabled))
-        deck.fields = fields
         
         deck.matureTreshold = str(self.matureEdit.text())
         deck.knownTreshold = str(self.knownEdit.text())

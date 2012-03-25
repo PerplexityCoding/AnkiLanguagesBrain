@@ -126,6 +126,22 @@ class FactDao:
         
         return facts
     
+    def selectAllChanged(self):
+        
+        db = self.learnXdB.openDataBase()
+        
+        c = db.cursor()
+        
+        c.execute("Select * From Facts Where status_changed = 1")
+        facts = []
+        for row in c:
+            facts.append(Fact(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[0]))
+        
+        c.close()
+        
+        return facts
+        
+    
     def insertFactMorphemes(self, fact, morphemes):
         
         db = self.learnXdB.openDataBase()

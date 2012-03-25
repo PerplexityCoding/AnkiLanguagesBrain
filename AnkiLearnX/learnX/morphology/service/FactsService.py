@@ -3,6 +3,7 @@
 from learnX.morphology.db.dao.FactDao import *
 from learnX.morphology.db.dao.CardDao import *
 from learnX.morphology.db.dao.MorphemeDao import *
+from learnX.morphology.db.dao.DeckDao import *
 
 from learnX.morphology.db.dto.Morpheme import *
 from learnX.morphology.db.dto.Fact import *
@@ -12,6 +13,7 @@ class FactsService:
         self.fact_dao = FactDao()
         self.card_dao = CardDao()
         self.morpheme_dao = MorphemeDao()
+        self.deck_dao = DeckDao()
         
     def getFact(self, deck, ankiFactId):
         fact = self.fact_dao.findById(deck, ankiFactId)
@@ -43,6 +45,9 @@ class FactsService:
         
         return facts
     
+    def getAllCardsOrderByScore(self):
+        return self.card_dao.getCardsOrderByScore()
+    
     def calcCardStatus(self, ankiCard):
         if ankiCard.interval < 4:
             return Card.STATUS_NONE
@@ -73,6 +78,19 @@ class FactsService:
         
         return cards
     
+    def getAllChanged(self):
+        facts = self.fact_dao.selectAllChanged() 
+        decks = dict()
+        for fact in facts:
+            deck = None
+            try:
+                deck = decks[fact.deckId]
+            except KeyError as e:
+                deck = self.deck_dao.findById(fact.deckId)
+                decks[fact.deckId] = deck
+            fact.deck = deck
+        return facts
+    
     def computeCardsMaturity(self):
         
         facts = self.fact_dao.findByChangedMorphemes()
@@ -101,29 +119,38 @@ class FactsService:
             learnt = len(learnMorphemes)
             unknown = len(unknownMorphemes)
             
+            status = fact.status
             if unknown == 0:
                 if learnt == 0 and known == 0:
-                    fact.status = Fact.STATUS_REVIEW_EASY
+                    status = Fact.STATUS_REVIEW_EASY
                 elif learnt > 0:
-                    fact.status = Fact.STATUS_REVIEW_HARD
+                    status = Fact.STATUS_REVIEW_HARD
                 else :
-                    fact.status = Fact.STATUS_REVIEW_MEDIUM
+                    status = Fact.STATUS_REVIEW_MEDIUM
             elif unknown == 1:
                 if learnt == 0 and known == 0:
-                    fact.status = Fact.STATUS_LEARN_EASY
+                    status = Fact.STATUS_LEARN_EASY
                 elif learnt > 0:
-                    fact.status = Fact.STATUS_LEARN_HARD
+                    status = Fact.STATUS_LEARN_HARD
                 else :
-                    fact.status = Fact.STATUS_LEARN_MEDIUM
+                    status = Fact.STATUS_LEARN_MEDIUM
             else:
-                fact.status = Fact.STATUS_TOO_DIFFICULT
+                status = Fact.STATUS_TOO_DIFFICULT
 
-            fact.score = (mature * 1 + known * 2 + learnt * 6 + unknown * 30) * 300 + morphemesScore
-
-            # Store in ankiFact ?
-
+            if status != fact.status:
+                fact.status = status
+                fact.statusChanged = True
+            
+            score = (mature * 1 + known * 2 + learnt * 6 + unknown * 30) * 300 + morphemesScore
+            if score != fact.score:
+                fact.score = score
+                fact.statusChanged = True
+            
         self.fact_dao.updateAll(facts) 
+
         self.morpheme_dao.clearMorphemesStatus()
+
+        return facts
 
     def changeMorphemes(self, fact, morphemes):
         self.fact_dao.insertFactMorphemes(fact, morphemes)

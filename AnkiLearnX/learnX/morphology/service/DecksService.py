@@ -24,6 +24,9 @@ class DecksService:
                 deck.language = self.languagesService.getLanguageByCode(deck.languageId)
         return list
     
+    def getDecksPathChanged(self):
+        return self.deckDao.listDeckPathWithFactsModified()
+    
     def createDeck(self, deckName, deckPath):
         
         deck = Deck(deckName, deckPath, False, None, "Expression", None)
@@ -41,6 +44,17 @@ class DecksService:
             deck.language = self.languagesService.getLanguageById(deck.languageId)
         
         return deck
+    
+    def getDeckByPath(self, deckPath):
+        deck = self.deckDao.findByPath(deckPath)
+        
+        if deck.languageId != None:
+            deck.language = self.languagesService.getLanguageById(deck.languageId)
+        
+        return deck
+    
+    def getDeckById(self, id):
+        return self.deckDao.findById(id)
     
     def countMorphemes(self, deck):
         self.deckDao.countMorphemes(deck)
