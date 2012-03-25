@@ -83,6 +83,7 @@ class FactsService:
             knownMorphemes = []
             learnMorphemes = []
             unknownMorphemes = []
+            morphemesScore = 0
             for morpheme in morphemes:
                 if morpheme.status == Morpheme.STATUS_MATURE:
                     matureMorphemes.append(morpheme)
@@ -91,8 +92,9 @@ class FactsService:
                 if morpheme.status == Morpheme.STATUS_LEARNT:
                     learnMorphemes.append(morpheme)
                 if morpheme.status == Morpheme.STATUS_NONE:
-                    unknownMorphemes.append(morpheme)    
-                
+                    unknownMorphemes.append(morpheme)
+                morphemesScore += morpheme.score
+            log(morphemesScore)
             total = len(morphemes)
             mature = len(matureMorphemes)
             known = len(knownMorphemes)
@@ -116,7 +118,7 @@ class FactsService:
             else:
                 fact.status = Fact.STATUS_TOO_DIFFICULT
 
-            fact.score = mature * 10 + known * 20 + learnt * 60 + unknown * 300
+            fact.score = (mature * 1 + known * 2 + learnt * 6 + unknown * 30) * 300 + morphemesScore
 
             # Store in ankiFact ?
 

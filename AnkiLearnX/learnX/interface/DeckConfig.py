@@ -6,8 +6,11 @@ from PyQt4.QtGui import *
 from learnX.utils.Log import *
 
 from ankiqt import mw
+from anki.models import Model, CardModel, FieldModel
 
 from learnX.morphology.service.LanguagesService import *
+
+from learnX.utils.AnkiHelper import *
 
 class DeckConfig(QDialog):
     def __init__(self, deck, parent=None):
@@ -136,19 +139,63 @@ class DeckConfig(QDialog):
         
         mainVBox = self.mainVBox
         deck = self.deck
+        realDeck = AnkiHelper.getDeck(deck.path)
         
         # Save Fields
         fields = []
         for fieldsGrid in self.fieldsComponents:
-            fields.append((str(fieldsGrid[0].text()), str(fieldsGrid[1].text()), fieldsGrid[0].isChecked()))
+            
+            isEnabled = fieldsGrid[0].isChecked()
+            value = str(fieldsGrid[1].text())
+            
+            models = realDeck.models
+            
+            if isEnabled:
+                for model in models:
+                    
+                    field = FieldModel(unicode(value, "utf-8"), True, True)
+                    font = u"Arial"
+                    field.quizFontSize = 22
+                    field.quizFontFamily = font
+                    field.editFontSize = 20
+                    field.editFontFamily = font
+                    log("add fields")
+                    try:
+                        fieldModelAlreadyAdded = False
+                        for fieldModel in model.fieldModels:
+                            if fieldModel.name == value:
+                                fieldModelAlreadyAdded = True
+                                break
+                            
+                        if not fieldModelAlreadyAdded:
+                            realDeck.addFieldModel(model, field) 
+                    except Exception as e:
+                        log(e)
+            else:
+                for model in models:
+                    try:
+                        fieldToDelete = None
+                        for fieldModel in model.fieldModels:
+                            if fieldModel.name == value:
+                                fieldToDelete = fieldModel
+                                break
+                            
+                        if fieldToDelete != None:
+                            realDeck.deleteFieldModel(model, fieldToDelete)
+                    except Exception as e:
+                        log(e)
+            
+            fields.append((str(fieldsGrid[0].text()), value, isEnabled))
         deck.fields = fields
         
         deck.matureTreshold = str(self.matureEdit.text())
         deck.knownTreshold = str(self.knownEdit.text())
         deck.learnTreshold = str(self.learnEdit.text())
         
-        #Add / Delete Fields To Deck if not Present
-        
         self.parent.decksService.changeLanguage(self.deck, str(self.languageCombo.currentText()))
+        
+        realDeck.save()
+        realDeck.close()
+        
         self.parent.refreshAll()
         self.close()

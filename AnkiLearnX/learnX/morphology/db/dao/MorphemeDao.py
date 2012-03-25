@@ -4,6 +4,8 @@ from learnX.morphology.db.dto.Card import *
 
 from learnX.utils.Log import *
 
+import math
+
 class MorphemeDao:
     def __init__(self):
         self.learnXdB = LearnXdB.getInstance()

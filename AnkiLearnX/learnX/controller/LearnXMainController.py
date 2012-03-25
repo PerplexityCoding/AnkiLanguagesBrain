@@ -59,6 +59,9 @@ class LearnXMainController:
         self.decksService.countMorphemes(deck)
         self.factsService.computeCardsMaturity()
 
+        realDeck.save()
+        realDeck.close()
+
         log("End")
         
     

@@ -6,6 +6,8 @@ from learnX.morphology.service.LanguagesService import *
 from learnX.morphology.service.FactsService import *
 
 from learnX.utils.Log import *
+from learnX.utils.AnkiHelper import *
+
 
 class DecksService:
     

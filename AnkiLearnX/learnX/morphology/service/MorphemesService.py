@@ -10,6 +10,7 @@ from learnX.morphology.db.dao.CardDao import *
 from learnX.morphology.db.dto.Card import *
 
 from learnX.utils.Log import *
+from learnX.utils.KanjiHelper import *
 
 class MorphemesService:
     
@@ -95,40 +96,63 @@ class MorphemesService:
             score = self.rankMorpheme(rankDb, morpheme.morph.base, morpheme.morph.read)
             if morpheme.score != score:
                 morpheme.score = score
-                morpheme.scoreModified = True
+                morpheme.statusChanged = True #FIXME
                 modifiedMorphemes.append(morpheme)
         
         self.morphemeDao.updateAll(modifiedMorphemes)
         
         return modifiedMorphemes
 
-    # Taken from MorphMan 2
+    # return a Rank between 0 and 100
+    def rankKanji(self, kanji):
+        kanjiFreq, kanjiStrokeCount = KanjiHelper.getKanjiInfo(kanji)
+        
+        freqScore = math.exp(kanjiFreq / 600.0)
+        freqScore = freqScore / 1.5
+        if freqScore > 100:
+            freqScore = 100
+        
+        strokeScore = kanjiStrokeCount * 100.0 / 28.0
+        if strokeScore > 100:
+            strokeScore = 100
+        
+        kanjiScore = ((freqScore + strokeScore) / 2.0) * 2.0
+        return kanjiScore
+
+    # Adapted from MorphMan 2
     def rankMorpheme(self, knownDb, expr, read):
         wordEase = 0
         numCharsConsidered = 0
         hasKanji = False
-        if (expr, read) in knownDb: return 0
-        for i,c in enumerate( expr ):
-            # skip non-kanji
-            if c < u'\u4E00' or c > u'\u9FBF': continue
-    
-            hasKanji = True
-            charEase = 20
-            npow = 0
-            numCharsConsidered += 1
-            for (e,r) in knownDb:
-                # has same kanji
-                if c in e:
-                    if npow > -0.5: npow -= 0.1
-                    # has same kanji at same pos
-                    if len(e) > i and c == e[i]:
-                        if npow > -1.0: npow -= 0.1
-                        # has same kanji at same pos with similar reading
-                        if i == 0 and read[0] == r[0] or i == len(expr)-1 and read[-1] == r[-1]:
-                            npow -= 0.8
-            wordEase += charEase * pow(2, npow)
+        if (expr, read) in knownDb:
+            for i,c in enumerate( expr ):
+                if c < u'\u4E00' or c > u'\u9FBF': continue
+                hasKanji = True
+                wordEase += self.rankKanji(c)
+        else:
+            for i,c in enumerate( expr ):
+                # skip non-kanji
+                if c < u'\u4E00' or c > u'\u9FBF': continue
+        
+                hasKanji = True
+                charEase = 200
+                #charEase = self.rankKanji(c)
+                npow = 0
+                numCharsConsidered += 1
+                for (e,r) in knownDb:
+                    # has same kanji
+                    if c in e:
+                        if npow > -0.5: npow -= 0.1
+                        # has same kanji at same pos
+                        if len(e) > i and c == e[i]:
+                            if npow > -1.0: npow -= 0.1
+                            # has same kanji at same pos with similar reading
+                            if i == 0 and read[0] == r[0] or i == len(expr)-1 and read[-1] == r[-1]:
+                                npow -= 0.8
+                charEase += self.rankKanji(c)
+                wordEase += charEase * pow(2, npow)
         if not hasKanji:
-            return 1
+            return len(expr)
         return wordEase
     
     def analyze(self, fact):
