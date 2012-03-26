@@ -4,14 +4,9 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from learnX.utils.Log import *
+from learnX.controller.DeckConfigController import *
 
 from ankiqt import mw
-from anki.models import Model, CardModel, FieldModel
-
-from learnX.morphology.service.LanguagesService import *
-from learnX.morphology.db.dto.Deck import *
-
-from learnX.utils.AnkiHelper import *
 
 class DeckConfig(QDialog):
     def __init__(self, deck, parent=None):
@@ -23,7 +18,17 @@ class DeckConfig(QDialog):
         self.resize(600, 0)
         
         self.mainVBox = mainVBox = QVBoxLayout(self)
+        self.controller = DeckConfigController(self)
+                
+        self.setupLanguages()        
+        self.setupExpression()
+        self.setupFields()
+        self.setupOptions()
+        self.setupButtons()
         
+    def setupLanguages(self):
+        mainVBox = self.mainVBox
+        deck = self.deck
         mainVBox.chooseHbox = chooseHbox = QHBoxLayout()
         
         chooseHbox.addWidget(QLabel("   (1) Choose Language"))
@@ -48,45 +53,19 @@ class DeckConfig(QDialog):
         chooseHbox.addWidget(languageCombo)
         mainVBox.addLayout(chooseHbox)
         
-        self.setupFields()
+    def setupExpression(self):
+        mainVBox = self.mainVBox
         
-        self.setupOptions()
+        expressionsFrame = QGroupBox("(2) Choose Expression")
         
-        mainVBox.buttonBar = buttonBar = QBoxLayout(QBoxLayout.RightToLeft)
         
-        cancelButton = QPushButton("Cancel")
-        mw.connect(cancelButton, SIGNAL('clicked()'), self.closeWindows)
-        buttonBar.addWidget(cancelButton)
-        
-        okButton = QPushButton("Ok")
-        mw.connect(okButton, SIGNAL('clicked()'), self.saveConfig)
-        buttonBar.addWidget(okButton)
-        mainVBox.addLayout(buttonBar)
-        
-    def createField(self, fieldName, fieldDefaultValue, fieldEnabled):
-        
-        mmiLayout = QHBoxLayout()
-        
-        checkBox = QCheckBox(fieldName)
-        checkBox.setChecked(fieldEnabled)
-        
-        mmiLayout.addWidget(checkBox)
-        
-        lineEdit = QLineEdit(fieldDefaultValue)
-        lineEdit.setEnabled(fieldEnabled)
-        mmiLayout.addWidget(lineEdit)
-        
-        mw.connect(checkBox, SIGNAL('clicked()'), lambda lx=lineEdit, cx=checkBox: lx.setEnabled(cx.isChecked()))
-        
-        self.fieldsComponents.append((checkBox, lineEdit))
-        
-        return mmiLayout
+        mainVBox.addWidget(expressionsFrame)
         
     def setupFields(self):
         
         mainVBox = self.mainVBox
         
-        fieldsFrame = QGroupBox("(2) Choose Fields")
+        fieldsFrame = QGroupBox("(3) Choose Fields Option")
         
         mainVBox.fieldsGrid = fieldsGrid = QGridLayout()
         fieldsFrame.setLayout(fieldsGrid)
@@ -108,11 +87,30 @@ class DeckConfig(QDialog):
         
         mainVBox.addWidget(fieldsFrame)
         
+    def createField(self, fieldName, fieldDefaultValue, fieldEnabled):
+        
+        mmiLayout = QHBoxLayout()
+        
+        checkBox = QCheckBox(fieldName)
+        checkBox.setChecked(fieldEnabled)
+        
+        mmiLayout.addWidget(checkBox)
+        
+        lineEdit = QLineEdit(fieldDefaultValue)
+        lineEdit.setEnabled(fieldEnabled)
+        mmiLayout.addWidget(lineEdit)
+        
+        mw.connect(checkBox, SIGNAL('clicked()'), lambda lx=lineEdit, cx=checkBox: lx.setEnabled(cx.isChecked()))
+        
+        self.fieldsComponents.append((checkBox, lineEdit))
+        
+        return mmiLayout
+        
     def setupOptions(self):
         
         mainVBox = self.mainVBox
         
-        optionsGroup = QGroupBox("(3) Choose Options")
+        optionsGroup = QGroupBox("(4) Choose Maturity Options")
         
         mainVBox.fieldsGrid = matureGrid = QGridLayout()
         optionsGroup.setLayout(matureGrid)
@@ -131,77 +129,21 @@ class DeckConfig(QDialog):
         
         mainVBox.addWidget(optionsGroup)
         
-    def closeWindows(self):
-        self.close()
-
-    def saveConfig(self):
-        
-        if self.languageCombo.currentIndex() <= 0:
-            # Error
-            return
+    def setupButtons(self):
         
         mainVBox = self.mainVBox
-        deck = self.deck
-        realDeck = AnkiHelper.getDeck(deck.path)
         
-        # Save Fields
-        for fieldsGrid in self.fieldsComponents:
-            
-            isEnabled = fieldsGrid[0].isChecked()
-            value = str(fieldsGrid[1].text())
-            key = str(fieldsGrid[0].text())
-            
-            numeric = deck.fields[key][2]
-
-            models = realDeck.models
-            
-            deck.fields[key] = (value, isEnabled, numeric)
-            
-            if isEnabled:
-                for model in models:
-                    
-                    field = FieldModel(unicode(value, "utf-8"), False, False)
-                    font = u"Arial"
-                    field.quizFontSize = 22
-                    field.quizFontFamily = font
-                    field.editFontSize = 20
-                    field.editFontFamily = font
-                    field.numeric = numeric
-
-                    log("add fields")
-                    try:
-                        fieldModelAlreadyAdded = False
-                        for fieldModel in model.fieldModels:
-                            if fieldModel.name == value:
-                                fieldModelAlreadyAdded = True
-                                break
-                            
-                        if not fieldModelAlreadyAdded:
-                            realDeck.addFieldModel(model, field) 
-                    except Exception as e:
-                        log(e)
-            else:
-                for model in models:
-                    try:
-                        fieldToDelete = None
-                        for fieldModel in model.fieldModels:
-                            if fieldModel.name == value:
-                                fieldToDelete = fieldModel
-                                break
-                            
-                        if fieldToDelete != None:
-                            realDeck.deleteFieldModel(model, fieldToDelete)
-                    except Exception as e:
-                        log(e)
+        mainVBox.buttonBar = buttonBar = QBoxLayout(QBoxLayout.RightToLeft)
         
-        deck.matureTreshold = str(self.matureEdit.text())
-        deck.knownTreshold = str(self.knownEdit.text())
-        deck.learnTreshold = str(self.learnEdit.text())
+        cancelButton = QPushButton("Cancel")
+        mw.connect(cancelButton, SIGNAL('clicked()'), self.closeWindows)
+        buttonBar.addWidget(cancelButton)
         
-        self.parent.decksService.changeLanguage(self.deck, str(self.languageCombo.currentText()))
+        okButton = QPushButton("Ok")
+        mw.connect(okButton, SIGNAL('clicked()'), self.controller.saveConfig)
+        buttonBar.addWidget(okButton)
         
-        realDeck.save()
-        realDeck.close()
+        mainVBox.addLayout(buttonBar)
         
-        self.parent.refreshAll()
+    def closeWindows(self):
         self.close()
