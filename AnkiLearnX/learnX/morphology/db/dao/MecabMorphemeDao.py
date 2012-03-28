@@ -75,14 +75,21 @@ class MecabMorphemeDao:
             
         return morphemes
     
-    def getMorphemes(self, expressions = None, status = None, status_changed = None, pos = None, subPos = None):
+    def getMorphemes(self, decksId = None, expressions = None, status = None, status_changed = None, pos = None, subPos = None):
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        sql = "Select base, pos, sub_pos, read, m.id, status, status_changed, mm.id, count(fm.fact_id) as c, m.score "
-        sql += "From Morphemes m, FactsMorphemes fm, MecabMorphemes mm "
-        sql += "Where mm.id = m.morph_impl_id and m.id = fm.morpheme_id "
+        sql = "Select base, pos, sub_pos, read, m.id, m.status, m.status_changed, mm.id, count(fm.fact_id) as c, m.score "
+        sql += "From Morphemes m, FactsMorphemes fm, MecabMorphemes mm, Facts f "
+        
+        if decksId != None:
+            sql += ", Decks d "
+        
+        sql += "Where mm.id = m.morph_impl_id and m.id = fm.morpheme_id and f.id = fm.fact_id "
+        
+        if decksId != None:
+            sql += "and d.id = f.deck_id "
         
         t = list()
         if expressions != None:
@@ -100,25 +107,41 @@ class MecabMorphemeDao:
             else:
                 t.append(0)
         if pos != None:
-            sql += "and pos = ?"
+            sql += "and pos = ? "
             t.append(pos)
         if subPos != None:
-            sql += "and sub_pos = ?"
+            sql += "and sub_pos = ? "
             t.append(subPos)
+        if decksId != None and len(decksId) > 0:
+            sql += "and ("
+            i = 1
+            for deckId in decksId:
+                t.append(deckId)
+                sql += "d.id = ?"
+                if i < len(decksId):
+                    sql += " or "
+                i += 1
+            sql += ")"
         
         sql += " group by m.id"
+        
+        log("getMorphemes SQL Start")
         log(sql)
+        log(t)
         if len(t) > 0:
             c.execute(sql, t)
         else:
             c.execute(sql)
+        log("getMorphemes SQL End")
         
+        log("getMorphemes get Result Start")
         morphemes = []
         for row in c:
             mecabMorpheme = MecabMorpheme(row[0], None, row[1], row[2], row[3], row[4])
             morpheme = Morpheme(row[5], row[6], Morpheme.TYPE_MECAB, row[7], mecabMorpheme, row[9], row[4])
             morpheme.factsCount = row[8]
             morphemes.append(morpheme)
+        log("getMorphemes get Result End")
         
         c.close()
         

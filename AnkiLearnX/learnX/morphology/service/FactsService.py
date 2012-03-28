@@ -9,11 +9,15 @@ from learnX.morphology.db.dto.Morpheme import *
 from learnX.morphology.db.dto.Fact import *
 
 class FactsService:
-    def __init__(self):
+    def __init__(self, serviceLocator):
+        self.serviceLocator = serviceLocator
         self.fact_dao = FactDao()
         self.card_dao = CardDao()
         self.morpheme_dao = MorphemeDao()
         self.deck_dao = DeckDao()
+        
+    def setupServices(self):
+        self.decksService = self.serviceLocator.getDecksService()
         
     def getFact(self, deck, ankiFactId):
         fact = self.fact_dao.findById(deck, ankiFactId)
@@ -45,15 +49,16 @@ class FactsService:
         
         return facts
     
-    def getAllCardsOrderByScore(self):
-        return self.card_dao.getCardsOrderByScore()
+    def getAllCardsOrderByScore(self, language):
+        decksId = self.decksService.listDecksIdByLanguage(language)
+        return self.card_dao.getCardsOrderByScore(decksId)
     
-    def calcCardStatus(self, ankiCard):
-        if ankiCard.interval < 4:
+    def calcCardStatus(self, deck, ankiCard):
+        if ankiCard.interval < deck.learnTreshold: 
             return Card.STATUS_NONE
-        if ankiCard.interval < 7:
+        if ankiCard.interval < deck.knownTreshold:
             return Card.STATUS_LEARNT
-        if ankiCard.interval < 21:
+        if ankiCard.interval < deck.matureTreshold:
             return Card.STATUS_KNOWN
         return Card.STATUS_MATURE
         
@@ -65,7 +70,7 @@ class FactsService:
             card = self.card_dao.findById(deck, ankiCard.id)
             if card == None:
                 fact = self.getFact(deck, ankiCard.fact.id)
-                status = self.calcCardStatus(ankiCard)
+                status = self.calcCardStatus(deck, ankiCard)
                 card = Card(deck.id, fact.id, ankiCard.id, status, False)
                 card.deck = deck
                 card.fact = fact
@@ -78,8 +83,10 @@ class FactsService:
         
         return cards
     
-    def getAllChanged(self):
-        facts = self.fact_dao.selectAllChanged() 
+    def getAllChanged(self, language):
+        
+        decksId = self.decksService.listDecksIdByLanguage(language)
+        facts = self.fact_dao.selectAllChanged(decksId) 
         decks = dict()
         for fact in facts:
             deck = None
@@ -91,9 +98,10 @@ class FactsService:
             fact.deck = deck
         return facts
     
-    def computeCardsMaturity(self):
+    def computeCardsMaturity(self, language):
         
-        facts = self.fact_dao.findByChangedMorphemes()
+        decksId = self.decksService.listDecksIdByLanguage(language)
+        facts = self.fact_dao.findByChangedMorphemes(decksId)
         for fact in facts:
             morphemes = self.morpheme_dao.getMorphemesFromFact(fact)
         
@@ -112,7 +120,6 @@ class FactsService:
                 if morpheme.status == Morpheme.STATUS_NONE:
                     unknownMorphemes.append(morpheme)
                 morphemesScore += morpheme.score
-            log(morphemesScore)
             total = len(morphemes)
             mature = len(matureMorphemes)
             known = len(knownMorphemes)
@@ -158,5 +165,6 @@ class FactsService:
         fact.morphemes = morphemes
         return fact
 
-
-        
+    def clearAllFactsStatus(self, language):
+        decksId = self.decksService.listDecksIdByLanguage(language)
+        self.fact_dao.clearAllFactsStatus(decksId)

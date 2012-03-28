@@ -17,7 +17,10 @@ class DeckConfigController:
         interface = self.interface
         
         if interface.languageCombo.currentIndex() <= 0:
-            # Error
+            # Error : marked in red + Error message
+            return
+        if interface.expressionCombo.currentIndex() <= 0:
+            # Error : marked in red + Error message
             return
         
         mainVBox = interface.mainVBox
@@ -74,14 +77,17 @@ class DeckConfigController:
                     except Exception as e:
                         log(e)
         
-        deck.matureTreshold = str(interface.matureEdit.text())
-        deck.knownTreshold = str(interface.knownEdit.text())
-        deck.learnTreshold = str(interface.learnEdit.text())
+        self.decksService.changeLanguage(interface.deck, unicode(interface.languageCombo.currentText()))
         
-        self.decksService.changeLanguage(interface.deck, str(interface.languageCombo.currentText()))
+        deck.matureTreshold = int(str(interface.matureEdit.text()))
+        deck.knownTreshold = int(str(interface.knownEdit.text()))
+        deck.learnTreshold = int(str(interface.learnEdit.text()))
+        deck.expressionField = str(interface.expressionCombo.currentText())
+        self.decksService.updateDeck(deck)
         
         realDeck.save()
         realDeck.close()
         
         interface.parent.refreshAll()
         interface.close()
+        

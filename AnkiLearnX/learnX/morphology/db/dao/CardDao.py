@@ -53,15 +53,35 @@ class CardDao:
         
         return card
     
-    def getCardsOrderByScore(self):
+    def getCardsOrderByScore(self, decksId):
         
         db = self.learnXdB.openDataBase()
         
         c = db.cursor()
         
-        c.execute("Select c.id, c.deck_id, c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.deck_path "
-                  "From Decks d, Cards c, Facts f "
-                  "Where c.fact_id = f.id and c.deck_id = d.id order by f.score asc")
+        sql = "Select c.id, c.deck_id, c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.deck_path "
+        sql += "From Decks d, Cards c, Facts f "
+        sql += "Where c.fact_id = f.id and c.deck_id = d.id "
+        
+        t = []
+        if decksId != None and len(decksId) > 0:
+            sql += "and ("
+            i = 1
+            for deckId in decksId:
+                t.append(deckId)
+                sql += "d.id = ?"
+                if i < len(decksId):
+                    sql += " or "
+                i += 1
+            sql += ")"
+        
+        sql += " order by f.score asc"
+        
+        if len(t) > 0:
+            c.execute(sql, t)
+        else:
+            c.execute(sql)
+        
         cards = []
         for row in c:
             card = Card(row[1],row[2],row[3],row[5],row[6],row[0])

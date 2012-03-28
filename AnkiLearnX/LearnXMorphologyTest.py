@@ -1,6 +1,9 @@
 ﻿#-*- coding: utf-8 -*-
 from sys import *
 
+
+from learnX.morphology.service.ServicesLocator import *
+
 from learnX.morphology.service.DecksService import *
 from learnX.morphology.service.LanguagesService import *
 from learnX.morphology.service.MorphemesService import *
@@ -9,10 +12,20 @@ from learnX.morphology.db.LearnXdB import *
 from learnX.utils.Log import *
 from learnX.morphology.db.dao.MecabMorphemeDao import *
 
+serviceLocator = ServicesLocator.getInstance()
+
+log(serviceLocator.getFactsService())
+
+
 #LearnXdB.getInstance().createDataBase()
 clearLog()
-#decksService = DecksService()
-languagesService = LanguagesService()
+languagesService = serviceLocator.getLanguagesService()
+factsService = serviceLocator.getFactsService()
+
+#languagesService.countMorphemes(None)
+
+
+#factsService.computeCardsMaturity()
 #morphemesService = MorphemesService()
 #factService = FactsService()
 

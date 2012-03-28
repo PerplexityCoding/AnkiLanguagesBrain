@@ -3,20 +3,21 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from learnX.morphology.service.MorphemesService import *
+from learnX.morphology.service.ServicesLocator import *
+
 from learnX.interface.model.MecabMorphemeModel import *
 
 class MorphemesBrowser(QDialog):
-    def __init__(self, deck, parent=None):
+    
+    def __init__(self, deck, language=None, parent=None):
         super(MorphemesBrowser, self).__init__(parent)
         
-        self.morphemesService = MorphemesService()
+        self.morphemesService = ServicesLocator.getInstance().getMorphemesService()
         
-        self.model = my_model = MecabMorphemeModel(deck)
+        self.model = my_model = MecabMorphemeModel(deck, language)
         
         self.parent = parent
         self.resize(900, 500)
-        self.deck = deck
         self.setTitle()
         
         self.mainVBox = mainVBox = QVBoxLayout(self)
@@ -45,6 +46,12 @@ class MorphemesBrowser(QDialog):
         customFilter.addItem("Un-Changed")
         
         self.posList = self.morphemesService.getAllPOS()
+        
+        filterPosLabelFont = QFont()
+        filterPosLabelFont.setPixelSize(12)
+        
+        customFilter.setFont(filterPosLabelFont) 
+        
         if len (self.posList) > 0:
             customFilter.insertSeparator(self.customFilter.count())
         

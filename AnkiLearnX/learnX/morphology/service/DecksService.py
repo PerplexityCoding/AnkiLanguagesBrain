@@ -2,18 +2,16 @@
 
 from learnX.morphology.db.dao.DeckDao import *
 
-from learnX.morphology.service.LanguagesService import *
-from learnX.morphology.service.FactsService import *
-
 from learnX.utils.Log import *
-from learnX.utils.AnkiHelper import *
 
 
 class DecksService:
+    def __init__(self, serviceLocator):
+        self.serviceLocator = serviceLocator
+        self.deckDao = DeckDao()
     
-    deckDao = DeckDao()
-    languagesService = LanguagesService()
-    factsService = FactsService()
+    def setupServices(self):
+        self.languagesService = self.serviceLocator.getLanguagesService()
     
     # Unused
     def listDecks(self):
@@ -21,15 +19,29 @@ class DecksService:
     
         for deck in list:
             if deck.languageId != None:
-                deck.language = self.languagesService.getLanguageByCode(deck.languageId)
+                deck.language = self.languagesService.getLanguageById(deck.languageId)
         return list
     
+    def listDecksByLanguage(self, language):
+        list = self.deckDao.listDecksByLanguage(language.id)
+        for deck in list:
+            if deck.languageId != None:
+                deck.language = self.languagesService.getLanguageById(deck.languageId)
+        return list
+    
+    def listDecksIdByLanguage(self, language):
+        decks = self.deckDao.listDecksByLanguage(language.id)
+        decksId = []
+        for deck in decks:
+            decksId.append(deck.id)
+        return decksId
+        
     def getDecksPathChanged(self):
         return self.deckDao.listDeckPathWithFactsModified()
     
     def createDeck(self, deckName, deckPath):
         
-        deck = Deck(deckName, deckPath, False, None, "Expression", None)
+        deck = Deck(deckName, deckPath, False, None, None, None)
         deck = self.deckDao.insert(deck)
         
         return deck
@@ -84,4 +96,7 @@ class DecksService:
         deck = self.deckDao.update(deck)
         
         return deck
+    
+    def updateDeck(self, deck):
+        return self.deckDao.update(deck)
         

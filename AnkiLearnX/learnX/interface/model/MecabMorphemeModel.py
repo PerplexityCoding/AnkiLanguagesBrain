@@ -2,16 +2,30 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from learnX.morphology.service.MorphemesService import *
+from learnX.morphology.service.ServicesLocator import *
+
+from learnX.utils.Log import *
 
 class MecabMorphemeModel(QAbstractTableModel):
-    def __init__(self, deck):
+    def __init__(self, deck, language=None):
         QAbstractTableModel.__init__(self)
         
-        self.deck = deck
-        self.morphemesService = MorphemesService()
+        self.servicesLocator = ServicesLocator.getInstance()
         
-        self.morphemes = self.morphemesService.getMorphemes()
+        self.morphemesService = self.servicesLocator.getMorphemesService()
+        self.decksService = self.servicesLocator.getDecksService()
+        
+        self.decksId = decksId = []
+        if language != None:
+            self.language = language
+            self.decks = self.decksService.listDecksByLanguage(language)
+            for deck in self.decks:
+                decksId.append(deck.id)
+        else:
+            self.deck = deck
+            decksId.append(deck.id)
+        
+        self.morphemes = self.morphemesService.getMorphemes(None, decksId)
         self.initMorphemesLen = len(self.morphemes)
         self.currentMorphemesLen = len(self.morphemes)
         
@@ -80,6 +94,6 @@ class MecabMorphemeModel(QAbstractTableModel):
         
     def showMatching(self, force=True):
         
-        self.morphemes = self.morphemesService.getMorphemes(self.searchText)
+        self.morphemes = self.morphemesService.getMorphemes(self.searchText, self.decksId)
         self.currentMorphemesLen = len(self.morphemes)
         self.reset()

@@ -3,10 +3,7 @@
 from ankiqt import mw
 
 from learnX.utils.Log import *
-from learnX.morphology.service import *
-from learnX.morphology.service.DecksService import *
-from learnX.morphology.service.LanguagesService import *
-from learnX.morphology.service.MorphemesService import *
+from learnX.morphology.service.ServicesLocator import *
 
 from learnX.interface.LanguageChooser import *
 from learnX.interface.DeckConfig import *
@@ -28,11 +25,12 @@ class LearnX(QDialog):
         self.setWindowTitle('LearnX')
         self.resize(600, 0)
         
-        self.decksService = DecksService()
-        self.languagesService = LanguagesService()
-        self.morphemesService = MorphemesService()
+        self.servicesLocator = ServicesLocator.getInstance()
+        self.decksService = self.servicesLocator.getDecksService()
+        self.languagesService = self.servicesLocator.getLanguagesService()
+        self.morphemesService = self.servicesLocator.getMorphemesService()
         
-        self.mainController = LearnXMainController()
+        self.mainController = LearnXMainController(self)
         self.morphemesController = MorphemesBrowserController()
         
         self.mainVBox = mainVBox = QVBoxLayout(self)
@@ -110,6 +108,9 @@ class LearnX(QDialog):
         conf = self.confButtons[index]
         conf.setEnabled(deck.enabled)
         log(deck.enabled)
+        
+        if deck.enabled:
+            self.configDeck(deck)
     
     def configDeck(self, deck):
 
@@ -155,7 +156,7 @@ class LearnX(QDialog):
             self.connect(analyze, SIGNAL("clicked()"), lambda d=deck: self.mainController.analyze(d))
             decksGrid.addWidget(analyze, i, 6)
             
-            more = QPushButton("More")
+            more = QPushButton("Browse")
             more.setEnabled(deck.enabled and deck.language != None and deck.totalMorphemes > 0)
             self.connect(more, SIGNAL("clicked()"), lambda d=deck: self.morphemesController.launchBrowserMorphemes(d))
             decksGrid.addWidget(more, i, 7)
@@ -198,18 +199,24 @@ class LearnX(QDialog):
         for language in languages:
             languageName = self.languagesService.getLanguageNameFromCode(language.nameId)
             log(languageName)
-            languagesGrid.addWidget(QLabel(languageName), i, 0)
+            languagesGrid.addWidget(QLabel(languageName), i, 0, Qt.AlignHCenter)
+            languagesGrid.addWidget(QLabel(str(language.totalMorphemes)), i, 1, Qt.AlignHCenter)
+            languagesGrid.addWidget(QLabel(str(language.matureMorphemes)), i, 2, Qt.AlignHCenter)
+            languagesGrid.addWidget(QLabel(str(language.knownMorphemes)), i, 3, Qt.AlignHCenter)
+            languagesGrid.addWidget(QLabel(str(language.learntMorphemes)), i, 4, Qt.AlignHCenter)
             
             conf = QPushButton("Conf")
             self.confButtons.append(conf)
             languagesGrid.addWidget(conf, i, 4)
         
             # on peux browse meme si desactivé, si le total de morphemes n'ai pas nulle
-            run = QPushButton("Run")
+            run = QPushButton("Analyze")
             #run.setEnabled(deck.totalMorphemes > 0)
+            self.connect(run, SIGNAL("clicked()"), lambda l=language: self.mainController.analyzeLanguage(l))
             languagesGrid.addWidget(run, i, 5)
             
-            more = QPushButton("More")
+            more = QPushButton("Browse")
+            self.connect(more, SIGNAL("clicked()"), lambda l=language: self.morphemesController.launchBrowserMorphemesByLanguage(l))
             languagesGrid.addWidget(more, i, 6)
             
             i += 1

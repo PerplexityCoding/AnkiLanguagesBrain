@@ -1,8 +1,5 @@
 
-from learnX.morphology.service.DecksService import *
-from learnX.morphology.service.LanguagesService import *
-from learnX.morphology.service.MorphemesService import *
-from learnX.morphology.service.FactsService import *
+from learnX.morphology.service.ServicesLocator import *
 
 from learnX.morphology.db.dto.Deck import *
 
@@ -12,13 +9,42 @@ from learnX.utils.Log import *
 from anki.utils import deleteTags, addTags, canonifyTags, stripHTML
 
 class LearnXMainController:
-    def __init__(self):
-        self.decksService = DecksService()
-        self.languagesService = LanguagesService()
-        self.morphemesService = MorphemesService()
-        self.factsService = FactsService()
+    def __init__(self, interface):
+        self.interface = interface
+        
+        self.servicesLocator = ServicesLocator.getInstance()
+        self.decksService = self.servicesLocator.getDecksService()
+        self.languagesService = self.servicesLocator.getLanguagesService()
+        self.morphemesService = self.servicesLocator.getMorphemesService()
+        self.factsService = self.servicesLocator.getFactsService()
         
     def analyze(self, deck):
+        self.analyzeDeck(deck)
+        
+        log("Process Facts Start")
+        self.processFacts(deck.language)
+        log("Process Facts Stop")
+        
+        self.interface.refreshAll()
+        
+        log("End")
+    
+    def analyzeLanguage(self, language):
+        
+        log(language)
+        decks = self.decksService.listDecksByLanguage(language)
+        for deck in decks:
+            self.analyzeDeck(deck)
+        
+        log("Process Facts Start")
+        self.processFacts(deck.language)
+        log("Process Facts Stop")
+        
+        self.interface.refreshAll()
+        
+        log("End")
+        
+    def analyzeDeck(self, deck):
         
         realDeck = AnkiHelper.getDeck(deck.path)
         log(realDeck)
@@ -37,7 +63,7 @@ class LearnXMainController:
         for fact in facts:
             if fact.ankiLastModified == fact.lastUpdated:
                 continue
-            expression = ankiFacts[fact.ankiFactIndex]["Expression"]
+            expression = ankiFacts[fact.ankiFactIndex][deck.expressionField]
             if fact.expressionHash != None and int(fact.expressionHash) == hash(expression) :
                 continue
             log("to analyze")
@@ -57,32 +83,53 @@ class LearnXMainController:
             self.morphemesService.computeMorphemesMaturity(modifiedCards)
         
         log("Calculed morpheme Score Start")
-        self.morphemesService.computeMorphemesScore()
+        self.morphemesService.computeMorphemesScore(deck.language)
         log("Calculed morpheme Score End")
         
+        log("decksService.countMorphemes Start")
         self.decksService.countMorphemes(deck)
-        self.factsService.computeCardsMaturity()
+        log("decksService.countMorphemes End")
         
+        log("decksService.countMorphemes Start")
+        self.languagesService.countMorphemes(deck.language)
+        log("decksService.countMorphemes End")
+        
+        log("factsService.computeCardsMaturity Start")
+        self.factsService.computeCardsMaturity(deck.language)
+        log("factsService.computeCardsMaturitys End")
+        
+        log("Saves Decks Start")
         realDeck.save()
         realDeck.close()
+        log("Saves Decks Stop")
         
-        self.processFacts()
+    def processFacts(self, language):
         
-        log("End")
+        log("self.setupProcessFacts()")
+        self.setupProcessFacts(language)
+
+        log("self.markFacts()")     
+        ankiFactsId = self.markFacts(language)
         
-    def processFacts(self):
+        log("self.changeDueCards()")     
+        self.changeDueCards(language)
         
-        self.setupProcessFacts()
-        ankiFactsId = self.markFacts()
-        self.changeDueCards()
-        self.saveDecks(ankiFactsId)
+        log("self.saveDecks(ankiFactsId)")     
+        self.saveDecks(ankiFactsId, language)
         
-    def setupProcessFacts(self):
+    def setupProcessFacts(self, language):
         self.decks = decks = dict()
         self.ankiDecks = ankiDecks = dict()
         self.ankiDeckFacts = ankiDeckFacts = dict()
         self.ankiDeckCards = ankiDeckCards = dict()
-        self.modifiedDecksPath = modifiedDecksPath = self.decksService.getDecksPathChanged()
+        #self.modifiedDecksPath = modifiedDecksPath = self.decksService.getDecksPathChanged()
+        decksList = self.decksService.listDecks()
+        modifiedDecksPath = []
+        for deck in decksList:
+            log(deck.language)
+            if deck.enabled and deck.language == language:
+                modifiedDecksPath.append(deck.path)
+        self.modifiedDecksPath = modifiedDecksPath
         
         # Init Mapping AnkiCards -> Cards and AnkiFacts -> Fact
         
@@ -102,8 +149,8 @@ class LearnXMainController:
                 ankiCardsDict[ankiCard.id] = ankiCard    
             ankiDeckCards[modifiedDeckPath] = ankiCardsDict
     
-    def markFacts(self):
-        modifiedFacts = self.factsService.getAllChanged()
+    def markFacts(self, language):
+        modifiedFacts = self.factsService.getAllChanged(language)
         ankiFactsId = list()
         
         for modifiedFact in modifiedFacts:
@@ -133,9 +180,9 @@ class LearnXMainController:
         
         return ankiFactsId
         
-    def changeDueCards(self):
+    def changeDueCards(self, language):
         
-        cards = self.factsService.getAllCardsOrderByScore()
+        cards = self.factsService.getAllCardsOrderByScore(language)
         newtime = 472777200.0 # 25 Decembre 1984 :)
         
         for card in cards:
@@ -150,7 +197,7 @@ class LearnXMainController:
             except KeyError:
                 log('Error during sorting')
             
-    def saveDecks(self, ankiFactsId):
+    def saveDecks(self, ankiFactsId, language):
         for modifiedDeckPath in self.modifiedDecksPath:
             ankiDeck = self.ankiDecks[modifiedDeckPath]
             
@@ -159,5 +206,5 @@ class LearnXMainController:
             ankiDeck.save()
             ankiDeck.close()
             
-        #self.factsService.clearAllFactsStatus()
+        self.factsService.clearAllFactsStatus(language)
     

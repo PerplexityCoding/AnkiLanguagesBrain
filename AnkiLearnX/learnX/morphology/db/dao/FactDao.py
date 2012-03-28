@@ -108,16 +108,34 @@ class FactDao:
         
         return fact
     
-    def findByChangedMorphemes(self):
+    def findByChangedMorphemes(self, decksId):
         
         db = self.learnXdB.openDataBase()
         
         c = db.cursor()
         
-        c.execute("Select distinct f.id, f.deck_id, f.anki_fact_id, f.last_updated, f.expression_hash, "
-                  "f.morphemes_changed, f.status, f.status_changed, f.score "
-                  "From Morphemes m, FactsMorphemes mf, Facts f "
-                  "Where mf.morpheme_id = m.id and f.id = mf.fact_id and m.status_changed = 1")
+        sql = "Select distinct f.id, f.deck_id, f.anki_fact_id, f.last_updated, f.expression_hash, "
+        sql += "f.morphemes_changed, f.status, f.status_changed, f.score "
+        sql += "From Morphemes m, FactsMorphemes mf, Facts f "
+        sql += "Where mf.morpheme_id = m.id and f.id = mf.fact_id and m.status_changed = 1 "
+        
+        t = []
+        if decksId != None and len(decksId) > 0:
+            sql += "and ("
+            i = 1
+            for deckId in decksId:
+                t.append(deckId)
+                sql += "f.deck_id = ?"
+                if i < len(decksId):
+                    sql += " or "
+                i += 1
+            sql += ")"
+        
+        if len(t) > 0:
+            c.execute(sql, t)
+        else:
+            c.execute(sql)
+        
         facts = []
         for row in c:
             facts.append(Fact(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[0]))
@@ -126,13 +144,31 @@ class FactDao:
         
         return facts
     
-    def selectAllChanged(self):
+    def selectAllChanged(self, decksId):
         
         db = self.learnXdB.openDataBase()
         
         c = db.cursor()
         
-        c.execute("Select * From Facts Where status_changed = 1")
+        sql = "Select * From Facts Where status_changed = 1 "
+        
+        t = []
+        if decksId != None and len(decksId) > 0:
+            sql += "and ("
+            i = 1
+            for deckId in decksId:
+                t.append(deckId)
+                sql += "deck_id = ?"
+                if i < len(decksId):
+                    sql += " or "
+                i += 1
+            sql += ")"
+        
+        if len(t) > 0:
+            c.execute(sql, t)
+        else:
+            c.execute(sql)
+        
         facts = []
         for row in c:
             facts.append(Fact(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[0]))
@@ -177,6 +213,30 @@ class FactDao:
                 c.execute("Insert Into FactsMorphemes(fact_id, morpheme_id) Values(?,?)", t)
         db.commit()
         c.close()
-        
-        
     
+    def clearAllFactsStatus(self, decksId):
+        
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        sql = "Update Facts Set status_changed = 0 "
+
+        t = []
+        if decksId != None and len(decksId) > 0:
+            sql += " Where "
+            i = 1
+            for deckId in decksId:
+                t.append(deckId)
+                sql += "deck_id = ?"
+                if i < len(decksId):
+                    sql += " or "
+                i += 1
+        
+        if len(t) > 0:
+            c.execute(sql, t)
+        else:
+            c.execute(sql)
+
+        db.commit()
+        c.close()
+        

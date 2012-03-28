@@ -23,7 +23,10 @@ class Deck:
         self.enabled = enabled
         self.languageId = languageId
         self.language = None
-        self.expressionField = expressionField
+        if expressionField != None:
+            self.expressionField = expressionField
+        else:
+            self.expressionField = "Expression"
         self.matureTreshold = matureTreshold
         self.knownTreshold = knownTreshold
         self.learnTreshold = learnTreshold

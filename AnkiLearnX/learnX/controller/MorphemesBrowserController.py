@@ -9,3 +9,9 @@ class MorphemesBrowserController:
         log("Launch Browser Morphemes")
         self.morphemesBrowser = MorphemesBrowser(deck)
         self.morphemesBrowser.show()
+        
+    def launchBrowserMorphemesByLanguage(self, language):
+        log("Launch Browser Morphemes By Language")
+        self.morphemesBrowser = MorphemesBrowser(None, language)
+        self.morphemesBrowser.show()
+        

@@ -14,7 +14,10 @@ class Mecab:
     MECAB_NODE_READING_INDEX = 4
     MECAB_NODE_LENGTH = len(MECAB_NODE_PARTS)
     
-    def __init__(self):
+    DEFAULT_BLACKLIST = [u'記号', u'助詞', u'助動詞', u'UNKNOWN']
+    
+    def __init__(self, serviceLocator):
+        self.serviceLocator = serviceLocator
         self.process = self.mecab()
     
     def which(self, app): # PartialAppPath -> [FullAppPath]
@@ -66,7 +69,7 @@ class Mecab:
         return morpheme
     
         # MecabProc -> Str -> PosWhiteList? -> PosBlackList? -> IO [Morpheme]
-    def getMorphemes(self, expression, whiteList=None, blackList=None):
+    def getMorphemes(self, expression, whiteList=None, blackList=DEFAULT_BLACKLIST):
         morphemes = [tuple(m.split('\t')) for m in self.interact(expression).split('\r')] # morphemes
         morphemes = [MecabMorpheme(*m) for m in morphemes if len(m) == self.MECAB_NODE_LENGTH] # filter garbage
         if whiteList: morphemes = [m for m in morphemes if m.pos in whiteList]

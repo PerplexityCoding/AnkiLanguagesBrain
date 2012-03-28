@@ -5,8 +5,10 @@ from PyQt4.QtGui import *
 
 from learnX.utils.Log import *
 from learnX.controller.DeckConfigController import *
+from learnX.utils.AnkiHelper import *
 
 from ankiqt import mw
+from anki.models import FieldModel
 
 class DeckConfig(QDialog):
     def __init__(self, deck, parent=None):
@@ -55,11 +57,41 @@ class DeckConfig(QDialog):
         
     def setupExpression(self):
         mainVBox = self.mainVBox
+        deck = self.deck
+        ankiDeck = AnkiHelper.getDeck(deck.path)
         
-        expressionsFrame = QGroupBox("(2) Choose Expression")
+        expressionFrame = QGroupBox("(2) Choose Expression")
         
+        layout = QHBoxLayout()
         
-        mainVBox.addWidget(expressionsFrame)
+        labelExpression = QLabel("Expression Field: ")
+
+        self.expressionCombo = expressionCombo = QComboBox()
+        expressionCombo.addItem("------------------------")
+                
+        allFields = list()
+        for model in ankiDeck.models:
+            for fieldModel in model.fieldModels:
+                if fieldModel.name not in allFields:
+                    allFields.append(fieldModel.name)
+        allFields.sort()
+        selectIndex = 0
+        i = 1
+        for fieldName in allFields:
+            expressionCombo.addItem(fieldName)
+            if fieldName == deck.expressionField:
+                selectIndex = i
+            i += 1
+        expressionCombo.setCurrentIndex(selectIndex)
+        
+        layout.addWidget(labelExpression)
+        layout.addWidget(expressionCombo)
+        
+        expressionFrame.setLayout(layout)
+        
+        mainVBox.addWidget(expressionFrame)
+        
+        ankiDeck.close()
         
     def setupFields(self):
         

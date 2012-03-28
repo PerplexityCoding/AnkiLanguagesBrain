@@ -1,26 +1,30 @@
-from learnX.morphology.service.Mecab import *
-from learnX.morphology.service.FactsService import *
 
-from learnX.morphology.db.dto.Morpheme import *
 from learnX.morphology.db.dao.MecabMorphemeDao import *
 from learnX.morphology.db.dao.MorphemeDao import *
 from learnX.morphology.db.dao.FactDao import *
 from learnX.morphology.db.dao.CardDao import *
+from learnX.morphology.db.dao.DeckDao import *
 
 from learnX.morphology.db.dto.Card import *
+from learnX.morphology.db.dto.Morpheme import *
 
 from learnX.utils.Log import *
 from learnX.utils.KanjiHelper import *
 
 class MorphemesService:
     
-    def __init__(self):
-        self.mecab = Mecab()
+    def __init__(self, serviceLocator):
+        self.serviceLocator = serviceLocator
+        
         self.mecabDao = MecabMorphemeDao()
         self.morphemeDao = MorphemeDao()
         self.factDao = FactDao()
         self.cardDao = CardDao()
-        self.factService = FactsService()
+        self.deckDao = DeckDao()
+    
+    def setupServices(self):
+        self.decksService = self.serviceLocator.getDecksService()
+        self.factsService = self.serviceLocator.getFactsService()
 
     def extractMorphemes(self, expression):
         
@@ -86,11 +90,20 @@ class MorphemesService:
         self.morphemeDao.updateAll(modifiedMorphemes)
         self.cardDao.updateAll(cards)
     
-    def computeMorphemesScore(self):
+    def computeMorphemesScore(self, language):
         
+        log("getAllKnownSimpleMorphemesStart")
         rankDb = self.morphemeDao.getAllKnownSimpleMorphemes()
+        log("getAllKnownSimpleMorphemesEnd")
         
-        allMorphemes = self.mecabDao.getMorphemes()
+        decksId = self.decksService.listDecksIdByLanguage(language)
+        
+        log("mecabDao.getMorphemes() Start")
+        allMorphemes = self.mecabDao.getMorphemes(decksId)
+        log(len(allMorphemes))
+        log("mecabDao.getMorphemes() Stop")
+        
+        log("Rank Morphemes Start")
         modifiedMorphemes = list()
         for morpheme in allMorphemes:
             score = self.rankMorpheme(rankDb, morpheme.morph.base, morpheme.morph.read)
@@ -98,6 +111,7 @@ class MorphemesService:
                 morpheme.score = score
                 morpheme.statusChanged = True #FIXME
                 modifiedMorphemes.append(morpheme)
+        log("Rank Morphemes Stop")
         
         self.morphemeDao.updateAll(modifiedMorphemes)
         
@@ -166,7 +180,7 @@ class MorphemesService:
             morpheme = self.morphemeDao.persist(morpheme)
             attachedMorphemes.append(morpheme)
         
-        self.factService.changeMorphemes(fact, attachedMorphemes)
+        self.factsService.changeMorphemes(fact, attachedMorphemes)
         
         return morphemes
         
@@ -176,10 +190,10 @@ class MorphemesService:
     def getAllSubPOS(self):
         return self.mecabDao.getAllSubPOS()
     
-    def getMorphemes(self, searchText = None):
+    def getMorphemes(self, searchText = None, decksId = None):
         
         if searchText == None or searchText == "":
-            return self.mecabDao.getMorphemes()
+            return self.mecabDao.getMorphemes(decksId)
         else:
             searchExpressions = searchText.split(" ")
             status_changed = None
@@ -208,4 +222,4 @@ class MorphemesService:
                     subPos = uni.split(":")[1]
                 else:
                     expressions.append(uni)
-            return self.mecabDao.getMorphemes(expressions, status, status_changed, pos, subPos)
+            return self.mecabDao.getMorphemes(decksId, expressions, status, status_changed, pos, subPos)

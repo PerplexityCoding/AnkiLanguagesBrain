@@ -10,8 +10,12 @@ DROP TABLE IF EXISTS MecabMorphemes;
 CREATE TABLE Languages (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name_id INTEGER UNIQUE NOT NULL,
-	pos_type INTEGER
-);
+	pos_type INTEGER,
+	total_morphemes INTEGER,
+	learnt_morphemes INTEGER,
+	known_morphemes INTEGER,
+	mature_morphemes INTEGER
+)
 
 CREATE TABLE Decks (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,

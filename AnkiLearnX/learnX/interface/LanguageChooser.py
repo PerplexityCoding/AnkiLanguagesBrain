@@ -7,8 +7,6 @@ from learnX.utils.Log import *
 
 from ankiqt import mw
 
-from learnX.morphology.service.LanguagesService import *
-
 class LanguageChooser(QDialog):
     def __init__(self, parent=None):
         super(LanguageChooser, self).__init__(parent)

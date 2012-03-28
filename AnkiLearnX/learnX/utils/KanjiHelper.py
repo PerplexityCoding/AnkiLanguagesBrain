@@ -1,3 +1,5 @@
+﻿#-*- coding: utf-8 -*-
+
 from learnX.utils.Log import *
 
 class KanjiHelper():
@@ -3019,8 +3021,7 @@ class KanjiHelper():
             info = KanjiHelper.kanjis[kanji]
             if info != None:
                 return info[0], info[1]
-        except Exception as e:
-            log("getKanjiInfo Error. Could not find: " + kanji)
+        except Exception as e: pass
         return 0, 0
 
 

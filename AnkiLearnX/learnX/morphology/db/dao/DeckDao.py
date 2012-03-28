@@ -43,6 +43,25 @@ class DeckDao:
         c.close()
         
         return decksPath
+    
+    def listDecksByLanguage(self, languageId):
+        
+        db = self.learnXdB.openDataBase()
+        
+        c = db.cursor()
+        t = (languageId,)
+        c.execute("select * from Decks Where language_id = ?", t)
+        
+        decks = []
+        for row in c:
+            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13])
+            if deck.fields:
+                deck.fields = pickle.loads(str(deck.fields))
+            decks.append(deck)
+        
+        c.close()
+        
+        return decks
         
     def insert(self, deck):
         db = self.learnXdB.openDataBase()
@@ -195,4 +214,3 @@ class DeckDao:
         if row:
             deck.matureMorphemes = row[0]
         c.close
-    
