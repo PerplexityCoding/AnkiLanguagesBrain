@@ -1,12 +1,12 @@
 ﻿#-*- coding: utf-8 -*-
 
 from learnX.morphology.db.LearnXdB import *
-from learnX.morphology.db.dto.MecabMorpheme import *
+from learnX.morphology.db.dto.MorphemeLemme import *
 from learnX.morphology.db.dto.Morpheme import *
 
 from learnX.utils.Log import *
 
-class MecabMorphemeDao:
+class MorphemeLemmeDao:
     def __init__(self):
         self.learnXdB = LearnXdB.getInstance()
     
@@ -15,7 +15,7 @@ class MecabMorphemeDao:
         c = db.cursor()
         
         t = (morpheme.pos, morpheme.subPos, morpheme.read, morpheme.base)
-        c.execute("Select id From MecabMorphemes Where pos = ? and sub_pos = ? and read = ? and base = ?", t)
+        c.execute("Select id From MorphemeLemmes Where pos = ? and sub_pos = ? and read = ? and base = ?", t)
         
         morphemeId = c.fetchone()
         if morphemeId:
@@ -26,13 +26,13 @@ class MecabMorphemeDao:
             c.close()
             
             c = db.cursor()
-            c.execute("Insert into MecabMorphemes(pos, sub_pos, read, base) "
-                  "Values (?,?,?,?)", t)
+            c.execute("Insert into MorphemeLemmes(pos, sub_pos, read, base) "
+                      "Values (?,?,?,?)", t)
             db.commit()
             c.close()
             
             c = db.cursor()
-            c.execute("Select count(*) From MecabMorphemes")
+            c.execute("Select count(*) From MorphemeLemmes")
             for row in c:
                 morpheme.id = row[0] - 1
             c.close()
@@ -43,34 +43,34 @@ class MecabMorphemeDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        mecabMorphemesToInsert = list()
+        lemmeMorphemesToInsert = list()
         for morpheme in morphemes:
-            mecabMorpheme = morpheme.morph
+            morphLemme = morpheme.morphLemme
             
-            t = (mecabMorpheme.pos, mecabMorpheme.subPos, mecabMorpheme.read, mecabMorpheme.base,)
-            c.execute("Select id From MecabMorphemes Where pos = ? and sub_pos = ? and read = ? and base = ?", t)            
+            t = (morphLemme.pos, morphLemme.subPos, morphLemme.read, morphLemme.base,)
+            c.execute("Select id From MorphemeLemmes Where pos = ? and sub_pos = ? and read = ? and base = ?", t)            
             morphemeId = c.fetchone()
             if morphemeId:
-                mecabMorpheme.id = morphemeId[0]
+                morphLemme.id = morphemeId[0]
             else:
-                mecabMorphemesToInsert.append(mecabMorpheme)
+                lemmeMorphemesToInsert.append(morphLemme)
         c.close()
             
         c = db.cursor()
-        for mecabMorpheme in mecabMorphemesToInsert:
-            t = (mecabMorpheme.pos, mecabMorpheme.subPos, mecabMorpheme.read, mecabMorpheme.base)
-            c.execute("Insert into MecabMorphemes(pos, sub_pos, read, base) "
+        for lemmeMorpheme in lemmeMorphemesToInsert:
+            t = (lemmeMorpheme.pos, lemmeMorpheme.subPos, lemmeMorpheme.read, lemmeMorpheme.base)
+            c.execute("Insert into MorphemeLemmes(pos, sub_pos, read, base) "
                       "Values (?,?,?,?)", t)
         db.commit()
         c.close()
         
         c = db.cursor()
-        for mecabMorpheme in mecabMorphemesToInsert:
-            t = (mecabMorpheme.pos, mecabMorpheme.subPos, mecabMorpheme.read, mecabMorpheme.base)
-            c.execute("Select id From MecabMorphemes Where pos = ? and sub_pos = ? and read = ? and base = ?", t)
+        for lemmeMorpheme in lemmeMorphemesToInsert:
+            t = (lemmeMorpheme.pos, lemmeMorpheme.subPos, lemmeMorpheme.read, lemmeMorpheme.base)
+            c.execute("Select id From MorphemeLemmes Where pos = ? and sub_pos = ? and read = ? and base = ?", t)
             morphemeId = c.fetchone()
             if morphemeId:
-                mecabMorpheme.id = morphemeId[0]
+                lemmeMorpheme.id = morphemeId[0]
         c.close()
             
         return morphemes
@@ -81,12 +81,12 @@ class MecabMorphemeDao:
         c = db.cursor()
         
         sql = "Select base, pos, sub_pos, read, m.id, m.status, m.status_changed, mm.id, count(fm.fact_id) as c, m.score "
-        sql += "From Morphemes m, FactsMorphemes fm, MecabMorphemes mm, Facts f "
+        sql += "From Morphemes m, FactsMorphemes fm, MorphemeLemmes mm, Facts f "
         
         if decksId != None:
             sql += ", Decks d "
         
-        sql += "Where mm.id = m.morph_impl_id and m.id = fm.morpheme_id and f.id = fm.fact_id "
+        sql += "Where mm.id = m.morph_lemme_id and m.id = fm.morpheme_id and f.id = fm.fact_id "
         
         if decksId != None:
             sql += "and d.id = f.deck_id "
@@ -137,8 +137,8 @@ class MecabMorphemeDao:
         log("getMorphemes get Result Start")
         morphemes = []
         for row in c:
-            mecabMorpheme = MecabMorpheme(row[0], None, row[1], row[2], row[3], row[4])
-            morpheme = Morpheme(row[5], row[6], Morpheme.TYPE_MECAB, row[7], mecabMorpheme, row[9], row[4])
+            morphemeLemme = MorphemeLemme(row[0], None, row[1], row[2], row[3], row[4])
+            morpheme = Morpheme(row[5], row[6], row[7], morphemeLemme, row[9], row[4])
             morpheme.factsCount = row[8]
             morphemes.append(morpheme)
         log("getMorphemes get Result End")
@@ -152,7 +152,7 @@ class MecabMorphemeDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        c.execute("Select distinct pos from MecabMorphemes")
+        c.execute("Select distinct pos from MorphemeLemmes")
         
         posList = []
         for row in c:
@@ -167,7 +167,7 @@ class MecabMorphemeDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        c.execute("Select distinct sub_pos from MecabMorphemes")
+        c.execute("Select distinct sub_pos from MorphemeLemmes")
         
         subPosList = []
         for row in c:

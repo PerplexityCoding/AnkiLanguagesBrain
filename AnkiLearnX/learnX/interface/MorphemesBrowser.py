@@ -4,17 +4,22 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
 from learnX.morphology.service.ServicesLocator import *
+from learnX.morphology.db.dto.Language import *
 
-from learnX.interface.model.MecabMorphemeModel import *
+from learnX.interface.model.JapaneseMorphemeModel import *
+from learnX.interface.model.FrenchMorphemeModel import *
 
 class MorphemesBrowser(QDialog):
     
-    def __init__(self, deck, language=None, parent=None):
+    def __init__(self, deck, language, allDecks, parent=None):
         super(MorphemesBrowser, self).__init__(parent)
         
         self.morphemesService = ServicesLocator.getInstance().getMorphemesService()
         
-        self.model = my_model = MecabMorphemeModel(deck, language)
+        if language.nameId == Language.JAPANESE:
+            self.model = my_model = JapaneseMorphemeModel(deck, language, allDecks)
+        elif language.nameId == Language.FRENCH:
+            self.model = my_model = FrenchMorphemeModel(deck, language, allDecks)
         
         self.parent = parent
         self.resize(900, 500)
@@ -45,21 +50,21 @@ class MorphemesBrowser(QDialog):
         customFilter.addItem("Changed")
         customFilter.addItem("Un-Changed")
         
-        self.posList = self.morphemesService.getAllPOS()
+        self.posList = self.morphemesService.getAllPOS(language)
         
         filterPosLabelFont = QFont()
         filterPosLabelFont.setPixelSize(12)
         
         customFilter.setFont(filterPosLabelFont) 
         
-        if len (self.posList) > 0:
+        if self.posList != None and len (self.posList) > 0:
             customFilter.insertSeparator(self.customFilter.count())
         
             for pos in self.posList:
                 customFilter.addItem(pos)
                 
-        self.subPosList = self.morphemesService.getAllSubPOS()
-        if len (self.subPosList) > 0:
+        self.subPosList = self.morphemesService.getAllSubPOS(language)
+        if self.subPosList != None and len (self.subPosList) > 0:
             customFilter.insertSeparator(self.customFilter.count())
         
             for subPos in self.subPosList:

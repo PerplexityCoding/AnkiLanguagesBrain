@@ -5,17 +5,18 @@ DROP TABLE IF EXISTS Facts;
 DROP TABLE IF EXISTS Cards;
 DROP TABLE IF EXISTS Morphemes;
 DROP TABLE IF EXISTS FactsMorphemes;
-DROP TABLE IF EXISTS MecabMorphemes;
+DROP TABLE IF EXISTS MorphemeLemmes;
 
 CREATE TABLE Languages (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name_id INTEGER UNIQUE NOT NULL,
-	pos_type INTEGER,
+	pos_tagger_id INTEGER NOT NULL,
+	pos_tagger_options BLOB,
 	total_morphemes INTEGER,
 	learnt_morphemes INTEGER,
 	known_morphemes INTEGER,
 	mature_morphemes INTEGER
-)
+);
 
 CREATE TABLE Decks (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,8 +63,7 @@ CREATE TABLE Morphemes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	status INTEGER(4) NOT NULL,
 	status_changed INTEGER(1),
-	morph_type INTEGER(4) NOT NULL,
-	morph_impl_id INTEGER NOT NULL,
+	morph_lemme_id INTEGER NOT NULL,
 	score INTEGER
 );
 
@@ -73,7 +73,7 @@ CREATE TABLE FactsMorphemes (
 	UNIQUE (fact_id, morpheme_id)
 );
 
-CREATE TABLE MecabMorphemes (
+CREATE TABLE MorphemeLemmes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	pos TEXT NOT NULL,
 	sub_pos TEXT,

@@ -10,17 +10,22 @@ from learnX.morphology.service.MorphemesService import *
 from learnX.morphology.service.FactsService import *
 from learnX.morphology.db.LearnXdB import *
 from learnX.utils.Log import *
-from learnX.morphology.db.dao.MecabMorphemeDao import *
+from learnX.morphology.db.dao.MorphemeLemmeDao import *
+
+from learnX.morphology.service.FactsService import *
 
 serviceLocator = ServicesLocator.getInstance()
 
 log(serviceLocator.getFactsService())
 
-
 #LearnXdB.getInstance().createDataBase()
 clearLog()
 languagesService = serviceLocator.getLanguagesService()
-factsService = serviceLocator.getFactsService()
+#factsService = serviceLocator.getFactsService()
+#tagger = serviceLocator.getStanfordPosTagger()
+#print(tagger.posTag("Bonjour ca va ?"))
+#print(tagger.posTag("Bonjour ca va et toi ?"))
+
 
 #languagesService.countMorphemes(None)
 
@@ -29,12 +34,12 @@ factsService = serviceLocator.getFactsService()
 #morphemesService = MorphemesService()
 #factService = FactsService()
 
-#mecabDao = MecabMorphemeDao()
+#lemmeDao = MorphemeLemmeDao()
 
 #morphemes = morphemesService.extractMorphemes("私")
 #print morphemes
 
-#mecabDao.persistAll(morphemes)
+#lemmeDao.persistAll(morphemes)
 
 #deck = decksService.createDeck("test2", "testo")
 #deck = decksService.getDeck("test2", "testo")

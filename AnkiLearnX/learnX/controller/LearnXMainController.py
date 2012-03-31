@@ -71,7 +71,7 @@ class LearnXMainController:
             modifiedFacts.append(fact)
         
         if len(modifiedFacts) > 0:
-            self.morphemesService.analyzeAll(modifiedFacts)
+            self.morphemesService.analyzeMorphemes(modifiedFacts, deck.language)
         
         modifiedCards = []
 

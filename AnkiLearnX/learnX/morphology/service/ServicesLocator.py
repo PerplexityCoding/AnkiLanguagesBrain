@@ -11,14 +11,12 @@ class ServicesLocator:
     
     def __init__(self, useGetInstanceInstead):
         self.factsService = FactsService(self)
-        self.mecab = Mecab(self)
         self.decksService = DecksService(self)
         self.languagesService = LanguagesService(self)
         self.morphemesService = MorphemesService(self)
         ServicesLocator.instance = self
         
         self.factsService.setupServices()
-        #self.mecab.setupServices()
         self.decksService.setupServices()
         self.languagesService.setupServices()
         self.morphemesService.setupServices()
@@ -31,9 +29,6 @@ class ServicesLocator:
 
     def getFactsService(self):
         return self.factsService
-    
-    def getMecab(self):
-        return self.mecab
     
     def getDecksService(self):
         return self.decksService

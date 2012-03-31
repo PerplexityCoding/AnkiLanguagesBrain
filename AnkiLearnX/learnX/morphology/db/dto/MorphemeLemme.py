@@ -1,6 +1,6 @@
 from learnX.utils.Log import *
 
-class MecabMorpheme:
+class MorphemeLemme:
     def __init__(self, base, inflected, pos, subPos, read, id = -1):
         self.id = id
         self.pos = pos
@@ -12,7 +12,7 @@ class MecabMorpheme:
         return not self.__eq__(o)
         
     def __eq__(self, o):
-        if not isinstance(o, MecabMorpheme): return False
+        if not isinstance(o, MorphemeLemme): return False
         if self.pos != o.pos: return False
         if self.subPos != o.subPos: return False
         if self.read != o.read: return False

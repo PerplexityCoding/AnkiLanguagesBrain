@@ -7,7 +7,7 @@ from learnX.morphology.service.ServicesLocator import *
 from learnX.utils.Log import *
 
 class JapaneseMorphemeModel(QAbstractTableModel):
-    def __init__(self, deck, language=None):
+    def __init__(self, deck, language, allDecks):
         QAbstractTableModel.__init__(self)
         
         self.servicesLocator = ServicesLocator.getInstance()
@@ -16,9 +16,9 @@ class JapaneseMorphemeModel(QAbstractTableModel):
         self.decksService = self.servicesLocator.getDecksService()
         
         self.decksId = decksId = []
-        if language != None:
+        if allDecks:
             self.language = language
-            self.decks = self.decksService.listDecksByLanguage(language)
+            self.decks = self.decksService.listDecksByLanguage(self.language)
             for deck in self.decks:
                 decksId.append(deck.id)
         else:
@@ -53,15 +53,6 @@ class JapaneseMorphemeModel(QAbstractTableModel):
             return QVariant()
 
     def data(self, index, role):
-        #if not index.isValid():
-        #    return QVariant()
-        #if role == Qt.FontRole:
-        #    f = QFont()
-        #    f.setPixelSize(self.parent.config['editFontSize'])
-        #    return QVariant(f)
-        #if role == Qt.TextAlignmentRole and index.column() == 2:
-        #    return QVariant(Qt.AlignHCenter)
-        #else:
         if role == Qt.DisplayRole or role == Qt.EditRole:
             
             morpheme = self.morphemes[index.row()]
@@ -89,8 +80,6 @@ class JapaneseMorphemeModel(QAbstractTableModel):
             elif columnId == 7:
                 s = int(morpheme.score)          
             return QVariant(s)
-        #elif role == Qt.UserRole:
-            
         else:
             return QVariant()
         

@@ -5,6 +5,8 @@ from learnX.morphology.db.dto.Morpheme import *
 
 from learnX.utils.Log import *
 
+import pickle
+
 class LanguageDao:
     def __init__(self):
         self.learnXdB = LearnXdB.getInstance()
@@ -18,7 +20,11 @@ class LanguageDao:
         
         languages = []
         for row in c:
-            languages.append(Language(row[1], row[2], row[0], row[3], row[4], row[5], row[6]))
+            language = Language(row[1], row[2], posOptions = row[3], id = row[0],
+                total = row[4], learnt = row[5], known = row[6], mature = row[7])
+            if language.posOptions:
+                language.posOptions = pickle.loads(str(language.posOptions))
+            languages.append(language)
         
         c.close()
         
@@ -29,9 +35,13 @@ class LanguageDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        t = (language.nameId, language.posType)
-        c.execute("Insert into Languages(name_id, pos_type)"
-                  "Values (?,?)", t)
+        posOptions = language.posOptions
+        if posOptions:
+            posOptions = sqlite3.Binary(pickle.dumps(posOptions, 2))
+        
+        t = (language.nameId, language.posTaggerId, posOptions)
+        c.execute("Insert into Languages(name_id, pos_tagger_id, pos_tagger_options)"
+                  "Values (?,?,?)", t)
         
         db.commit()
         c.close()
@@ -51,8 +61,12 @@ class LanguageDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
 
-        t = (language.nameId, language.posType, language.totalMorphemes, language.learntMorphemes, language.knownMorphemes, language.matureMorphemes, language.id)
-        c.execute("Update Languages Set name_id = ?, pos_type = ?, total_morphemes = ?, learnt_morphemes = ?,"
+        posOptions = language.posOptions
+        if posOptions:
+            posOptions = sqlite3.Binary(pickle.dumps(posOptions, 2))
+
+        t = (language.nameId, language.posTaggerId, posOptions, language.totalMorphemes, language.learntMorphemes, language.knownMorphemes, language.matureMorphemes, language.id)
+        c.execute("Update Languages Set name_id = ?, pos_tagger_id = ?, pos_tagger_options = ?, total_morphemes = ?, learnt_morphemes = ?,"
                   "known_morphemes = ?, mature_morphemes = ? "
                   "Where id = ?", t)
         db.commit()
@@ -67,7 +81,10 @@ class LanguageDao:
         
         language = None
         for row in c:
-            language = Language(row[1], row[2], row[0], row[3], row[4], row[5], row[6])
+            language = Language(row[1], row[2], posOptions = row[3], id = row[0],
+                total = row[4], learnt = row[5], known = row[6], mature = row[7])
+            if language.posOptions:
+                language.posOptions = pickle.loads(str(language.posOptions))
             
         db.commit()
         c.close()
@@ -83,7 +100,10 @@ class LanguageDao:
         
         language = None
         for row in c:
-            language = Language(row[1], row[2], row[0], row[3], row[4], row[5], row[6])
+            language = Language(row[1], row[2], posOptions = row[3], id = row[0],
+                total = row[4], learnt = row[5], known = row[6], mature = row[7])
+            if language.posOptions:
+                language.posOptions = pickle.loads(str(language.posOptions))
             
         db.commit()
         c.close()

@@ -1,9 +1,15 @@
 
 class Language:
-    def __init__(self, nameId, posType, id = -1, total = 0, learnt = 0, known = 0, mature = 0):
+    
+    ENGLISH = 1
+    FRENCH = 2
+    JAPANESE = 500
+    
+    def __init__(self, nameId, posTaggerId, id = -1, total = 0, learnt = 0, known = 0, mature = 0, posOptions = None):
         self.id = id
         self.nameId = nameId
-        self.posType = posType
+        self.posTaggerId = posTaggerId
+        self.posOptions = posOptions
         self.totalMorphemes = total
         self.learntMorphemes = learnt
         self.knownMorphemes = known
@@ -21,4 +27,5 @@ class Language:
         return hash(self.id)
 
     def __repr__(self):
-        return u'\t'.join([str(self.id), str(self.nameId), str(self.posType)])
+        return u'\t'.join([str(self.id), str(self.nameId), str(self.posTaggerId)])
+

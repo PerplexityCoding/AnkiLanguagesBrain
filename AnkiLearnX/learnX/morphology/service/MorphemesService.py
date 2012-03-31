@@ -1,5 +1,5 @@
 
-from learnX.morphology.db.dao.MecabMorphemeDao import *
+from learnX.morphology.db.dao.MorphemeLemmeDao import *
 from learnX.morphology.db.dao.MorphemeDao import *
 from learnX.morphology.db.dao.FactDao import *
 from learnX.morphology.db.dao.CardDao import *
@@ -16,7 +16,7 @@ class MorphemesService:
     def __init__(self, serviceLocator):
         self.serviceLocator = serviceLocator
         
-        self.mecabDao = MecabMorphemeDao()
+        self.lemmeDao = MorphemeLemmeDao()
         self.morphemeDao = MorphemeDao()
         self.factDao = FactDao()
         self.cardDao = CardDao()
@@ -26,26 +26,33 @@ class MorphemesService:
         self.decksService = self.serviceLocator.getDecksService()
         self.factsService = self.serviceLocator.getFactsService()
 
-    def extractMorphemes(self, expression):
+    def extractMorphemes(self, expression, language):
         
-        # if mecab:
-        mecabMorphemes = self.mecab.getMorphemes(expression)
+        morphemes = language.posTagger.getMorphemes(expression)
+        #morphemes = language.lemmatizer.lemmatize(morphemes)
+        
+        # Unique morphemes
+        uniqueMorphemes = set()
+        for morpheme in morphemes:
+            if morpheme not in uniqueMorphemes:
+                uniqueMorphemes.add(morpheme)
+        
         morphemes = set()
-        for mecabMorpheme in mecabMorphemes:
-            morphemes.add(Morpheme(Morpheme.STATUS_NONE, False, Morpheme.TYPE_MECAB, mecabMorpheme.id, mecabMorpheme, 0))
+        for morpheme in uniqueMorphemes:
+            morphemes.add(Morpheme(Morpheme.STATUS_NONE, False, morpheme.id, morpheme, 0))
         
         return morphemes
     
-    def analyze(self, expression):
+    def analyze(self, expression, language):
         morphemes = self.extractMorphemes(expression)
         return morphemes
     
-    def analyzeAll(self, facts):
+    def analyzeMorphemes(self, facts, language):
         
         allMorphemes = list()
         # Unique Morphemes
         for fact in facts:
-            fact.morphemes = self.extractMorphemes(fact.expression)
+            fact.morphemes = self.extractMorphemes(fact.expression, language)
             factUniqueMorphemes = []
             for morpheme in fact.morphemes:
                 uniqueMorpheme = None
@@ -61,7 +68,7 @@ class MorphemesService:
             fact.lastUpdated = fact.ankiLastModified
             fact.expression = None
         
-        self.mecabDao.persistAll(allMorphemes)
+        self.lemmeDao.persistAll(allMorphemes)
         self.morphemeDao.persistAll(allMorphemes)
         
         self.factDao.insertAllFactMorphemes(facts)
@@ -98,15 +105,15 @@ class MorphemesService:
         
         decksId = self.decksService.listDecksIdByLanguage(language)
         
-        log("mecabDao.getMorphemes() Start")
-        allMorphemes = self.mecabDao.getMorphemes(decksId)
+        log("lemmeDao.getMorphemes() Start")
+        allMorphemes = self.lemmeDao.getMorphemes(decksId)
         log(len(allMorphemes))
-        log("mecabDao.getMorphemes() Stop")
+        log("lemmeDao.getMorphemes() Stop")
         
         log("Rank Morphemes Start")
         modifiedMorphemes = list()
         for morpheme in allMorphemes:
-            score = self.rankMorpheme(rankDb, morpheme.morph.base, morpheme.morph.read)
+            score = self.rankMorpheme(rankDb, morpheme.morphLemme.base, morpheme.morphLemme.read)
             if morpheme.score != score:
                 morpheme.score = score
                 morpheme.statusChanged = True #FIXME
@@ -175,8 +182,7 @@ class MorphemesService:
         
         attachedMorphemes = []
         for morpheme in morphemes:
-            # if mecab:
-            morpheme.morph = self.mecabDao.persist(morpheme.morph)
+            morpheme.morphLemme = self.lemmeDao.persist(morpheme.morphLemme)
             morpheme = self.morphemeDao.persist(morpheme)
             attachedMorphemes.append(morpheme)
         
@@ -184,16 +190,20 @@ class MorphemesService:
         
         return morphemes
         
-    def getAllPOS(self):
-        return self.mecabDao.getAllPOS()
+    def getAllPOS(self, language):
+        try:
+            return language.posOptions["activatedPos"]
+        except Exception: pass
   
-    def getAllSubPOS(self):
-        return self.mecabDao.getAllSubPOS()
+    def getAllSubPOS(self, language):
+        try:
+            return language.posOptions["activatedSubPos"]
+        except Exception: pass
     
     def getMorphemes(self, searchText = None, decksId = None):
         
         if searchText == None or searchText == "":
-            return self.mecabDao.getMorphemes(decksId)
+            return self.lemmeDao.getMorphemes(decksId)
         else:
             searchExpressions = searchText.split(" ")
             status_changed = None
@@ -222,4 +232,4 @@ class MorphemesService:
                     subPos = uni.split(":")[1]
                 else:
                     expressions.append(uni)
-            return self.mecabDao.getMorphemes(decksId, expressions, status, status_changed, pos, subPos)
+            return self.lemmeDao.getMorphemes(decksId, expressions, status, status_changed, pos, subPos)
