@@ -6,7 +6,7 @@
 import os, subprocess, sys
 import unicodedata
 
-from learnX.morphology.db.dto.MecabMorpheme import *
+from learnX.morphology.db.dto.MorphemeLemme import *
 
 class Mecab:
 
@@ -71,16 +71,9 @@ class Mecab:
         # MecabProc -> Str -> PosWhiteList? -> PosBlackList? -> IO [Morpheme]
     def getMorphemes(self, expression, whiteList=None, blackList=DEFAULT_BLACKLIST):
         morphemes = [tuple(m.split('\t')) for m in self.interact(expression).split('\r')] # morphemes
-        morphemes = [MecabMorpheme(*m) for m in morphemes if len(m) == self.MECAB_NODE_LENGTH] # filter garbage
+        morphemes = [MorphemeLemme(*m) for m in morphemes if len(m) == self.MECAB_NODE_LENGTH] # filter garbage
         if whiteList: morphemes = [m for m in morphemes if m.pos in whiteList]
         if blackList: morphemes = [m for m in morphemes if m.pos not in blackList]
         morphemes = [self.fixReading(m) for m in morphemes]
-        
-        # Unique morphemes
-        uniqueMorphemes = set()
-        for morpheme in morphemes:
-            if morpheme not in uniqueMorphemes:
-                uniqueMorphemes.add(morpheme)
-
-        return uniqueMorphemes
+        return morphemes
     
