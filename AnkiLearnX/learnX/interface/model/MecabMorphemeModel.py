@@ -6,7 +6,7 @@ from learnX.morphology.service.ServicesLocator import *
 
 from learnX.utils.Log import *
 
-class MecabMorphemeModel(QAbstractTableModel):
+class JapaneseMorphemeModel(QAbstractTableModel):
     def __init__(self, deck, language=None):
         QAbstractTableModel.__init__(self)
         
@@ -65,16 +65,18 @@ class MecabMorphemeModel(QAbstractTableModel):
         if role == Qt.DisplayRole or role == Qt.EditRole:
             
             morpheme = self.morphemes[index.row()]
+            morphemeLemme = morpheme.morphLemme
+            
             s = ""
             columnId = index.column()
             if columnId == 0:
-                s = morpheme.morph.base
+                s = morphemeLemme.base
             elif columnId == 1:
-                s = morpheme.morph.read
+                s = morphemeLemme.read
             elif columnId == 2:
-                s = morpheme.morph.pos
+                s = morphemeLemme.pos
             elif columnId == 3:
-                s = morpheme.morph.subPos
+                s = morphemeLemme.subPos
             elif columnId == 4:
                 s = morpheme.getStatusName()
             elif columnId == 5:
