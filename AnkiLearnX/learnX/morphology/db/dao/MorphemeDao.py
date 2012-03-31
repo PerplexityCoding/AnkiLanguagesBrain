@@ -191,7 +191,7 @@ class MorphemeDao:
         
         return result
     
-    def getAllKnownSimpleMorphemes(self):
+    def getAllKnownSimpleMorphemes(self): # FIXME: language
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
@@ -205,3 +205,16 @@ class MorphemeDao:
         
         return result
         
+    def getAllKnownBaseMorphemes(self): # FIXME: language
+        
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        c.execute("select mm.base from MorphemeLemmes mm, Morphemes m where mm.id = m.morph_lemme_id and (m.status = 2 or m.status = 3)")
+        result = set()
+        for row in c:
+            result.add(row[0])
+        
+        c.close()
+        
+        return result

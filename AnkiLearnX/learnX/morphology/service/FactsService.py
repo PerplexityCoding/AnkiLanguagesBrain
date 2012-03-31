@@ -62,28 +62,38 @@ class FactsService:
             return Card.STATUS_KNOWN
         return Card.STATUS_MATURE
         
-    def getAllCards(self, deck, ankiCards):
+    def getAllCardsChanged(self, deck, ankiCards):
         
-        cards = []
+        changedCards = []
         cardsToInsert = []
+        cardsToUpdate = []
         for ankiCard in ankiCards:
             card = self.card_dao.findById(deck, ankiCard.id)
+            status = self.calcCardStatus(deck, ankiCard)
             if card == None:
                 fact = self.getFact(deck, ankiCard.fact.id)
-                status = self.calcCardStatus(deck, ankiCard)
-                card = Card(deck.id, fact.id, ankiCard.id, status, False)
+                card = Card(deck.id, fact.id, ankiCard.id, status, True)
                 card.deck = deck
                 card.fact = fact
                 cardsToInsert.append(card)
+                changedCards.append(card)
+            else:
+                if status != card.status:
+                    card.statusChanged = True
+                    changedCards.append(card)
+                card.status = status               
+                cardsToUpdate.append(card)  
             card.ankiLastModified = ankiCard.modified
-            cards.append(card)
-
+            
         if len(cardsToInsert) > 0:
             self.card_dao.insertAll(cardsToInsert)
         
-        return cards
+        if len(cardsToUpdate) > 0:
+            self.card_dao.updateAll(cardsToUpdate)
+        
+        return changedCards
     
-    def getAllChanged(self, language):
+    def getAllFactsChanged(self, language):
         
         decksId = self.decksService.listDecksIdByLanguage(language)
         facts = self.fact_dao.selectAllChanged(decksId) 
@@ -98,7 +108,7 @@ class FactsService:
             fact.deck = deck
         return facts
     
-    def computeCardsMaturity(self, language):
+    def computeFactsMaturity(self, language):
         
         decksId = self.decksService.listDecksIdByLanguage(language)
         facts = self.fact_dao.findByChangedMorphemes(decksId)

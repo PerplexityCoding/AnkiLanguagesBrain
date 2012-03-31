@@ -15,7 +15,6 @@ class LearnXMainController:
         self.servicesLocator = ServicesLocator.getInstance()
         self.decksService = self.servicesLocator.getDecksService()
         self.languagesService = self.servicesLocator.getLanguagesService()
-        self.morphemesService = self.servicesLocator.getMorphemesService()
         self.factsService = self.servicesLocator.getFactsService()
         
     def analyze(self, deck):
@@ -46,6 +45,8 @@ class LearnXMainController:
         
     def analyzeDeck(self, deck):
         
+        self.morphemesService = self.servicesLocator.getMorphemesService(deck.language)
+        
         realDeck = AnkiHelper.getDeck(deck.path)
         log(realDeck)
         log("Get All Facts / Cards")
@@ -55,7 +56,6 @@ class LearnXMainController:
         
         log("Store All Facts")
         facts = self.factsService.getAllFacts(deck, ankiFacts)
-        cards = self.factsService.getAllCards(deck, ankiCards)
         log("Analyze All")
         
         # Verifier a ne prendre que les facts modifié
@@ -70,14 +70,13 @@ class LearnXMainController:
             fact.expression = expression
             modifiedFacts.append(fact)
         
+        log("Analyze Morphemes")
         if len(modifiedFacts) > 0:
             self.morphemesService.analyzeMorphemes(modifiedFacts, deck.language)
-        
-        modifiedCards = []
 
-        for card in cards:
-            if card.lastUpdated != card.ankiLastModified:
-                modifiedCards.append(card)
+
+        log("computeMorphemesMaturity")
+        modifiedCards = self.factsService.getAllCardsChanged(deck, ankiCards)
 
         if len(modifiedCards) > 0:
             self.morphemesService.computeMorphemesMaturity(modifiedCards)
@@ -94,9 +93,9 @@ class LearnXMainController:
         self.languagesService.countMorphemes(deck.language)
         log("decksService.countMorphemes End")
         
-        log("factsService.computeCardsMaturity Start")
-        self.factsService.computeCardsMaturity(deck.language)
-        log("factsService.computeCardsMaturitys End")
+        log("factsService.computeFactsMaturity Start")
+        self.factsService.computeFactsMaturity(deck.language)
+        log("factsService.computeFactsMaturity End")
         
         log("Saves Decks Start")
         realDeck.save()
@@ -150,11 +149,14 @@ class LearnXMainController:
             ankiDeckCards[modifiedDeckPath] = ankiCardsDict
     
     def markFacts(self, language):
-        modifiedFacts = self.factsService.getAllChanged(language)
+        modifiedFacts = self.factsService.getAllFactsChanged(language)
         ankiFactsId = list()
         
         for modifiedFact in modifiedFacts:
-            ankiFact = self.ankiDeckFacts[modifiedFact.deck.path][modifiedFact.ankiFactId]
+            try:
+                ankiFact = self.ankiDeckFacts[modifiedFact.deck.path][modifiedFact.ankiFactId]
+            except Exception: continue
+            
             deck = self.decks[modifiedFact.deck.path]
             fields = deck.fields
             
@@ -186,7 +188,9 @@ class LearnXMainController:
         newtime = 472777200.0 # 25 Decembre 1984 :)
         
         for card in cards:
-            ankiCard = self.ankiDeckCards[card.deckPath][card.ankiCardId]
+            try:
+                ankiCard = self.ankiDeckCards[card.deckPath][card.ankiCardId]
+            except Exception: continue
             deck = self.ankiDecks[card.deckPath]
             
             try:

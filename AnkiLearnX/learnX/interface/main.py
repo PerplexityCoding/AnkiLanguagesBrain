@@ -38,7 +38,7 @@ class LearnX(QDialog):
         self.setupMain()
         self.setupDecks()
         self.setupLanguages()
-        self.setupToolbar()
+        #self.setupToolbar()
         
     def refreshAll(self):
         
@@ -50,13 +50,13 @@ class LearnX(QDialog):
         mainVBox.removeWidget(self.languagesTitle)
         self.languagesTitle.deleteLater()
         
-        mainVBox.removeWidget(self.toolBarFrame)
-        self.toolBarFrame.deleteLater()
+        #mainVBox.removeWidget(self.toolBarFrame)
+        #self.toolBarFrame.deleteLater()
         
         self.setupMain()
         self.setupLanguages()
         self.setupDecks()
-        self.setupToolbar()
+        #self.setupToolbar()
         
     def tableTitle(self, title):
         

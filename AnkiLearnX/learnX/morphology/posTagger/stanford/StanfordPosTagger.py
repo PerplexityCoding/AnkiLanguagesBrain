@@ -1,5 +1,5 @@
 
-import os, subprocess, sys
+import os, subprocess, sys, time
 
 from learnX.utils.Log import *
 from learnX.morphology.db.dto.MorphemeLemme import *
@@ -28,30 +28,45 @@ class StanfordPosTagger():
         
         p = subprocess.Popen(posCmd, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
-        # Pass verbose
+        # Flush verbose
+        
+        #time.sleep(2)
+        #p.stdout.flush()
         p.stdout.readline()
         p.stdout.readline()
         p.stdout.readline()
         p.stdout.readline()
+        p.stdout.flush()
         
         return p
         
     def posTag(self, expression):
+        
         p = self.process
-        expression = expression.encode( 'utf-8', 'ignore' )
+        
+        expression = expression.encode('latin-1', 'ignore')
+
         p.stdin.write(expression)
         p.stdin.write("\n")
         p.stdin.flush()
 
-        result = p.stdout.readline()
-        p.stdout.readline()
-
+        result = unicode(p.stdout.readline(), "utf-8")
+        p.stdout.flush()
+  
         return result
     
     def filterExpression(self, expression):
         expression = expression.replace('-', ' ')
         expression = expression.replace("'", "' ")
+        expression = expression.replace("<br>", "")
+        expression = expression.replace("</br>", "")
+        
         return expression
+
+    def filterMorpheme(self, morpheme):
+        if morpheme.find("www") >= 0:
+            return None
+        return morpheme
 
     def getMorphemes(self, expression):
         
@@ -62,18 +77,19 @@ class StanfordPosTagger():
         morphemes = list()
         taggedTerms = taggedExpression.split(" ")
         for taggedTerm in taggedTerms:
+            #log(taggedTerm)
             termArray = taggedTerm.split("_")
             if len(termArray) == 2:
-                base = unicode(termArray[0].strip(), "utf-8")
-                pos = unicode(termArray[1].strip(), "utf-8")
+                base = self.filterMorpheme(termArray[0].strip())
+                if base == None:
+                    continue
                 if len(base) <= 2:
                     continue
+                
+                pos = termArray[1].strip()
                 
                 morphemes.append(MorphemeLemme(base, None, pos, pos, base))
             else:
                 log("Error:" + taggedTerm)
         
         return morphemes
-
-        
-
