@@ -16,7 +16,10 @@ from learnX.morphology.service.FactsService import *
 
 serviceLocator = ServicesLocator.getInstance()
 
-log(serviceLocator.getFactsService())
+#log(serviceLocator.getFactsService())
+
+#cst = CstLemmatizer()
+#cst.lemmatize("test")
 
 #LearnXdB.getInstance().createDataBase()
 clearLog()

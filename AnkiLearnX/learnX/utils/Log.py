@@ -3,10 +3,9 @@
 #from ankiqt import mw, forms, ui
 import datetime, os
 import codecs
+from learnX.utils.Globals import *
 
-learnXPath = 'E:\Project\Git\AnkiLearnX\AnkiLearnX'
-logPath = os.path.join(learnXPath, 'learnX', 'log', 'main.log')
-#logPath = os.path.join(mw.pluginsFolder(), 'learnX', 'log', 'main.log')
+logPath = os.path.join(Globals.LearnXPath, 'learnX', 'log', 'main.log')
 
 VERBOSE = False
 NO_LOG = False

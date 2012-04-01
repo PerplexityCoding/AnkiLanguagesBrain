@@ -1,16 +1,14 @@
 import os
 import sqlite3
 
-learnXPath = 'E:\Project\Git\AnkiLearnX\AnkiLearnX'
-#learnXPath = mw.pluginsFolder()
+from learnX.utils.Log import *
+from learnX.utils.Globals import *
 
-dbPath = os.path.join(learnXPath, 'learnX', 'db', 'db.learnX')
-sqlPath = os.path.join(learnXPath, 'learnX', 'morphology', 'db', 'sql', 'tables.sql')
 
 class LearnXdB:
     
     instance = None
-    
+
     @staticmethod
     def getInstance():
        if LearnXdB.instance == None:
@@ -18,13 +16,19 @@ class LearnXdB:
        return LearnXdB.instance
        
     def __init__(self):
-        self.conn = sqlite3.connect(dbPath)
+
+        self.learnXPath = learnXPath = Globals.LearnXPath
+
+        self.dbPath = os.path.join(learnXPath, 'learnX', 'db', 'db.learnX')
+        self.sqlPath = os.path.join(learnXPath, 'learnX', 'morphology', 'db', 'sql', 'tables.sql')        
+        
+        self.conn = sqlite3.connect(self.dbPath)
         
     def createDataBase(self):
-        self.conn = sqlite3.connect(dbPath)
+        self.conn = sqlite3.connect(self.dbPath)
         
         c = self.conn.cursor()
-        sqlScript = open(sqlPath, "r")
+        sqlScript = open(self.sqlPath, "r")
         c.executescript(sqlScript.read())
         
         self.conn.commit()

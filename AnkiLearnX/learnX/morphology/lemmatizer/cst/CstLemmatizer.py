@@ -4,12 +4,15 @@ import os, subprocess, sys, time
 import unicodedata, codecs
 
 from learnX.utils.Log import *
+from learnX.utils.Globals import *
 
 class CstLemmatizer:
     def __init__(self):
-        self.path = "E:\\Project\\LearnX\\cst-lemma\\bin\\windows32\\cstlemma.exe"
+        self.path = Globals.LearnXPath
+        self.lemmatizer = self.path + "\\learnX\\morphology\\lemmatizer\\cst\\"
+        self.bin = self.lemmatizer + "bin\\cstlemma.exe"
         
-        self.data = "E:\\Project\\Git\\AnkiLearnX\\AnkiLearnX\\learnX\\morphology\\lemmatizer\\cst\\data\\french\\"
+        self.data = self.lemmatizer + "data\\french\\"
         self.lexique = self.data + "corpus\\OLDlexiqueSimplePos.txt"
         
         self.dict = self.data + "french.dict"
@@ -18,23 +21,18 @@ class CstLemmatizer:
         self.dataIn = self.data + "french.in"
         self.dataOut = self.data + "french.out"
         
-        #self.makeDict()
-        #self.makeFlexRules()
-        
-        #self.process = self.cst()
-        
     def cst(self):
         
-        cstCmd = [self.path, "-L",
-                  "-f", self.flex,
-                  "-d", self.dict,
-                  "-u-",
-                  "-U-",
-                  "-b$w",
-                  "-B$w",
-                  "-c$w/$t/$b1[[$b?]~1$B]\n",
-                  "-o", self.dataOut,
-                  "-i", self.dataIn
+        cstCmd = [self.bin, "-L",
+            "-f", self.flex,
+            "-d", self.dict,
+            "-u-",
+            "-U-",
+            "-b$w",
+            "-B$w",
+            "-c$w/$t/$b1[[$b?]~1$B]\n",
+            "-o", self.dataOut,
+            "-i", self.dataIn
         ]
         
         p = subprocess.Popen(cstCmd, bufsize=-1, stdin=None, stdout=None,
@@ -42,12 +40,12 @@ class CstLemmatizer:
         
     def makeDict(self):
         
-        cstCmd = [self.path, "-D", "-cFBT", "-i" + self.lexique, "-o" + self.dict]
+        cstCmd = [self.bin, "-D", "-cFBT", "-i" + self.lexique, "-o" + self.dict]
         subprocess.Popen(cstCmd)
         
     def makeFlexRules(self):
         
-        cstCmd = [self.path, "-F", "-cFBT", "-i" + self.lexique, "-o" + self.flex]
+        cstCmd = [self.bin, "-F", "-cFBT", "-i" + self.lexique, "-o" + self.flex]
         subprocess.Popen(cstCmd)
         
     def lemmatizeMorphemes(self, morphemes):
@@ -92,17 +90,17 @@ class CstLemmatizer:
         fileout.write("")
         fileout.close()
         
-        cstCmd = [self.path, "-L",
-                  "-f", self.flex,
-                  "-d", self.dict,
-                  "-u-",
-                  "-U-",
-                  "-e1",
-                  "-b$w",
-                  "-B$w",
-                  "-c$w/$t/$b1[[$b?]~1$B]\n",
-                  "-o", self.dataOut,
-                  "-i", self.dataIn
+        cstCmd = [self.bin, "-L",
+            "-f", self.flex,
+            "-d", self.dict,
+            "-u-",
+            "-U-",
+            "-e1",
+            "-b$w",
+            "-B$w",
+            "-c$w/$t/$b1[[$b?]~1$B]\n",
+            "-o", self.dataOut,
+            "-i", self.dataIn
         ]
         
         p = subprocess.Popen(cstCmd, bufsize=-1, stdin=None, stdout=None,

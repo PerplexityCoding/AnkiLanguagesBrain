@@ -4,17 +4,16 @@ import os, subprocess, sys, time, re
 from learnX.utils.Log import *
 from learnX.morphology.db.dto.MorphemeLemme import *
 
+from learnX.utils.Globals import *
+
 class StanfordPosTagger():
     def __init__(self, options):
-        self.stanfordTagger = "E:\\Project\\LearnX\\stanford-postagger-full-2012-03-09\\"
-        self.jarPath = self.stanfordTagger + "stanford-postagger.jar"
-        self.modelPath = self.stanfordTagger + "models\\"
+        self.path = Globals.LearnXPath
+        
+        self.stanfordPath = self.path + "\\learnX\\morphology\\posTagger\\stanford\\"
+        self.jarPath = self.stanfordPath + "\\lib\\stanford-postagger.jar"
+        self.modelPath = self.stanfordPath + "\\data\\french\\model\\"
         self.frenchModel = self.modelPath + "french.tagger"
-        
-        self.data = "E:\\Project\\Git\\AnkiLearnX\\AnkiLearnX\\learnX\\morphology\\posTagger\\stanford\\data\\french\\"
-        
-        self.dataIn = self.data + "french.in"
-        self.dataOut = self.data + "french.out"
         
         self.options = options
         
