@@ -8,6 +8,8 @@ from learnX.morphology.db.dto.Language import *
 from learnX.morphology.posTagger.Mecab import *
 from learnX.morphology.posTagger.stanford.StanfordPosTagger import *
 
+from learnX.morphology.lemmatizer.cst.CstLemmatizer import *
+
 from collections import defaultdict
 
 from learnX.utils.Log import *
@@ -79,6 +81,10 @@ class LanguagesService:
             language.posTagger = Mecab(language.posOptions)
         elif language.posTaggerId == 2:
             language.posTagger = StanfordPosTagger(language.posOptions)
+            language.lemmatizer = CstLemmatizer()
+
+    #def selectLemmatizer(self, language):
+        
 
     def addLanguage(self, name):
         

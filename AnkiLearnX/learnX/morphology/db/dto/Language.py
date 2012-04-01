@@ -14,6 +14,7 @@ class Language:
         self.learntMorphemes = learnt
         self.knownMorphemes = known
         self.matureMorphemes = mature
+        self.lemmatizer = None
 
     def __ne__(self, o):
         return not self.__eq__(o)

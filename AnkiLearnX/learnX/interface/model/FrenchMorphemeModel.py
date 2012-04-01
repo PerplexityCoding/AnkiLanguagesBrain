@@ -61,6 +61,13 @@ class FrenchMorphemeModel(QAbstractTableModel):
             s = ""
             columnId = index.column()
             if columnId == 0:
+                #base = base.encode("utf-8")
+                #base = morphemeLemme.base
+                #log((base,))
+                #base = base.encode("latin-1")
+                #log((base,))
+                #base = base.decode("utf-8")
+                #log((base,))
                 s = morphemeLemme.base
             elif columnId == 1:
                 s = morphemeLemme.pos

@@ -1,5 +1,5 @@
 
-import os, subprocess, sys, time
+import os, subprocess, sys, time, re
 
 from learnX.utils.Log import *
 from learnX.morphology.db.dto.MorphemeLemme import *
@@ -44,22 +44,54 @@ class StanfordPosTagger():
         
         p = self.process
         
+        log ((expression,))
+        
         expression = expression.encode('latin-1', 'ignore')
+
+        expression = self.filterExpression(expression)
 
         p.stdin.write(expression)
         p.stdin.write("\n")
         p.stdin.flush()
+        
+        #time.sleep(0.01)
 
-        result = unicode(p.stdout.readline(), "utf-8")
+        result = p.stdout.readline()
+        result = result.decode("utf-8", "ignore")
+        
+        log((result,))
+        
         p.stdout.flush()
   
         return result
     
+    def stripHTML(self, s):
+        s = re.sub("(?s)<style.*?>.*?</style>", "", s)
+        s = re.sub("(?s)<script.*?>.*?</script>", "", s)
+        s = re.sub("<.*?>", "", s)
+        return s
+    
     def filterExpression(self, expression):
         expression = expression.replace('-', ' ')
         expression = expression.replace("'", "' ")
-        expression = expression.replace("<br>", "")
-        expression = expression.replace("</br>", "")
+        expression = expression.replace("<br>", "; ")
+        expression = expression.replace("</br>", "; ")
+        expression = expression.replace("<br />", "; ")
+        expression = expression.replace(".", "; ")
+        expression = expression.replace("?", "; ")
+        expression = expression.replace("!", "; ")
+        expression = expression.replace("\n", "; ")
+        expression = expression.replace("/", "; ")
+        expression = expression.replace("[", "; ")
+        expression = expression.replace("]", "; ")
+        expression = expression.replace("(", "; ")
+        expression = expression.replace(")", "; ")
+        expression = self.stripHTML(expression)
+        expression = expression.replace("<", "; ")
+        expression = expression.replace(">", "; ")
+        expression = expression.replace("</", "; ")
+        expression = expression.replace("/>", "; ")
+        # remove html !!!!
         
         return expression
 
@@ -68,9 +100,10 @@ class StanfordPosTagger():
             return None
         return morpheme
 
-    def getMorphemes(self, expression):
+    def posMorphemes(self, expression):
         
-        expression = self.filterExpression(expression)
+        if len(expression) == 0:
+            return list()
         
         taggedExpression = self.posTag(expression)
         
@@ -88,7 +121,7 @@ class StanfordPosTagger():
                 
                 pos = termArray[1].strip()
                 
-                morphemes.append(MorphemeLemme(base, None, pos, pos, base))
+                morphemes.append(MorphemeLemme(base, None, pos, "", ""))
             else:
                 log("Error:" + taggedTerm)
         

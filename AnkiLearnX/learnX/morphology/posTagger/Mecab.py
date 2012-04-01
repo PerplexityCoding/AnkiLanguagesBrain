@@ -69,7 +69,7 @@ class Mecab:
         return morpheme
     
         # MecabProc -> Str -> PosWhiteList? -> PosBlackList? -> IO [Morpheme]
-    def getMorphemes(self, expression):
+    def posMorphemes(self, expression):
         morphemes = [tuple(m.split('\t')) for m in self.interact(expression).split('\r')] # morphemes
         morphemes = [MorphemeLemme(*m) for m in morphemes if len(m) == self.MECAB_NODE_LENGTH] # filter garbage
         #if whiteList: morphemes = [m for m in morphemes if m.pos in whiteList]

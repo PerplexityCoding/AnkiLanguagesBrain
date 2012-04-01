@@ -11,6 +11,8 @@ from learnX.morphology.db.dto.Morpheme import *
 from learnX.utils.Log import *
 from learnX.utils.KanjiHelper import *
 
+from learnX.morphology.lemmatizer.cst.CstLemmatizer import *
+
 class MorphemesService:
     
     def __init__(self, serviceLocator):
@@ -28,18 +30,12 @@ class MorphemesService:
 
     def extractMorphemes(self, expression, language):
         
-        morphemes = language.posTagger.getMorphemes(expression)
-        #morphemes = language.lemmatizer.lemmatize(morphemes)
+        morphemes = language.posTagger.posMorphemes(expression)
+        #language.lemmatizer = CstLemmatizer()
+        #if language.lemmatizer:
+        #    morphemes = language.lemmatizer.lemmatizeMorphemes(morphemes)
         
         # Unique morphemes
-        uniqueMorphemes = set()
-        for morpheme in morphemes:
-            if morpheme not in uniqueMorphemes:
-                uniqueMorphemes.add(morpheme)
-        
-        morphemes = set()
-        for morpheme in uniqueMorphemes:
-            morphemes.add(Morpheme(Morpheme.STATUS_NONE, False, morpheme.id, morpheme, 0))
         
         return morphemes
     
@@ -49,21 +45,31 @@ class MorphemesService:
     
     def analyzeMorphemes(self, facts, language):
         
-        allMorphemes = list()
         # Unique Morphemes
+        allMorphLemmes = list()
         for fact in facts:
-            #log("extractMorphemes")
-            fact.morphemes = self.extractMorphemes(fact.expression, language)
+            morphLemmes = self.extractMorphemes(fact.expression, language)
+            for morphLemme in morphLemmes:
+                allMorphLemmes.append(morphLemme)
+            fact.morphLemmes = morphLemmes
+        
+        if language.lemmatizer:
+            language.lemmatizer.lemmatizeMorphemes(allMorphLemmes)
+        
+        allMorphemes = list()
+        for fact in facts:
             factUniqueMorphemes = []
-            for morpheme in fact.morphemes:
+            for morphLemme in fact.morphLemmes:
+                morpheme = Morpheme(Morpheme.STATUS_NONE, False, morphLemme.id, morphLemme, 0)
+                
                 uniqueMorpheme = None
                 if morpheme not in allMorphemes:    
                     allMorphemes.append(morpheme)
                     uniqueMorpheme = morpheme
                 else:
                     uniqueMorpheme = allMorphemes[allMorphemes.index(morpheme)]
-                uniqueMorpheme.fact = fact
-                factUniqueMorphemes.append(uniqueMorpheme)
+                if uniqueMorpheme not in factUniqueMorphemes:
+                    factUniqueMorphemes.append(uniqueMorpheme)
             fact.morphemes = factUniqueMorphemes
             fact.expressionHash = hash(fact.expression)
             fact.lastUpdated = fact.ankiLastModified
@@ -80,6 +86,7 @@ class MorphemesService:
         self.factDao.updateAll(facts)
         
         for fact in facts:
+            fact.morphLemmes = None
             fact.morphemes = None
     
     def computeMorphemesMaturity(self, cards):
