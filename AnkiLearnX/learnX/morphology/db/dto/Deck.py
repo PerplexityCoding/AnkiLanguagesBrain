@@ -1,18 +1,16 @@
 
 class Deck:
     
-    LEARNX_SCORE_KEY = "LearnX Score"
-    VOCAB_RANK_KEY = "Vocab Score"
-    
-    LEARNT_NB_KEY = "Learnt Count"
-    KNOWN_NB_KEY = "Known Count"
-    MATURE_NB_KEY = "Mature Count"
+    LEARNX_SCORE_KEY = "LearnXScore"
+    VOCAB_SCORE_KEY = "VocabScore"
     
     UNKNOWNS_KEY = "Unknown"
-    UNMATUES_KEY = "Unmature"
+    LEARNTS_KEY = "Learnts"
+    KNOWNS_KEY = "Knowns"
+    MATURES_KEY = "Matures"
     
-    COPY_UNKNOWN_1_TO_KEY = "Copy Unknown"
-    COPY_MATURE_TO_KEY = "Copy Mature"
+    COPY_UNKNOWN_1_TO_KEY = "CopyUnknown"
+    COPY_MATURE_TO_KEY = "CopyMature"
     
     def __init__(self, name, path, enabled, languageId, expressionField,
                  fields, id = -1, matureTreshold = 21, knownTreshold = 7, learnTreshold = 3, 
@@ -35,18 +33,16 @@ class Deck:
         else:
             self.fields = {
                 self.LEARNX_SCORE_KEY : ("LearnXScore", False, True),
-                self.LEARNT_NB_KEY : ("LearntCount", False, True),
-                self.KNOWN_NB_KEY : ("KnownCount", False, True),
-                self.MATURE_NB_KEY : ("MatureCount", False, True),
-                self.VOCAB_RANK_KEY : ("VocabScore", False, True),
+                self.VOCAB_SCORE_KEY : ("VocabScore", False, True),
                 self.UNKNOWNS_KEY : ("UnknownMorphemes", False, False),
-                self.UNMATUES_KEY : ("UnmatureMorphemes", False, False),
+                self.LEARNTS_KEY : ("LearntMorphemes", False, False),
+                self.KNOWNS_KEY : ("KnownMorphemes", False, False),
+                self.MATURES_KEY : ("MatureMorphemes", False, False),
                 self.COPY_UNKNOWN_1_TO_KEY : ("VocabExpression", False, False),
                 self.COPY_MATURE_TO_KEY : ("SentenceExpression", False, False)
             }
-        self.fieldsList = [self.LEARNX_SCORE_KEY, self.LEARNT_NB_KEY, self.KNOWN_NB_KEY, self.MATURE_NB_KEY,
-                self.VOCAB_RANK_KEY, self.UNKNOWNS_KEY, self.UNMATUES_KEY, self.COPY_UNKNOWN_1_TO_KEY,
-                self.COPY_MATURE_TO_KEY
+        self.fieldsList = [self.LEARNX_SCORE_KEY, self.VOCAB_SCORE_KEY, self.UNKNOWNS_KEY, self.LEARNTS_KEY,
+                           self.KNOWNS_KEY, self.MATURES_KEY, self.COPY_UNKNOWN_1_TO_KEY, self.COPY_MATURE_TO_KEY
         ]
         self.totalMorphemes = total
         self.learntMorphemes = learnt

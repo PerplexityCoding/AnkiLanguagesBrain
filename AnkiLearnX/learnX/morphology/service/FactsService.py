@@ -174,6 +174,9 @@ class FactsService:
         
         fact.morphemes = morphemes
         return fact
+    
+    def getMorphemes(self, fact):
+        return self.morpheme_dao.getMorphemesFromFact(fact, True)
 
     def clearAllFactsStatus(self, language):
         decksId = self.decksService.listDecksIdByLanguage(language)

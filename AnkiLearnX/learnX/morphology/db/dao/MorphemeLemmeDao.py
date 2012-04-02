@@ -147,7 +147,7 @@ class MorphemeLemmeDao:
         
         return morphemes
     
-    def getAllPOS(self):
+    def getAllPOS(self): #FIXME: language
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
@@ -162,7 +162,7 @@ class MorphemeLemmeDao:
             
         return posList
     
-    def getAllSubPOS(self):
+    def getAllSubPOS(self): #FIXME: language
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()

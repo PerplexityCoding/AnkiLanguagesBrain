@@ -1,5 +1,6 @@
 from learnX.morphology.db.LearnXdB import *
 from learnX.morphology.db.dto.Morpheme import *
+from learnX.morphology.db.dto.MorphemeLemme import *
 from learnX.morphology.db.dto.Card import *
 
 from learnX.utils.Log import *
@@ -150,24 +151,36 @@ class MorphemeDao:
         
         return morphemes
     
-    def getMorphemesFromFact(self, fact):
+    def getMorphemesFromFact(self, fact, withLemme = False):
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
         t = (fact.id,)
-        c.execute("Select m.id, m.status, m.status_changed, m.morph_lemme_id, m.score "
-                  "From Morphemes m, FactsMorphemes mf "
-                  "Where mf.morpheme_id = m.id and mf.fact_id = ?", t)
+        sql =  "Select m.id, m.status, m.status_changed, m.morph_lemme_id, m.score "
+        if withLemme:
+            sql += ", ml.base, ml.pos, ml.sub_pos, ml.read, ml.id "
+        sql += "From Morphemes m, FactsMorphemes mf "
+        if withLemme:
+            sql += ", MorphemeLemmes ml "
+        sql += "Where mf.morpheme_id = m.id and mf.fact_id = ?"
+        if withLemme:
+            sql += " and ml.id == m.morph_lemme_id "
+        
+        c.execute(sql, t)
+        
         morphemes = []
         for row in c:
-            morphemes.append(Morpheme(row[1], row[2], row[3], None, row[4], row[0]))
+            morphLemme = None
+            if withLemme:
+                morphLemme = MorphemeLemme(row[5], None, row[6], row[7], row[8], row[9])
+            morphemes.append(Morpheme(row[1], row[2], row[3], morphLemme, row[4], row[0]))
             
         c.close()
         
         return morphemes
     
-    def clearMorphemesStatus(self):
+    def clearMorphemesStatus(self): #FIXME: language
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
@@ -177,7 +190,7 @@ class MorphemeDao:
         db.commit()
         c.close()
         
-    def getAllMorphemes(self):
+    def getAllMorphemes(self): #FIXME: language
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
