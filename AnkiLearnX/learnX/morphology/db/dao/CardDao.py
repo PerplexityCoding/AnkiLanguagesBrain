@@ -109,7 +109,40 @@ class CardDao:
         c.close()
         
         return card
+
+    def getAllNewCards(self, decksId):
         
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        sql = "select c.id, c.deck_id,  c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.deck_path "
+        sql += "from Cards c, Decks d where c.status = 0 and c.deck_id = d.id "
+        
+        t = []
+        if decksId != None and len(decksId) > 0:
+            sql += "and ("
+            i = 1
+            for deckId in decksId:
+                t.append(deckId)
+                sql += "d.id = ?"
+                if i < len(decksId):
+                    sql += " or "
+                i += 1
+            sql += ")"
+        
+        if len(t) > 0:
+            c.execute(sql, t)
+        else:
+            c.execute(sql)
+        
+        cards = []
+        for row in c:
+            card = Card(row[1],row[2],row[3],row[5],row[6],row[0])
+            card.deckPath = row[7]
+            cards.append(card)
+        
+        return cards
+
     def updateAll(self, cards):
         db = self.learnXdB.openDataBase()
         

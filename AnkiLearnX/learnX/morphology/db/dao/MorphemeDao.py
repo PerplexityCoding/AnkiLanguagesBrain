@@ -103,13 +103,13 @@ class MorphemeDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        sql = "Select count(c.id) from Cards c, Facts f, FactsMorphemes fm "
-        sql += "Where c.fact_id = f.id and f.id = fm.fact_id and fm.morpheme_id = ? and c.status = ?"
+        sql = "Select c.id from Cards c, Facts f, FactsMorphemes fm "
+        sql += "Where c.fact_id = f.id and f.id = fm.fact_id and fm.morpheme_id = ? and c.status = ? limit 1"
         
         t = (morpheme.id, Card.STATUS_MATURE)
         c.execute(sql, t)
         row = c.fetchone()
-        if row and row[0] > 0:
+        if row:
             c.close()
             return Morpheme.STATUS_MATURE
         c.close()
@@ -118,7 +118,7 @@ class MorphemeDao:
         t = (morpheme.id, Card.STATUS_KNOWN)
         c.execute(sql, t)
         row = c.fetchone()
-        if row and row[0] > 0:
+        if row:
             c.close()
             return Morpheme.STATUS_KNOWN
         c.close()
@@ -127,7 +127,7 @@ class MorphemeDao:
         t = (morpheme.id, Card.STATUS_LEARNT)
         c.execute(sql, t)
         row = c.fetchone()
-        if row and row[0] > 0:
+        if row:
             c.close()
             return Morpheme.STATUS_LEARNT
         c.close()

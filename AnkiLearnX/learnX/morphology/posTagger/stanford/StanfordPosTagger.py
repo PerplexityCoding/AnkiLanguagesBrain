@@ -43,7 +43,7 @@ class StanfordPosTagger():
         
         p = self.process
         
-        log ((expression,))
+        #log ((expression,))
         
         expression = expression.encode('latin-1', 'ignore')
 
@@ -58,7 +58,7 @@ class StanfordPosTagger():
         result = p.stdout.readline()
         result = result.decode("utf-8", "ignore")
         
-        log((result,))
+        #log((result,))
         
         p.stdout.flush()
   
@@ -90,7 +90,6 @@ class StanfordPosTagger():
         expression = expression.replace(">", "; ")
         expression = expression.replace("</", "; ")
         expression = expression.replace("/>", "; ")
-        # remove html !!!!
         
         return expression
 

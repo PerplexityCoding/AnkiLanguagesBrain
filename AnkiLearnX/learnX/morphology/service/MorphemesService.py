@@ -43,41 +43,56 @@ class MorphemesService:
         morphemes = self.extractMorphemes(expression)
         return morphemes
     
+    def getList(self, dict):
+        dictList = list()
+        for key, value in dict.iteritems():
+            dictList.append(value)
+        return dictList
+    
     def analyzeMorphemes(self, facts, language):
         
         # Unique Morphemes
-        allMorphLemmes = list()
+        log("Extract Morphemes")
+        allUniqueMorphLemmes = dict()
         for fact in facts:
             morphLemmes = self.extractMorphemes(fact.expression, language)
+            factMorphLemmes = list()
             for morphLemme in morphLemmes:
-                allMorphLemmes.append(morphLemme)
-            fact.morphLemmes = morphLemmes
+                
+                if morphLemme in allUniqueMorphLemmes:
+                    morphLemme = allUniqueMorphLemmes[morphLemme]
+                else:
+                    allUniqueMorphLemmes[morphLemme] = morphLemme
+                factMorphLemmes.append(morphLemme)
+            fact.morphLemmes = factMorphLemmes
         
+        log("Lemmatize Morphemes : " + str(len(allUniqueMorphLemmes)))
         if language.lemmatizer:
-            language.lemmatizer.lemmatizeMorphemes(allMorphLemmes)
+            language.lemmatizer.lemmatizeMorphemes(self.getList(allUniqueMorphLemmes))
         
-        allMorphemes = list()
+        log("Compute Facts <-> Morphemes")
+        allMorphemes = dict()
         for fact in facts:
-            factUniqueMorphemes = []
+            factUniqueMorphemes = dict()
             for morphLemme in fact.morphLemmes:
                 morpheme = Morpheme(Morpheme.STATUS_NONE, False, morphLemme.id, morphLemme, 0)
-                
-                uniqueMorpheme = None
-                if morpheme not in allMorphemes:    
-                    allMorphemes.append(morpheme)
-                    uniqueMorpheme = morpheme
+                if morpheme in allMorphemes:    
+                    morpheme = allMorphemes[morpheme]
                 else:
-                    uniqueMorpheme = allMorphemes[allMorphemes.index(morpheme)]
-                if uniqueMorpheme not in factUniqueMorphemes:
-                    factUniqueMorphemes.append(uniqueMorpheme)
-            fact.morphemes = factUniqueMorphemes
+                    allMorphemes[morpheme] = morpheme
+                if morpheme not in factUniqueMorphemes:
+                    factUniqueMorphemes[morpheme] = morpheme
+            fact.morphemes = self.getList(factUniqueMorphemes)
             fact.expressionHash = hash(fact.expression)
             fact.lastUpdated = fact.ankiLastModified
             fact.expression = None
         
+        allMorphemesList = self.getList(allMorphemes)
+        log("All Unique Morphemes (Lemmatized): " + str(len(allMorphemesList)))
+        
         log("persistAll")
-        self.lemmeDao.persistAll(allMorphemes)
-        self.morphemeDao.persistAll(allMorphemes)
+        self.lemmeDao.persistAll(allMorphemesList)
+        self.morphemeDao.persistAll(allMorphemesList)
         
         log("insertAllFactMorphemes")
         self.factDao.insertAllFactMorphemes(facts)
@@ -92,22 +107,32 @@ class MorphemesService:
     def computeMorphemesMaturity(self, cards):
         
         log("computeMorphemesMaturity")
-        modifiedMorphemes = list()
+        
+        morphemesInCards = dict()
         for card in cards:
-            morphemes = self.morphemeDao.getMorphemesFromCard(card)
+            morphemes = self.morphemeDao.getMorphemesFromCard(card) # Very Fast 45s pour 20.000
             #log("Morphemes: " + str(len(morphemes)))
             for morpheme in morphemes:
-                if morpheme is not modifiedMorphemes:
-                    status = self.morphemeDao.getNewStatus(morpheme)
-                    #log("status: " + str(status))
-                    if morpheme.status != status:
-                        #log("status modified")
-                        morpheme.status = status
-                        morpheme.statusChanged = True
-                        modifiedMorphemes.append(morpheme)
+                if morpheme.id not in morphemesInCards:
+                    morphemesInCards[morpheme.id] = morpheme
             card.lastUpdated = card.ankiLastModified
+        
+        morphemesInCardsList = self.getList(morphemesInCards)
+        log("get New Status for morphemes: " + str(len(morphemesInCardsList)))
+        
+        modifiedMorphemes = list()
+        for morpheme in morphemesInCardsList:
+            #log("morpheme: " + str(morpheme))
+            status = self.morphemeDao.getNewStatus(morpheme) # Slow :/ XXX: Optimize
+            #log("status: " + str(status))
+            if morpheme.status != status:
+                log("status modified")
+                morpheme.status = status
+                morpheme.statusChanged = True
+                modifiedMorphemes.append(morpheme)
 
-        self.morphemeDao.updateAll(modifiedMorphemes)
+        if len(modifiedMorphemes) > 0:
+            self.morphemeDao.updateAll(modifiedMorphemes)
         self.cardDao.updateAll(cards)
     
     def analyze(self, fact):

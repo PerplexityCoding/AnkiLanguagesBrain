@@ -50,10 +50,14 @@ class CstLemmatizer:
         
     def lemmatizeMorphemes(self, morphemes):
         
-        exp = ""
-        for morpheme in morphemes:
-            exp += morpheme.base + "/" + morpheme.pos + " "
+        log("Get Big Expr from morphemes")
+        #exp = ""
+        #for morpheme in morphemes:
+        #    exp += morpheme.base + "/" + morpheme.pos + " "
         
+        exp = " ".join(morpheme.base + "/" + morpheme.pos for morpheme in morphemes)
+        
+        log("Lemmatize")
         lemmes = self.lemmatize(exp)
         
         log("Nb lemmes = " + str(len(lemmes)))
@@ -76,15 +80,18 @@ class CstLemmatizer:
         
     def lemmatize(self, expr):
 
+        #log((expr,))
+        log("Lemmatize exp:" + str(len(expr)))
+
+        log ("Encode in Latin-1")
         expr = expr.encode('latin-1', 'ignore')
         
-        log((expr,))
-        
+        log("Write to In File")
         filein = open(self.dataIn, "wb")
         filein.write(expr)
         filein.close()
         
-        time.sleep(5)
+        #time.sleep(5)
         
         fileout = open(self.dataOut, "wb")
         fileout.write("")
@@ -115,9 +122,12 @@ class CstLemmatizer:
         
         fileout = open(self.dataOut, "r")
         result = list()
-        for line in fileout.readlines():
-            log((line,))
+        
+        line = fileout.readline()
+        while len(line) > 0:
+            #log((line,))
             result.append(line.decode("latin-1", "ignore"))
+            line = fileout.readline()  
 
         return result
         

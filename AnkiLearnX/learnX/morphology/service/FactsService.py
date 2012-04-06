@@ -20,7 +20,7 @@ class FactsService:
         self.decksService = self.serviceLocator.getDecksService()
         
     def getFact(self, deck, ankiFactId):
-        fact = self.fact_dao.findById(deck, ankiFactId)
+        fact = self.fact_dao.findByAnkiFactId(deck, ankiFactId)
         if fact == None:
             fact = Fact(deck.id, ankiFactId, None, None, False, Fact.STATUS_NONE, False, 0)
             fact.deck = deck
@@ -28,13 +28,19 @@ class FactsService:
 
         return fact
 
+    def getFactById(self, ankiFactId):
+        fact = self.fact_dao.findById(ankiFactId)
+        fact.deck = self.deck_dao.findById(fact.deckId)
+        
+        return fact
+    
     def getAllFacts(self, deck, ankiFacts):
         
         facts = []
         factsToInsert = []
         i = 0
         for ankiFact in ankiFacts:
-            fact = self.fact_dao.findById(deck, ankiFact.id)
+            fact = self.fact_dao.findByAnkiFactId(deck, ankiFact.id)
             if fact == None:
                 fact = Fact(deck.id, ankiFact.id, None, None, False, Fact.STATUS_NONE, False, 0)
                 fact.deck = deck
@@ -49,8 +55,12 @@ class FactsService:
         
         return facts
     
-    def getAllCardsOrderByScore(self, language):
-        decksId = self.decksService.listDecksIdByLanguage(language)
+    def getAllCardsOrderByScore(self, deck = None, language = None):
+        if language:
+            decksId = self.decksService.listDecksIdByLanguage(language)
+        else:
+            decksId = [deck.id]
+        log(decksId)
         return self.card_dao.getCardsOrderByScore(decksId)
     
     def calcCardStatus(self, deck, ankiCard):
@@ -177,6 +187,10 @@ class FactsService:
     
     def getMorphemes(self, fact):
         return self.morpheme_dao.getMorphemesFromFact(fact, True)
+
+    def getAllNewCards(self, language):
+        decksId = self.decksService.listDecksIdByLanguage(language)
+        return self.card_dao.getAllNewCards(decksId)
 
     def clearAllFactsStatus(self, language):
         decksId = self.decksService.listDecksIdByLanguage(language)

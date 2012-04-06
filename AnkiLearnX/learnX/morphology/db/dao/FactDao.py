@@ -90,7 +90,7 @@ class FactDao:
         
         return facts
     
-    def findById(self, deck, ankiFactId):
+    def findByAnkiFactId(self, deck, ankiFactId):
         
         db = self.learnXdB.openDataBase()
         
@@ -107,6 +107,24 @@ class FactDao:
         c.close()
         
         return fact
+    
+    def findById(self, factId):
+    
+        db = self.learnXdB.openDataBase()
+        
+        c = db.cursor()
+        
+        t = (factId,)
+        c.execute("Select * From Facts Where id = ?", t)
+        
+        fact = None
+        for row in c:
+            fact = Fact(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[0])
+
+        c.close()
+        
+        return fact
+    
     
     def findByChangedMorphemes(self, decksId):
         

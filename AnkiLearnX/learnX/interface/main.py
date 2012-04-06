@@ -93,7 +93,7 @@ class LearnX(QDialog):
         decksGrid.addWidget(self.tableTitle("Mature"), 0, 2, Qt.AlignHCenter)
         decksGrid.addWidget(self.tableTitle("Known"), 0, 3, Qt.AlignHCenter)
         decksGrid.addWidget(self.tableTitle("Learnt"), 0, 4, Qt.AlignHCenter)
-        decksGrid.addWidget(self.tableTitle("Actions"), 0, 5, 1, 3, Qt.AlignHCenter)
+        decksGrid.addWidget(self.tableTitle("Actions"), 0, 5, 1, 4, Qt.AlignHCenter)
 
     def enabledDeck(self, deck, index):
         
@@ -161,6 +161,12 @@ class LearnX(QDialog):
                 more.setEnabled(deck.enabled and deck.language != None and deck.totalMorphemes > 0)
                 self.connect(more, SIGNAL("clicked()"), lambda d=deck: self.morphemesController.launchBrowserMorphemes(d))
                 decksGrid.addWidget(more, i, 7)
+                
+                duplicate = QPushButton("Mark Duplicates")
+                duplicate.setEnabled(deck.enabled and deck.language != None and deck.totalMorphemes > 0)
+                self.connect(duplicate, SIGNAL("clicked()"), lambda d=deck: self.mainController.markDuplicateFacts(d))
+                decksGrid.addWidget(duplicate, i, 8)
+                
             i += 1
         
         decksGrid.setRowStretch(1, 1)
@@ -190,7 +196,12 @@ class LearnX(QDialog):
         
         languages = self.languagesService.listLanguages()
         
-        if len(languages) > 0:
+        if len(languages) == 0:
+            font = QFont("Arial", 10, QFont.Bold)
+            qlabel = QLabel("To use language, first choose Decks to enable")
+            qlabel.setFont(font)
+            languagesGrid.addWidget(qlabel, 0, 0, 1, 6, Qt.AlignHCenter)
+        else:
             languagesGrid.addWidget(self.tableTitle("Language"), 0, 0)
             languagesGrid.addWidget(self.tableTitle("Total"), 0, 1, Qt.AlignHCenter)
             languagesGrid.addWidget(self.tableTitle("Mature"), 0, 2, Qt.AlignHCenter)
@@ -198,29 +209,29 @@ class LearnX(QDialog):
             languagesGrid.addWidget(self.tableTitle("Learnt"), 0, 4, Qt.AlignHCenter)
             languagesGrid.addWidget(self.tableTitle("Actions"), 0, 5, 1, 3, Qt.AlignHCenter)
         
-        for language in languages:
-            languageName = self.languagesService.getLanguageNameFromCode(language.nameId)
-            log(languageName)
-            languagesGrid.addWidget(QLabel(languageName), i, 0, Qt.AlignHCenter)
-            languagesGrid.addWidget(QLabel(str(language.totalMorphemes)), i, 1, Qt.AlignHCenter)
-            languagesGrid.addWidget(QLabel(str(language.matureMorphemes)), i, 2, Qt.AlignHCenter)
-            languagesGrid.addWidget(QLabel(str(language.knownMorphemes)), i, 3, Qt.AlignHCenter)
-            languagesGrid.addWidget(QLabel(str(language.learntMorphemes)), i, 4, Qt.AlignHCenter)
+            for language in languages:
+                languageName = self.languagesService.getLanguageNameFromCode(language.nameId)
+                log(languageName)
+                languagesGrid.addWidget(QLabel(languageName), i, 0, Qt.AlignHCenter)
+                languagesGrid.addWidget(QLabel(str(language.totalMorphemes)), i, 1, Qt.AlignHCenter)
+                languagesGrid.addWidget(QLabel(str(language.matureMorphemes)), i, 2, Qt.AlignHCenter)
+                languagesGrid.addWidget(QLabel(str(language.knownMorphemes)), i, 3, Qt.AlignHCenter)
+                languagesGrid.addWidget(QLabel(str(language.learntMorphemes)), i, 4, Qt.AlignHCenter)
+                
+                conf = QPushButton("Conf")
+                languagesGrid.addWidget(conf, i, 5)
             
-            conf = QPushButton("Conf")
-            languagesGrid.addWidget(conf, i, 5)
-        
-            # on peux browse meme si desactivé, si le total de morphemes n'ai pas nulle
-            run = QPushButton("Analyze")
-            #run.setEnabled(deck.totalMorphemes > 0)
-            self.connect(run, SIGNAL("clicked()"), lambda l=language: self.mainController.analyzeLanguage(l))
-            languagesGrid.addWidget(run, i, 6)
-            
-            more = QPushButton("Browse")
-            self.connect(more, SIGNAL("clicked()"), lambda l=language: self.morphemesController.launchBrowserMorphemesByLanguage(l))
-            languagesGrid.addWidget(more, i, 7)
-            
-            i += 1
+                # on peux browse meme si desactivé, si le total de morphemes n'ai pas nulle
+                run = QPushButton("Analyze")
+                #run.setEnabled(deck.totalMorphemes > 0)
+                self.connect(run, SIGNAL("clicked()"), lambda l=language: self.mainController.analyzeLanguage(l))
+                languagesGrid.addWidget(run, i, 6)
+                
+                more = QPushButton("Browse")
+                self.connect(more, SIGNAL("clicked()"), lambda l=language: self.morphemesController.launchBrowserMorphemesByLanguage(l))
+                languagesGrid.addWidget(more, i, 7)
+                
+                i += 1
         
         #addNewLanguageButton = QPushButton("Add New Language")
         #mw.connect(addNewLanguageButton, SIGNAL('clicked()'), self.openLanguageChooser)
