@@ -6,10 +6,12 @@ from learnX.utils.Log import *
 from learnX.morphology.service.ServicesLocator import *
 
 from learnX.interface.LanguageChooser import *
+from learnX.interface.LanguageConfig import *
 from learnX.interface.DeckConfig import *
 
 from learnX.controller.LearnXMainController import *
 from learnX.controller.MorphemesBrowserController import *
+from learnX.controller.LanguageConfigController import *
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -219,6 +221,7 @@ class LearnX(QDialog):
                 languagesGrid.addWidget(QLabel(str(language.learntMorphemes)), i, 4, Qt.AlignHCenter)
                 
                 conf = QPushButton("Conf")
+                self.connect(conf, SIGNAL("clicked()"), lambda l=language: self.morphemesController.launchBrowserMorphemesByLanguage(l))
                 languagesGrid.addWidget(conf, i, 5)
             
                 # on peux browse meme si desactivé, si le total de morphemes n'ai pas nulle

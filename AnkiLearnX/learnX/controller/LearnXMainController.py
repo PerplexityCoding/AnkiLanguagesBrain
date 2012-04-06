@@ -74,7 +74,7 @@ class LearnXMainController:
         
         log("Analyze Morphemes on " + str(len(modifiedFacts)) + " facts")
         if len(modifiedFacts) > 0:
-            self.morphemesService.analyzeMorphemes(modifiedFacts, deck.language)
+            self.morphemesService.analyzeMorphemes(modifiedFacts, deck, deck.language)
 
         log("computeMorphemesMaturity")
         modifiedCards = self.factsService.getAllCardsChanged(deck, ankiCards)

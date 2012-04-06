@@ -6,6 +6,7 @@ from PyQt4.QtGui import *
 from learnX.utils.Log import *
 from learnX.controller.DeckConfigController import *
 from learnX.utils.AnkiHelper import *
+from learnX.morphology.service.ServicesLocator import *
 
 from ankiqt import mw
 from anki.models import FieldModel
@@ -21,10 +22,13 @@ class DeckConfig(QDialog):
         
         self.mainVBox = mainVBox = QVBoxLayout(self)
         self.controller = DeckConfigController(self)
-                
+        
+        self.languagesService = ServicesLocator.getInstance().getLanguagesService()
+        
         self.setupLanguages()        
         self.setupExpression()
         self.setupFields()
+        self.setupPOSOptions()
         self.setupOptions()
         self.setupButtons()
         
@@ -51,6 +55,7 @@ class DeckConfig(QDialog):
             languageCombo.addItem(languageName)
         
         languageCombo.setCurrentIndex(currentIndex)
+        mw.connect(languageCombo, SIGNAL("activated(int)"), self.chooseLanguage)
         
         chooseHbox.addWidget(languageCombo)
         mainVBox.addLayout(chooseHbox)
@@ -138,11 +143,71 @@ class DeckConfig(QDialog):
         
         return mmiLayout
         
+    def refreshPosOptions(self, deck, language):
+        
+        allPosListWidget = self.allPosListWidget
+        allPosListWidget.clear()
+        
+        listAvailablePos = language.posOptions["availablePos"]
+        listDisabledPos = deck.posOptions["disabledPos"]
+        if listDisabledPos == None:
+            listDisabledPos = list()
+        
+        for availablePos in listAvailablePos:
+            if availablePos not in listDisabledPos:
+                allPosListWidget.addItem(availablePos)
+        
+        bsPosListWidget = self.bsPosListWidget
+        bsPosListWidget.clear()
+        
+        for disablePos in listDisabledPos:
+            bsPosListWidget.addItem(disablePos)
+        
+    def setupPOSOptions(self):
+        
+        mainVBox = self.mainVBox
+        deck  = self.deck
+        language = deck.language
+        
+        optionsGroup = QGroupBox("(4) Choose Part Of Speech Options")
+        
+        mainVBox.posOptionsGrid = posOptionsBox = QHBoxLayout()
+        optionsGroup.setLayout(posOptionsBox)
+        
+        self.allPosListWidget = allPosListWidget = QListWidget()
+        allPosListWidget.setDragEnabled(True)
+        allPosListWidget.setDropIndicatorShown(True)
+        allPosListWidget.setDragDropMode(QAbstractItemView.DragDrop)
+        allPosListWidget.setAcceptDrops(True)
+        allPosListWidget.setDragDropOverwriteMode(True)
+        
+        allPosListWidgetwithTitle = QVBoxLayout()
+        allPosListWidgetwithTitle.addWidget(QLabel("Available Part Of Speech"))
+        allPosListWidgetwithTitle.addWidget(allPosListWidget)
+        posOptionsBox.addLayout(allPosListWidgetwithTitle)
+        
+        self.bsPosListWidget = bsPosListWidget = QListWidget()
+        bsPosListWidget.setDragEnabled(True)
+        bsPosListWidget.setDropIndicatorShown(True)
+        bsPosListWidget.setDragDropMode(QAbstractItemView.DragDrop)
+        bsPosListWidget.setAcceptDrops(True)
+        bsPosListWidget.setDragDropOverwriteMode(True)
+
+        bsPosListWidgetWithTitle = QVBoxLayout()
+        bsPosListWidgetWithTitle.addWidget(QLabel("Disabled Part of Speech"))
+        bsPosListWidgetWithTitle.addWidget(bsPosListWidget)
+        posOptionsBox.addLayout(bsPosListWidgetWithTitle)
+        
+        mainVBox.addWidget(optionsGroup)
+        
+        if language:
+            self.refreshPosOptions(deck, language)
+        
     def setupOptions(self):
         
         mainVBox = self.mainVBox
         
-        optionsGroup = QGroupBox("(4) Choose Maturity Options")
+        optionsGroup = QGroupBox("(5) Choose Maturity Options")
         
         mainVBox.fieldsGrid = matureGrid = QGridLayout()
         optionsGroup.setLayout(matureGrid)
@@ -177,5 +242,9 @@ class DeckConfig(QDialog):
         
         mainVBox.addLayout(buttonBar)
         
+    def chooseLanguage(self, idx):
+        language = self.languagesService.getPredifinedLanguageByName(unicode(self.languageCombo.currentText()))
+        self.refreshPosOptions(self.deck, language)
+    
     def closeWindows(self):
         self.close()

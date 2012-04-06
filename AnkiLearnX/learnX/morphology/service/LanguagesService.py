@@ -32,7 +32,7 @@ class LanguagesService:
                 "activatedSubPos" : [u'一般', u'助詞類接続', u'接尾', u'自立', u'非自立', u'サ変接続', u'ナイ形容詞語幹', u'代名詞', u'副詞可能', u'動詞非自立的', u'固有名詞', u'形容動詞語幹', u'接続詞的', u'数', u'動詞接続', u'名詞接続', u'数接続']
         })
         self.languagesName = dict({
-            unicode("English", "utf-8")  : Language.ENGLISH,
+            #unicode("English", "utf-8")  : Language.ENGLISH,
             unicode("Francais", "utf-8") : Language.FRENCH,
             unicode("日本語", "utf-8")   : Language.JAPANESE
         })
@@ -73,6 +73,13 @@ class LanguagesService:
             self.selectPosTagger(language)
         return language
 
+    def getPredifinedLanguageByName(self, name):
+        languageCode = self.languagesName[name]
+        if languageCode == 2:
+            return self.French
+        elif languageCode == 500:
+            return self.Japanese
+
     def listLanguages(self):
         return self.languageDao.list()
 
@@ -82,9 +89,6 @@ class LanguagesService:
         elif language.posTaggerId == 2:
             language.posTagger = StanfordPosTagger(language.posOptions)
             language.lemmatizer = CstLemmatizer()
-
-    #def selectLemmatizer(self, language):
-        
 
     def addLanguage(self, name):
         

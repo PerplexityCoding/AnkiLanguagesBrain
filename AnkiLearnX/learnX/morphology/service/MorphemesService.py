@@ -28,20 +28,14 @@ class MorphemesService:
         self.decksService = self.serviceLocator.getDecksService()
         self.factsService = self.serviceLocator.getFactsService()
 
-    def extractMorphemes(self, expression, language):
+    def extractMorphemes(self, expression, deck, language):
         
-        morphemes = language.posTagger.posMorphemes(expression)
-        #language.lemmatizer = CstLemmatizer()
-        #if language.lemmatizer:
-        #    morphemes = language.lemmatizer.lemmatizeMorphemes(morphemes)
-        
-        # Unique morphemes
-        
+        morphemes = language.posTagger.posMorphemes(expression, deck, language)
         return morphemes
     
-    def analyze(self, expression, language):
-        morphemes = self.extractMorphemes(expression)
-        return morphemes
+    #def analyze(self, expression, language):
+    #    morphemes = self.extractMorphemes(expression, None, None)
+    #    return morphemes
     
     def getList(self, dict):
         dictList = list()
@@ -49,13 +43,13 @@ class MorphemesService:
             dictList.append(value)
         return dictList
     
-    def analyzeMorphemes(self, facts, language):
+    def analyzeMorphemes(self, facts, deck, language):
         
         # Unique Morphemes
         log("Extract Morphemes")
         allUniqueMorphLemmes = dict()
         for fact in facts:
-            morphLemmes = self.extractMorphemes(fact.expression, language)
+            morphLemmes = self.extractMorphemes(fact.expression, deck, language)
             factMorphLemmes = list()
             for morphLemme in morphLemmes:
                 
@@ -135,19 +129,19 @@ class MorphemesService:
             self.morphemeDao.updateAll(modifiedMorphemes)
         self.cardDao.updateAll(cards)
     
-    def analyze(self, fact):
+    #def analyze(self, fact):
         
-        morphemes = self.extractMorphemes(fact.expression)
+    #    morphemes = self.extractMorphemes(fact.expression)
         
-        attachedMorphemes = []
-        for morpheme in morphemes:
-            morpheme.morphLemme = self.lemmeDao.persist(morpheme.morphLemme)
-            morpheme = self.morphemeDao.persist(morpheme)
-            attachedMorphemes.append(morpheme)
+    #    attachedMorphemes = []
+    #    for morpheme in morphemes:
+    #        morpheme.morphLemme = self.lemmeDao.persist(morpheme.morphLemme)
+    #        morpheme = self.morphemeDao.persist(morpheme)
+    #        attachedMorphemes.append(morpheme)
         
-        self.factsService.changeMorphemes(fact, attachedMorphemes)
+    #    self.factsService.changeMorphemes(fact, attachedMorphemes)
         
-        return morphemes
+    #    return morphemes
         
     def getAllPOS(self, language):
         try:

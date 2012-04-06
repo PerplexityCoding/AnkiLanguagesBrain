@@ -68,12 +68,32 @@ class Mecab:
                 morpheme.read = n[self.MECAB_NODE_READING_INDEX].strip()
         return morpheme
     
+    
+    def filterPos(self, pos, deck, language):
+        disablePosList = deck.posOptions["disabledPos"]
+        for disablePos in disablePosList:
+            if pos == disablePos:
+                return None
+        
+        posFound = False
+        availablePosList = language.posOptions["availablePos"]    
+        for availablePos in availablePosList:
+            if pos == availablePos:
+                posFound = True
+                break
+        if posFound == False:
+            return None
+        
+        return pos
+    
         # MecabProc -> Str -> PosWhiteList? -> PosBlackList? -> IO [Morpheme]
-    def posMorphemes(self, expression):
+    def posMorphemes(self, expression, deck, language):
         morphemes = [tuple(m.split('\t')) for m in self.interact(expression).split('\r')] # morphemes
         morphemes = [MorphemeLemme(*m) for m in morphemes if len(m) == self.MECAB_NODE_LENGTH] # filter garbage
-        #if whiteList: morphemes = [m for m in morphemes if m.pos in whiteList]
-        #if blackList: morphemes = [m for m in morphemes if m.pos not in blackList]
+        whiteList = language.posOptions["availablePos"]
+        blackList = deck.posOptions["disabledPos"]
+        morphemes = [m for m in morphemes if m.pos in whiteList]
+        morphemes = [m for m in morphemes if m.pos not in blackList]
         morphemes = [self.fixReading(m) for m in morphemes]
         return morphemes
     

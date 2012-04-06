@@ -3,6 +3,8 @@ from anki.models import FieldModel
 
 from learnX.utils.AnkiHelper import *
 
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 
 class DeckConfigController:
     def __init__(self, interface):
@@ -83,6 +85,16 @@ class DeckConfigController:
         deck.knownTreshold = int(str(interface.knownEdit.text()))
         deck.learnTreshold = int(str(interface.learnEdit.text()))
         deck.expressionField = str(interface.expressionCombo.currentText())
+        
+        bsPosListWidget = interface.bsPosListWidget
+        disabledPosList = list()
+        items = bsPosListWidget.findItems("*", Qt.MatchWrap | Qt.MatchWildcard)
+        for item in items:
+            log(item)
+            disabledPosList.append(unicode(item.text()))
+        deck.posOptions["disabledPos"] = disabledPosList
+        
+        
         self.decksService.updateDeck(deck)
         
         realDeck.save()

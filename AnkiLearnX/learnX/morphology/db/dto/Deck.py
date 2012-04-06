@@ -17,7 +17,7 @@ class Deck:
     
     def __init__(self, name, path, enabled, languageId, expressionField,
                  fields, id = -1, matureTreshold = 21, knownTreshold = 7, learnTreshold = 3, 
-                 total = 0, learnt = 0, known = 0, mature = 0):
+                 total = 0, learnt = 0, known = 0, mature = 0, posOptions = None):
         self.id = id
         self.name = str(name)
         self.path = str(path)
@@ -44,7 +44,7 @@ class Deck:
                 self.COPY_UNKNOWN_1_TO_KEY : ("VocabExpression", False, False),
                 self.COPY_MATURE_TO_KEY : ("SentenceExpression", False, False),
                 self.DEFINITION_KEY : ("DefinitionExpression", False, False),
-                self.DEFINITION_SCORE_KEY : ("Definition_Score", False, False)
+                self.DEFINITION_SCORE_KEY : ("DefinitionScore", False, False)
             }
         self.fieldsList = [self.LEARNX_SCORE_KEY, self.VOCAB_SCORE_KEY, self.UNKNOWNS_KEY, self.LEARNTS_KEY,
                            self.KNOWNS_KEY, self.MATURES_KEY, self.COPY_UNKNOWN_1_TO_KEY, self.COPY_MATURE_TO_KEY,
@@ -54,6 +54,10 @@ class Deck:
         self.learntMorphemes = learnt
         self.knownMorphemes = known
         self.matureMorphemes = mature
+        if posOptions == None:
+            self.posOptions = {"disabledPos" : list()}
+        else :
+            self.posOptions = posOptions
 
     def __ne__(self, o):
         return not self.__eq__(o)

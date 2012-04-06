@@ -32,7 +32,8 @@ CREATE TABLE Decks (
 	total_morphemes INTEGER,
 	learnt_morphemes INTEGER,
 	known_morphemes INTEGER,
-	mature_morphemes INTEGER
+	mature_morphemes INTEGER,
+	pos_options BLOB
 );
 
 CREATE TABLE Facts (

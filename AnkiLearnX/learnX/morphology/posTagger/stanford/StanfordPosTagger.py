@@ -7,7 +7,7 @@ from learnX.morphology.db.dto.MorphemeLemme import *
 from learnX.utils.Globals import *
 
 class StanfordPosTagger():
-    def __init__(self, options):
+    def __init__(self, posOptions):
         self.path = Globals.LearnXPath
         
         self.stanfordPath = self.path + "\\learnX\\morphology\\posTagger\\stanford\\"
@@ -15,7 +15,7 @@ class StanfordPosTagger():
         self.modelPath = self.stanfordPath + "\\data\\french\\model\\"
         self.frenchModel = self.modelPath + "french.tagger"
         
-        self.options = options
+        self.posOptions = posOptions
         
         self.process = self.stanfordPosTagger()
         
@@ -98,7 +98,24 @@ class StanfordPosTagger():
             return None
         return morpheme
 
-    def posMorphemes(self, expression):
+    def filterPos(self, pos, deck, language):
+        disablePosList = deck.posOptions["disabledPos"]
+        for disablePos in disablePosList:
+            if pos == disablePos:
+                return None
+        
+        posFound = False
+        availablePosList = language.posOptions["availablePos"]    
+        for availablePos in availablePosList:
+            if pos == availablePos:
+                posFound = True
+                break
+        if posFound == False:
+            return None
+        
+        return pos
+
+    def posMorphemes(self, expression, deck, language):
         
         if len(expression) == 0:
             return list()
@@ -116,8 +133,11 @@ class StanfordPosTagger():
                     continue
                 if len(base) <= 2:
                     continue
+                pos = self.filterPos(termArray[1].strip(), deck, language)
+                if pos == None:
+                    continue
                 
-                pos = termArray[1].strip()
+                
                 
                 morphemes.append(MorphemeLemme(base, None, pos, "", ""))
             else:
