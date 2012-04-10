@@ -162,17 +162,17 @@ class FactDao:
         
         return facts
     
-    def selectAllChanged(self, decksId):
+    def selectAll(self, decksId, statusChanged = None):
         
         db = self.learnXdB.openDataBase()
         
         c = db.cursor()
         
-        sql = "Select * From Facts Where status_changed = 1 "
-        
+        sql = "Select * From Facts Where "
         t = []
+        
         if decksId != None and len(decksId) > 0:
-            sql += "and ("
+            sql += " ("
             i = 1
             for deckId in decksId:
                 t.append(deckId)
@@ -181,6 +181,10 @@ class FactDao:
                     sql += " or "
                 i += 1
             sql += ")"
+        
+        if statusChanged != None:
+            " and status_changed = ? "
+            t.append(statusChanged)
         
         if len(t) > 0:
             c.execute(sql, t)

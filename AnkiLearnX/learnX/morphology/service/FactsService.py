@@ -104,9 +104,12 @@ class FactsService:
         return changedCards
     
     def getAllFactsChanged(self, language):
+        return self.getAllFactsByLanguage(language, 1)
+    
+    def getAllFactsByLanguage(self, language, statusChanged = None):
         
         decksId = self.decksService.listDecksIdByLanguage(language)
-        facts = self.fact_dao.selectAllChanged(decksId) 
+        facts = self.fact_dao.selectAll(decksId, statusChanged) 
         decks = dict()
         for fact in facts:
             deck = None

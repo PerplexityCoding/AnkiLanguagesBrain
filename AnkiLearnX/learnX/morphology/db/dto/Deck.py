@@ -9,9 +9,10 @@ class Deck:
     KNOWNS_KEY = "Knowns"
     MATURES_KEY = "Matures"
     
-    COPY_UNKNOWN_1_TO_KEY = "CopyUnknown"
+    COPY_UNKNOWN_1_TO_KEY = "Copy1Unknown"
     COPY_MATURE_TO_KEY = "CopyMature"
 
+    DEFINITION_NAME_KEY = "DefinitionName"
     DEFINITION_KEY = "Definition"
     DEFINITION_SCORE_KEY = "DefinitionScore"
     
@@ -43,12 +44,13 @@ class Deck:
                 self.MATURES_KEY : ("MatureMorphemes", False, False),
                 self.COPY_UNKNOWN_1_TO_KEY : ("VocabExpression", False, False),
                 self.COPY_MATURE_TO_KEY : ("SentenceExpression", False, False),
-                self.DEFINITION_KEY : ("DefinitionExpression", False, False),
+                self.DEFINITION_NAME_KEY : ("DefinitionKey", False, False),
+                self.DEFINITION_KEY : ("Definition", False, False),
                 self.DEFINITION_SCORE_KEY : ("DefinitionScore", False, False)
             }
         self.fieldsList = [self.LEARNX_SCORE_KEY, self.VOCAB_SCORE_KEY, self.UNKNOWNS_KEY, self.LEARNTS_KEY,
                            self.KNOWNS_KEY, self.MATURES_KEY, self.COPY_UNKNOWN_1_TO_KEY, self.COPY_MATURE_TO_KEY,
-                           self.DEFINITION_KEY, self.DEFINITION_SCORE_KEY
+                           self.DEFINITION_KEY, self.DEFINITION_NAME_KEY, self.DEFINITION_SCORE_KEY
         ]
         self.totalMorphemes = total
         self.learntMorphemes = learnt

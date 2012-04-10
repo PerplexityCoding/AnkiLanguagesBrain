@@ -43,6 +43,28 @@ class MorphemesService:
             dictList.append(value)
         return dictList
     
+    # Store temporarly (not in database) definition morphemes and score in facts
+    # Dont work with lemmatizater
+    def getMorphemesFromDB(self, expression, deck, language):
+        
+        # Unique Morphemes
+        log("Extract Morphemes")
+        morphLemmes = self.extractMorphemes(expression, deck, language)
+        factMorphemes = list()
+        for morphemeLemme in morphLemmes:
+            morphLemmeDB = self.lemmeDao.find(morphemeLemme)
+            if morphLemmeDB == None:
+                morpheme = Morpheme(0, 0, -1, None, 0, -1)
+                morpheme.morphLemme = morphemeLemme
+            else:
+                morpheme = self.morphemeDao.findByLemmeId(morphLemmeDB.id)
+                if morpheme == None:
+                    continue
+                morpheme.morphLemme = morphLemmeDB
+            if morpheme not in factMorphemes:
+                factMorphemes.append(morpheme)
+        return factMorphemes
+    
     def analyzeMorphemes(self, facts, deck, language):
         
         # Unique Morphemes

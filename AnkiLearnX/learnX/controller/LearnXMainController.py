@@ -51,8 +51,8 @@ class LearnXMainController:
         realDeck = AnkiHelper.getDeck(deck.path)
         log(realDeck)
         log("Get All Facts / Cards")
-        ankiFacts = AnkiHelper.getFacts(realDeck)
-        ankiCards = AnkiHelper.getCards(realDeck)
+        self.ankiFacts = ankiFacts = AnkiHelper.getFacts(realDeck)
+        self.ankiCards = ankiCards = AnkiHelper.getCards(realDeck)
         i = 0
         
         log("Store All Facts")
@@ -148,85 +148,106 @@ class LearnXMainController:
                 ankiCardsDict[ankiCard.id] = ankiCard    
             ankiDeckCards[modifiedDeckPath] = ankiCardsDict
     
+    def getMorphemesScore(self, morphemes):
+        matureMorphemes = []
+        knownMorphemes = []
+        learnMorphemes = []
+        unknownMorphemes = []
+        morphemesScore = 0
+        for morpheme in morphemes:
+            morphLemme = morpheme.morphLemme
+            if morpheme.status == Morpheme.STATUS_MATURE:
+                matureMorphemes.append(morphLemme.base)
+            if morpheme.status == Morpheme.STATUS_KNOWN:
+                knownMorphemes.append(morphLemme.base)
+            if morpheme.status == Morpheme.STATUS_LEARNT:
+                learnMorphemes.append(morphLemme.base)
+            if morpheme.status == Morpheme.STATUS_NONE:
+                unknownMorphemes.append(morphLemme.base)
+            morphemesScore += morpheme.score
+        return morphemesScore, matureMorphemes, knownMorphemes, learnMorphemes, unknownMorphemes
+    
     def markFacts(self, language):
-        modifiedFacts = self.factsService.getAllFactsChanged(language)
+        facts = self.factsService.getAllFactsByLanguage(language)
         ankiFactsId = list()
         
         #i = 0
-        for modifiedFact in modifiedFacts:
+        for fact in facts:
             try:
-                ankiFact = self.ankiDeckFacts[modifiedFact.deck.path][modifiedFact.ankiFactId]
+                ankiFact = self.ankiDeckFacts[fact.deck.path][fact.ankiFactId]
             except Exception: continue
             
-            deck = self.decks[modifiedFact.deck.path]
+            deck = self.decks[fact.deck.path]
             fields = deck.fields
             
-            if fields[Deck.LEARNX_SCORE_KEY][1]:
-                try: ankiFact[fields[Deck.LEARNX_SCORE_KEY][0]] = u'%d' % int(modifiedFact.score)
-                except KeyError: pass
+            morphemes = self.factsService.getMorphemes(fact)
+            morphemesScore, matureMorphemes, knownMorphemes, learnMorphemes, unknownMorphemes = self.getMorphemesScore(morphemes)
             
-            
-            morphemes = self.factsService.getMorphemes(modifiedFact)
-            matureMorphemes = []
-            knownMorphemes = []
-            learnMorphemes = []
-            unknownMorphemes = []
-            morphemesScore = 0
-            for morpheme in morphemes:
-                morphLemme = morpheme.morphLemme
-                if morpheme.status == Morpheme.STATUS_MATURE:
-                    matureMorphemes.append(morphLemme.base)
-                if morpheme.status == Morpheme.STATUS_KNOWN:
-                    knownMorphemes.append(morphLemme.base)
-                if morpheme.status == Morpheme.STATUS_LEARNT:
-                    learnMorphemes.append(morphLemme.base)
-                if morpheme.status == Morpheme.STATUS_NONE:
-                    unknownMorphemes.append(morphLemme.base)
-                morphemesScore += morpheme.score
-            
-            if fields[Deck.VOCAB_SCORE_KEY][1]:
-                try: ankiFact[fields[Deck.VOCAB_SCORE_KEY][0]] = u'%d' % int(morphemesScore)
-                except KeyError: pass
-    
-            if fields[Deck.UNKNOWNS_KEY][1]:
-                try: ankiFact[fields[Deck.UNKNOWNS_KEY][0]] = u','.join(u for u in unknownMorphemes)
-                except KeyError: pass
-    
-            if fields[Deck.LEARNTS_KEY][1]:
-                try: ankiFact[fields[Deck.LEARNTS_KEY][0]] = u','.join(u for u in learnMorphemes)
-                except KeyError: pass
-                
-            if fields[Deck.KNOWNS_KEY][1]:
-                try: ankiFact[fields[Deck.KNOWNS_KEY][0]] = u','.join(u for u in knownMorphemes)
-                except KeyError: pass
-                
-            if fields[Deck.MATURES_KEY][1]:
-                try: ankiFact[fields[Deck.MATURES_KEY][0]] = u','.join(u for u in matureMorphemes)
-                except KeyError: pass
-
-            if len(unknownMorphemes) == 1:
-                if fields[Deck.COPY_UNKNOWN_1_TO_KEY][1]:
-                    try: ankiFact[fields[Deck.COPY_UNKNOWN_1_TO_KEY][0]] = u','.join(u for u in unknownMorphemes)
+            if fact.statusChanged == True: # FIXME: sure ?
+                if fields[Deck.LEARNX_SCORE_KEY][1]:
+                    try: ankiFact[fields[Deck.LEARNX_SCORE_KEY][0]] = u'%d' % int(fact.score)
                     except KeyError: pass
-            elif len(unknownMorphemes) == 0:
-                if fields[Deck.COPY_MATURE_TO_KEY][1]:
-                    try: ankiFact[fields[Deck.COPY_MATURE_TO_KEY][0]] = u'%s' % ankiFact[deck.expressionField]
+                
+                if fields[Deck.VOCAB_SCORE_KEY][1]:
+                    try: ankiFact[fields[Deck.VOCAB_SCORE_KEY][0]] = u'%d' % int(morphemesScore)
                     except KeyError: pass
-                     
-            if fields[Deck.DEFINITION_KEY][1] and fields[Deck.DEFINITION_SCORE_KEY][1]:
-                try: ankiFact[fields[Deck.DEFINITION_SCORE_KEY][0]] = u'%d' % int(modifiedFact.definitionScore)
+        
+                if fields[Deck.UNKNOWNS_KEY][1]:
+                    try: ankiFact[fields[Deck.UNKNOWNS_KEY][0]] = u','.join(u for u in unknownMorphemes)
+                    except KeyError: pass
+        
+                if fields[Deck.LEARNTS_KEY][1]:
+                    try: ankiFact[fields[Deck.LEARNTS_KEY][0]] = u','.join(u for u in learnMorphemes)
+                    except KeyError: pass
+                    
+                if fields[Deck.KNOWNS_KEY][1]:
+                    try: ankiFact[fields[Deck.KNOWNS_KEY][0]] = u','.join(u for u in knownMorphemes)
+                    except KeyError: pass
+                    
+                if fields[Deck.MATURES_KEY][1]:
+                    try: ankiFact[fields[Deck.MATURES_KEY][0]] = u','.join(u for u in matureMorphemes)
+                    except KeyError: pass
+    
+                if len(unknownMorphemes) == 1:
+                    if fields[Deck.COPY_UNKNOWN_1_TO_KEY][1]:
+                        try: ankiFact[fields[Deck.COPY_UNKNOWN_1_TO_KEY][0]] = u','.join(u for u in unknownMorphemes)
+                        except KeyError: pass
+                elif len(unknownMorphemes) == 0:
+                    if fields[Deck.COPY_MATURE_TO_KEY][1]:
+                        try: ankiFact[fields[Deck.COPY_MATURE_TO_KEY][0]] = u'%s' % ankiFact[deck.expressionField]
+                        except KeyError: pass
+                    
+                ankiFact.tags = canonifyTags(deleteTags(fact.getAllStatusTag(), ankiFact.tags))
+                ankiFact.tags = canonifyTags(addTags(fact.getStatusTag(), ankiFact.tags))
+            
+            if fields[Deck.DEFINITION_KEY][1] and fields[Deck.DEFINITION_NAME_KEY][1]:
+                try:
+                    ankiFact.tags = canonifyTags(deleteTags(u'LearnX_Definition_Known,LearnX_Definition_Match', ankiFact.tags))
+                    
+                    definition = ankiFact[fields[Deck.DEFINITION_KEY][0]]
+                    definitionName = ankiFact[fields[Deck.DEFINITION_NAME_KEY][0]]
+                    
+                    if definition != None and definition != "":
+                    
+                        dictMorphemes = self.morphemesService.getMorphemesFromDB(definition, fact.deck, language)
+                        dictMorphemesScore, defMatureMorphemes, defKnownMorphemes, defLearnMorphemes, defUnknownMorphemes = self.getMorphemesScore(dictMorphemes)
+                        
+                        if len(defUnknownMorphemes) == 0:
+                            ankiFact.tags = canonifyTags(addTags(u'LearnX_Definition_Known', ankiFact.tags))
+                        
+                        if len(unknownMorphemes) == 1 and unknownMorphemes[0] == definitionName:
+                            ankiFact.tags = canonifyTags(addTags(u'LearnX_Definition_Match', ankiFact.tags))
+                        
+                        if fields[Deck.DEFINITION_SCORE_KEY][1]:
+                            try: ankiFact[fields[Deck.DEFINITION_SCORE_KEY][0]] = u'%d' % int(dictMorphemesScore)
+                            except KeyError: pass
+                  
                 except KeyError: pass
-            
-            
-            ankiFact.tags = canonifyTags(deleteTags(modifiedFact.getAllStatusTag(), ankiFact.tags))
-            ankiFact.tags = canonifyTags(addTags(modifiedFact.getStatusTag(), ankiFact.tags))
-            
-            #log(ankiFact.tags)
             
             ankiFactsId.append(ankiFact.id)
-        
+            
         self.saveDecks(ankiFactsId, language)
-                
+    
     def changeDueCards(self, language):
         
         cards = self.factsService.getAllCardsOrderByScore(language = language)
@@ -295,10 +316,13 @@ class LearnXMainController:
             
             if ankiFactsId:
                 ankiDeck.updateFactTags(ankiFactsId)
+                ankiDeck.updateCardQACacheFromIds(ankiFactsId, type="facts")
             
+            ankiDeck.setModified()
             ankiDeck.save()
     
     def closeDecks(self, language):
+
         for modifiedDeckPath in self.modifiedDecksPath:
             ankiDeck = self.ankiDecks[modifiedDeckPath]
             

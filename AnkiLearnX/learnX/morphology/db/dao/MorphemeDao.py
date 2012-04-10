@@ -61,7 +61,7 @@ class MorphemeDao:
         c.execute("Select id, status, status_changed From Morphemes Where morph_lemme_id = ?", t)
         
         row = c.fetchone()
-        if morphemeInfo:
+        if row:
             morpheme.id = row[0]
             morpheme.status = row[1]
             morpheme.statusChanged = row[2]
@@ -84,6 +84,19 @@ class MorphemeDao:
             c.close()
         
         return morpheme
+
+    def findByLemmeId(self, lemmeId):
+        
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        t = (lemmeId,)
+        c.execute("Select id, status, status_changed, morph_lemme_id, score From Morphemes Where morph_lemme_id = ?", t)
+        
+        row = c.fetchone()
+        if row:
+            return Morpheme(row[1], row[2], row[3], None, row[4], row[0])
+        return None
 
     def updateAll(self, morphemes):
         db = self.learnXdB.openDataBase()

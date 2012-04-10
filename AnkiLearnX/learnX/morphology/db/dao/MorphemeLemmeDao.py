@@ -39,6 +39,20 @@ class MorphemeLemmeDao:
             
             return morpheme
     
+    def find(self, morpheme):
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        t = (morpheme.pos, morpheme.subPos, morpheme.read, morpheme.base)
+        c.execute("Select id From MorphemeLemmes Where pos = ? and sub_pos = ? and read = ? and base = ?", t)
+        
+        morphemeId = c.fetchone()
+        if morphemeId:
+            morpheme.id = morphemeId[0]
+            c.close()
+            return morpheme
+        return None
+    
     def persistAll(self, morphemes):
         db = self.learnXdB.openDataBase()
         c = db.cursor()
