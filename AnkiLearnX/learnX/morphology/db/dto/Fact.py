@@ -29,25 +29,25 @@ class Fact:
 
     def getStatusTag(self):
         if self.status == self.STATUS_NONE:
-            return "LearnX_None"
+            return u'LxNone'
         if self.status == self.STATUS_REVIEW_EASY:
-            return "LearnX_Review,LearnX_ReviewEasy"
+            return u'LxRev,LxRevEasy'
         if self.status == self.STATUS_REVIEW_MEDIUM:
-            return "LearnX_Review,LearnX_ReviewMedium"
+            return u'LxRev,LxRevMedium'
         if self.status == self.STATUS_REVIEW_HARD:
-            return "LearnX_Review,LearnX_ReviewHard"
+            return u'LxRev,LxRevHard'
         if self.status == self.STATUS_LEARN_EASY:
-            return "LearnX_Learn,LearnX_LearnEasy"
+            return u'LxLearn,LxLearnEasy'
         if self.status == self.STATUS_LEARN_MEDIUM:
-            return "LearnX_Learn,LearnX_LearnMedium"
+            return u'LxLearn,LxLearnMedium'
         if self.status == self.STATUS_LEARN_HARD:
-            return "LearnX_Learn,LearnX_LearnHard"
+            return u'LxLearn,LxLearnHard'
         if self.status == self.STATUS_TOO_DIFFICULT:
-            return "LearnX_TooDifficult"        
-        return "None"
+            return u'LxTooDifficult'   
+        return u'LxNone'
     
     def getAllStatusTag(self):
-        return u'LearnX_None,LearnX_ReviewEasy,LearnX_ReviewMedium,LearnX_ReviewHard,LearnX_LearnEasy,LearnX_LearnMedium,LearnX_LearnHard,LearnX_TooDifficult'
+        return u'LxNone,LxRev,LxRevEasy,LxRevMedium,LxRevHard,LxLearn,LxLearnEasy,LxLearnMedium,LxLearnHard,LxTooDifficult'
 
     def __repr__(self):
         return u'\t'.join([str(self.id), str(self.deckId), str(self.ankiFactId),str(self.lastUpdated),

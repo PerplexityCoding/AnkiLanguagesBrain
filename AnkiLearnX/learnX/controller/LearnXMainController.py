@@ -222,7 +222,7 @@ class LearnXMainController:
             
             if fields[Deck.DEFINITION_KEY][1] and fields[Deck.DEFINITION_NAME_KEY][1]:
                 try:
-                    ankiFact.tags = canonifyTags(deleteTags(u'LearnX_Definition_Known,LearnX_Definition_Match', ankiFact.tags))
+                    ankiFact.tags = canonifyTags(deleteTags(u'LxDefKnown,LxDefMatch', ankiFact.tags))
                     
                     definition = ankiFact[fields[Deck.DEFINITION_KEY][0]]
                     definitionName = ankiFact[fields[Deck.DEFINITION_NAME_KEY][0]]
@@ -233,10 +233,10 @@ class LearnXMainController:
                         dictMorphemesScore, defMatureMorphemes, defKnownMorphemes, defLearnMorphemes, defUnknownMorphemes = self.getMorphemesScore(dictMorphemes)
                         
                         if len(defUnknownMorphemes) == 0:
-                            ankiFact.tags = canonifyTags(addTags(u'LearnX_Definition_Known', ankiFact.tags))
+                            ankiFact.tags = canonifyTags(addTags(u'LxDefKnown', ankiFact.tags))
                         
                         if len(unknownMorphemes) == 1 and unknownMorphemes[0] == definitionName:
-                            ankiFact.tags = canonifyTags(addTags(u'LearnX_Definition_Match', ankiFact.tags))
+                            ankiFact.tags = canonifyTags(addTags(u'LxDefMatch', ankiFact.tags))
                         
                         if fields[Deck.DEFINITION_SCORE_KEY][1]:
                             try: ankiFact[fields[Deck.DEFINITION_SCORE_KEY][0]] = u'%d' % int(dictMorphemesScore)
@@ -298,10 +298,10 @@ class LearnXMainController:
                 ankiFact = ankiFactsDict[fact.ankiFactId]
             except Exception:continue
             
-            ankiFact.tags = canonifyTags(deleteTags(u'LearnX_Duplicate', ankiFact.tags))
+            ankiFact.tags = canonifyTags(deleteTags(u'LxDuplicate', ankiFact.tags))
             if factHasNewMorphemes == False:
                 log(str(fact) + " is Duplicate")
-                ankiFact.tags = canonifyTags(addTags(u'LearnX_Duplicate', ankiFact.tags))
+                ankiFact.tags = canonifyTags(addTags(u'LxDuplicate', ankiFact.tags))
                 ankiFactsId.append(int(ankiFact.id))
 
         log(ankiFactsId)
