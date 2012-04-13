@@ -4,6 +4,7 @@ from learnX.morphology.db.dao.MorphemeDao import *
 from learnX.morphology.db.dao.FactDao import *
 from learnX.morphology.db.dao.CardDao import *
 from learnX.morphology.db.dao.DeckDao import *
+from learnX.morphology.db.dao.DefinitionDao import *
 
 from learnX.morphology.db.dto.Card import *
 from learnX.morphology.db.dto.Morpheme import *
@@ -23,6 +24,7 @@ class MorphemesService:
         self.factDao = FactDao()
         self.cardDao = CardDao()
         self.deckDao = DeckDao()
+        self.definitionDao = DefinitionDao()
     
     def setupServices(self):
         self.decksService = self.serviceLocator.getDecksService()
@@ -65,10 +67,74 @@ class MorphemesService:
                 factMorphemes.append(morpheme)
         return factMorphemes
     
+    def analyseDefinition(self, deck, language, facts, ankiFacts):
+        
+        definitions = self.definitionDao.getDefinitions(facts)
+        
+        modifiedDefinition = list()
+        keyModifiedDefinition = list()
+        defModifiedDefinition = list()
+        
+        for definition in definitions:
+            fact = definition.fact
+            if fact.ankiLastModified == fact.lastUpdated:
+                continue
+            
+            isModified = False
+            definitionExpression = ankiFacts[fact.ankiFactIndex][deck.definitionField]
+            if definition.definitionHash == None or int(definition.definitionHash) != hash(definitionExpression):
+                definition.definitionMorphemes = self.getMorphemesFromDB(definitionExpression, deck, language)
+                definition.definitionHash = hash(definitionExpression)
+                defModifiedDefinition.append(definition)
+                isModified = True
+            
+            definitionKeyExpression = ankiFacts[fact.ankiFactIndex][deck.definitionKeyField]
+            if definition.definitionKeyHash == None or int(definition.definitionKeyHash) != hash(definitionKeyExpression):
+                definition.definitionMorphemesKey = self.getMorphemesFromDB(definitionKeyExpression, deck, language)
+                definition.definitionKeyHash = hash(definitionKeyExpression)
+                keyModifiedDefinition.append(definition)
+                isModified = True
+            
+            if isModified == True:
+                modifiedDefinition.append(definition)
+        
+        if len(defModifiedDefinition) > 0:
+            self.definitionDao.updateAllDefinitionsMorphemes(defModifiedDefinition)
+        if len(keyModifiedDefinition) > 0:
+            self.definitionDao.updateAllDefinitionsKeysMorphemes(keyModifiedDefinition)
+        if len(modifiedDefinition) > 0:
+            self.definitionDao.updateAll(modifiedDefinition)
+    
+    def getMorphemesDefinition(self, definition):
+        morphemesId = self.definitionDao.getAllDefinitionMorphemes(definition)
+        
+        morphemes = list()
+        for morphemeId in morphemesId:
+            morpheme = self.morphemeDao.findById(morphemeId)
+            if morpheme:
+                morpheme.morphLemme = self.lemmeDao.findById(morpheme.morphLemmeId)
+                if morpheme.morphLemme:
+                    morphemes.append(morpheme)
+            
+        return morphemes
+    
+    def getMorphemesDefinitionKey(self, definition):
+        morphemesId = self.definitionDao.getAllDefinitionKeyMorphemes(definition)
+        
+        morphemes = list()
+        for morphemeId in morphemesId:
+            morpheme = self.morphemeDao.findById(morphemeId)
+            if morpheme:
+                morpheme.morphLemme = self.lemmeDao.findById(morpheme.morphLemmeId)
+                if morpheme.morphLemme:
+                    morphemes.append(morpheme)
+            
+        return morphemes
+    
     def analyzeMorphemes(self, facts, deck, language):
         
         # Unique Morphemes
-        log("Extract Morphemes")
+        #log("Extract Morphemes")
         allUniqueMorphLemmes = dict()
         for fact in facts:
             morphLemmes = self.extractMorphemes(fact.expression, deck, language)

@@ -25,6 +25,10 @@ class DeckConfigController:
             # Error : marked in red + Error message
             return
         
+        if interface.defintionCB.isChecked() and interface.definitionCombo.currentIndex() <= 0:
+            # Error : ...
+            return
+        
         mainVBox = interface.mainVBox
         deck = interface.deck
         realDeck = AnkiHelper.getDeck(deck.path)
@@ -94,6 +98,12 @@ class DeckConfigController:
             disabledPosList.append(unicode(item.text()))
         deck.posOptions["disabledPos"] = disabledPosList
         
+        if interface.defintionCB.isChecked():
+            deck.definitionField = str(interface.definitionCombo.currentText())
+            if interface.definitionKeyCombo.currentIndex() > 0:
+                deck.definitionKeyField = str(interface.definitionKeyCombo.currentText())
+            else:
+                deck.definitionKeyField = None
         
         self.decksService.updateDeck(deck)
         

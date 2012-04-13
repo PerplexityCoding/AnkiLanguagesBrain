@@ -20,7 +20,7 @@ class DeckDao:
         
         decks = []
         for row in c:
-            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14])
+            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16])
             if deck.fields:
                 deck.fields = pickle.loads(str(deck.fields))
             if deck.posOptions:
@@ -57,7 +57,7 @@ class DeckDao:
         
         decks = []
         for row in c:
-            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14])
+            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16])
             if deck.fields:
                 deck.fields = pickle.loads(str(deck.fields))
             if deck.posOptions:
@@ -81,11 +81,11 @@ class DeckDao:
             
         t = (deck.name, deck.path, deck.enabled, deck.languageId, deck.expressionField, deckFields,
              deck.matureTreshold, deck.knownTreshold, deck.learnTreshold, deck.totalMorphemes, deck.learntMorphemes, deck.knownMorphemes,
-             deck.matureMorphemes, posOptions)
+             deck.matureMorphemes, posOptions, deck.definitionField, deck.definitionKeyField)
         c.execute("Insert into Decks(deck_name, deck_path, enabled, language_id, expression_field,"
                   "deck_fields, mature_treshold, known_treshold, learn_treshold,"
-                  "total_morphemes, learnt_morphemes, known_morphemes, mature_morphemes, pos_options) "
-                  "Values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", t)
+                  "total_morphemes, learnt_morphemes, known_morphemes, mature_morphemes, pos_options, definition_field, definition_key_field) "
+                  "Values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", t)
         db.commit()
         c.close()
         
@@ -115,10 +115,12 @@ class DeckDao:
         
         t = (deck.name, deck.path, deck.enabled, deck.languageId, deck.expressionField, deckFields,
              deck.matureTreshold, deck.knownTreshold, deck.learnTreshold,
-             deck.totalMorphemes, deck.learntMorphemes, deck.knownMorphemes, deck.matureMorphemes, posOptions, deck.id)
+             deck.totalMorphemes, deck.learntMorphemes, deck.knownMorphemes, deck.matureMorphemes, posOptions,
+             deck.definitionField, deck.definitionKeyField, deck.id)
         c.execute("Update Decks Set deck_name = ?, deck_path = ?, enabled = ?, language_id = ?, "
                   "expression_field = ?, deck_fields = ?, mature_treshold = ?, known_treshold = ?, learn_treshold = ?, "
-                  "total_morphemes = ?, learnt_morphemes = ?, known_morphemes = ?, mature_morphemes = ?, pos_options = ? "
+                  "total_morphemes = ?, learnt_morphemes = ?, known_morphemes = ?, mature_morphemes = ?, pos_options = ?, "
+                  "definition_field = ?, definition_key_field = ? "
                   "Where id = ?", t)
         
         db.commit()
@@ -135,7 +137,7 @@ class DeckDao:
         
         deck = None
         for row in c:
-            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14])
+            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16])
             if deck.fields:
                 deck.fields = pickle.loads(str(deck.fields))
             if deck.posOptions:
@@ -155,7 +157,7 @@ class DeckDao:
         
         deck = None
         for row in c:
-            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14])
+            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16])
             if deck.fields:
                 deck.fields = pickle.loads(str(deck.fields))
             if deck.posOptions:
@@ -176,7 +178,7 @@ class DeckDao:
         
         deck = None
         for row in c:
-            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14])
+            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[6], row[0], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16])
             if deck.fields:
                 deck.fields = pickle.loads(str(deck.fields))
             if deck.posOptions:

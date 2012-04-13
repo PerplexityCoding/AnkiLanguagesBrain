@@ -2,9 +2,12 @@
 DROP TABLE IF EXISTS Languages;
 DROP TABLE IF EXISTS Decks;
 DROP TABLE IF EXISTS Facts;
+DROP TABLE IF EXISTS Definitions;
 DROP TABLE IF EXISTS Cards;
 DROP TABLE IF EXISTS Morphemes;
 DROP TABLE IF EXISTS FactsMorphemes;
+DROP TABLE IF EXISTS DefinitionsMorphemes;
+DROP TABLE IF EXISTS DefinitionsKeysMorphemes;
 DROP TABLE IF EXISTS MorphemeLemmes;
 
 CREATE TABLE Languages (
@@ -33,7 +36,9 @@ CREATE TABLE Decks (
 	learnt_morphemes INTEGER,
 	known_morphemes INTEGER,
 	mature_morphemes INTEGER,
-	pos_options BLOB
+	pos_options BLOB,
+	definition_field TEXT,
+	definition_key_field TEXT
 );
 
 CREATE TABLE Facts (
@@ -47,6 +52,14 @@ CREATE TABLE Facts (
 	status_changed INTEGER(1),
 	score INTEGER,
 	UNIQUE (deck_id, anki_fact_id)
+);
+
+CREATE TABLE Definitions (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	fact_id INTEGER REFERENCES Facts(id),
+	definition_hash TEXT,
+	definition_key_hash TEXT,
+	UNIQUE (fact_id)
 );
 
 CREATE TABLE Cards (
@@ -72,6 +85,18 @@ CREATE TABLE FactsMorphemes (
 	fact_id INTEGER REFERENCES Fact(id),
 	morpheme_id INTEGER REFERENCES Morphemes(id),
 	UNIQUE (fact_id, morpheme_id)
+);
+
+CREATE TABLE DefinitionsMorphemes (
+	definition_id INTEGER REFERENCES Definitions(id),
+	morpheme_id INTEGER REFERENCES Morphemes(id),
+	UNIQUE (definition_id, morpheme_id)
+);
+
+CREATE TABLE DefinitionsKeysMorphemes (
+	definition_id INTEGER REFERENCES Definitions(id),
+	morpheme_id INTEGER REFERENCES Morphemes(id),
+	UNIQUE (definition_id, morpheme_id)
 );
 
 CREATE TABLE MorphemeLemmes (

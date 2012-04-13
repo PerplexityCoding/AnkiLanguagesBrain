@@ -58,7 +58,7 @@ class LearnXMainController:
         log("Store All Facts")
         facts = self.factsService.getAllFacts(deck, ankiFacts)
         
-        log("Determine Modified Facts")
+        log("Determine Modified Facts : " + str(len(facts)))
         
         #XXX: Ne pas faire la vérification la 1er fois, prendre tous les facts !
         # Verifier a ne prendre que les facts modifié
@@ -79,12 +79,15 @@ class LearnXMainController:
         log("computeMorphemesMaturity")
         modifiedCards = self.factsService.getAllCardsChanged(deck, ankiCards)
 
-        # FIXME: uncomment
         if len(modifiedCards) > 0:
             self.morphemesService.computeMorphemesMaturity(modifiedCards)
         
         log("Calculed morpheme Score Start")
         self.morphemesService.computeMorphemesScore(deck.language)
+        
+        log("Analyze Definitions")
+        if deck.definitionField:
+            self.morphemesService.analyseDefinition(deck, deck.language, facts, ankiFacts)
         
         log("decksService.countMorphemes Start")
         self.decksService.countMorphemes(deck)
@@ -220,22 +223,23 @@ class LearnXMainController:
                 ankiFact.tags = canonifyTags(deleteTags(fact.getAllStatusTag(), ankiFact.tags))
                 ankiFact.tags = canonifyTags(addTags(fact.getStatusTag(), ankiFact.tags))
             
-            if fields[Deck.DEFINITION_KEY][1] and fields[Deck.DEFINITION_NAME_KEY][1]:
+            if deck.definitionField:
                 try:
                     ankiFact.tags = canonifyTags(deleteTags(u'LxDefKnown,LxDefMatch', ankiFact.tags))
+                    definition = self.factsService.getDefinition(fact)
                     
-                    definition = ankiFact[fields[Deck.DEFINITION_KEY][0]]
-                    definitionName = ankiFact[fields[Deck.DEFINITION_NAME_KEY][0]]
+                    if definition and definition.definitionHash and int(definition.definitionHash) != 0:
                     
-                    if definition != None and definition != "":
-                    
-                        dictMorphemes = self.morphemesService.getMorphemesFromDB(definition, fact.deck, language)
-                        dictMorphemesScore, defMatureMorphemes, defKnownMorphemes, defLearnMorphemes, defUnknownMorphemes = self.getMorphemesScore(dictMorphemes)
+                        defMorphemes = self.morphemesService.getMorphemesDefinition(definition)
+                        dictMorphemesScore, defMatureMorphemes, defKnownMorphemes, defLearnMorphemes, defUnknownMorphemes = self.getMorphemesScore(defMorphemes)
                         
                         if len(defUnknownMorphemes) == 0:
                             ankiFact.tags = canonifyTags(addTags(u'LxDefKnown', ankiFact.tags))
                         
-                        if len(unknownMorphemes) == 1 and unknownMorphemes[0] == definitionName:
+                        defKeyMorphemes = self.morphemesService.getMorphemesDefinitionKey(definition)
+                        defKeyMorphemesBase = "".join(m.morphLemme.base for m in defKeyMorphemes)
+                        
+                        if len(unknownMorphemes) == 1 and unknownMorphemes[0] in defKeyMorphemesBase:
                             ankiFact.tags = canonifyTags(addTags(u'LxDefMatch', ankiFact.tags))
                         
                         if fields[Deck.DEFINITION_SCORE_KEY][1]:

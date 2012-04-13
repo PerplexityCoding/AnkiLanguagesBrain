@@ -98,6 +98,19 @@ class MorphemeDao:
             return Morpheme(row[1], row[2], row[3], None, row[4], row[0])
         return None
 
+    def findById(self, id):
+        
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        t = (id,)
+        c.execute("Select id, status, status_changed, morph_lemme_id, score From Morphemes Where id = ?", t)
+        
+        row = c.fetchone()
+        if row:
+            return Morpheme(row[1], row[2], row[3], None, row[4], row[0])
+        return None
+
     def updateAll(self, morphemes):
         db = self.learnXdB.openDataBase()
         c = db.cursor()

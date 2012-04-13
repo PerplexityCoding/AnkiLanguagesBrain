@@ -4,6 +4,7 @@ from learnX.morphology.db.dao.FactDao import *
 from learnX.morphology.db.dao.CardDao import *
 from learnX.morphology.db.dao.MorphemeDao import *
 from learnX.morphology.db.dao.DeckDao import *
+from learnX.morphology.db.dao.DefinitionDao import *
 
 from learnX.morphology.db.dto.Morpheme import *
 from learnX.morphology.db.dto.Fact import *
@@ -15,6 +16,7 @@ class FactsService:
         self.card_dao = CardDao()
         self.morpheme_dao = MorphemeDao()
         self.deck_dao = DeckDao()
+        self.definitionDao = DefinitionDao()
         
     def setupServices(self):
         self.decksService = self.serviceLocator.getDecksService()
@@ -27,6 +29,9 @@ class FactsService:
             fact = self.fact_dao.insert(fact)
 
         return fact
+    
+    def getDefinition(self, fact):
+        return self.definitionDao.getDefinition(fact.id)
 
     def getFactById(self, ankiFactId):
         fact = self.fact_dao.findById(ankiFactId)

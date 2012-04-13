@@ -28,6 +28,7 @@ class DeckConfig(QDialog):
         self.setupLanguages()        
         self.setupExpression()
         self.setupFields()
+        self.setupModes()
         self.setupPOSOptions()
         self.setupOptions()
         self.setupButtons()
@@ -124,6 +125,71 @@ class DeckConfig(QDialog):
         
         mainVBox.addWidget(fieldsFrame)
         
+    def enableDefinitionModes(self):
+        self.definitionKeyCombo.setEnabled(self.defintionCB.isChecked())
+        self.definitionKeyCombo.setEnabled(self.defintionCB.isChecked())
+        
+    def setupModes(self): 
+        
+        mainVBox = self.mainVBox
+        deck = self.deck
+        ankiDeck = AnkiHelper.getDeck(deck.path)
+        
+        modesFrame = QGroupBox("(3) Choose Modes")
+        
+        mainVBox.modesBox = modesBox = QVBoxLayout()
+        modesFrame.setLayout(modesBox)
+        
+        definitionBox = QHBoxLayout()
+        
+        self.defintionCB = defintionCB = QCheckBox("Definition Mode") 
+        self.definitionCombo = definitionCombo = QComboBox()
+        if deck.definitionField:
+            defintionCB.setChecked(True)
+        
+        definitionCombo.setEnabled(deck.definitionField != None)
+        definitionCombo.addItem("------------ Choose Definition field ------------")
+        
+        mw.connect(defintionCB, SIGNAL('clicked()'), self.enableDefinitionModes)
+                
+        allFields = list()
+        for model in ankiDeck.models:
+            for fieldModel in model.fieldModels:
+                if fieldModel.name not in allFields:
+                    allFields.append(fieldModel.name)
+        allFields.sort()
+        selectIndex = 0
+        i = 1
+        for fieldName in allFields:
+            definitionCombo.addItem(fieldName)
+            if fieldName == deck.definitionField:
+                selectIndex = i
+            i += 1
+        definitionCombo.setCurrentIndex(selectIndex)
+        
+        self.definitionKeyCombo = definitionKeyCombo = QComboBox()
+        definitionKeyCombo.setEnabled(deck.definitionField != None)
+        definitionKeyCombo.addItem("---------- Choose Definition Key field ----------")
+        
+        selectIndex = 0
+        i = 1
+        for fieldName in allFields:
+            definitionKeyCombo.addItem(fieldName)
+            if fieldName == deck.definitionKeyField:
+                selectIndex = i
+            i += 1
+        definitionKeyCombo.setCurrentIndex(selectIndex)
+        
+        definitionBox.addWidget(defintionCB)
+        definitionBox.addWidget(definitionCombo)
+        definitionBox.addWidget(definitionKeyCombo)
+        
+        modesBox.addLayout(definitionBox)
+        
+        mainVBox.addWidget(modesFrame)
+        
+        ankiDeck.close()
+        
     def createField(self, fieldName, fieldDefaultValue, fieldEnabled):
         
         mmiLayout = QHBoxLayout()
@@ -169,7 +235,7 @@ class DeckConfig(QDialog):
         deck  = self.deck
         language = deck.language
         
-        optionsGroup = QGroupBox("(4) Choose Part Of Speech Options")
+        optionsGroup = QGroupBox("(5) Choose Part Of Speech Options")
         
         mainVBox.posOptionsGrid = posOptionsBox = QHBoxLayout()
         optionsGroup.setLayout(posOptionsBox)
@@ -207,7 +273,7 @@ class DeckConfig(QDialog):
         
         mainVBox = self.mainVBox
         
-        optionsGroup = QGroupBox("(5) Choose Maturity Options")
+        optionsGroup = QGroupBox("(6) Choose Maturity Options")
         
         mainVBox.fieldsGrid = matureGrid = QGridLayout()
         optionsGroup.setLayout(matureGrid)
