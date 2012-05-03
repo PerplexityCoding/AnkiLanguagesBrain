@@ -73,6 +73,7 @@ class StanfordPosTagger():
     def filterExpression(self, expression):
         expression = expression.replace('-', ' ')
         expression = expression.replace("'", "' ")
+        expression = expression.replace("’", "' ")
         expression = expression.replace("<br>", "; ")
         expression = expression.replace("</br>", "; ")
         expression = expression.replace("<br />", "; ")
@@ -136,8 +137,6 @@ class StanfordPosTagger():
                 pos = self.filterPos(termArray[1].strip(), deck, language)
                 if pos == None:
                     continue
-                
-                
                 
                 morphemes.append(MorphemeLemme(base, None, pos, "", ""))
             else:

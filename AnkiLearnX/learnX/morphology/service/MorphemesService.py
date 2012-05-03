@@ -140,7 +140,6 @@ class MorphemesService:
             morphLemmes = self.extractMorphemes(fact.expression, deck, language)
             factMorphLemmes = list()
             for morphLemme in morphLemmes:
-                
                 if morphLemme in allUniqueMorphLemmes:
                     morphLemme = allUniqueMorphLemmes[morphLemme]
                 else:
@@ -151,6 +150,8 @@ class MorphemesService:
         log("Lemmatize Morphemes : " + str(len(allUniqueMorphLemmes)))
         if language.lemmatizer:
             language.lemmatizer.lemmatizeMorphemes(self.getList(allUniqueMorphLemmes))
+        
+        self.filterMorphLemmes(self.getList(allUniqueMorphLemmes))
         
         log("Compute Facts <-> Morphemes")
         allMorphemes = dict()

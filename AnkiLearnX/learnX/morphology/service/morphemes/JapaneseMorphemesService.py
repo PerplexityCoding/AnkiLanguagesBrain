@@ -81,3 +81,8 @@ class JapaneseMorphemesService(MorphemesService):
         self.morphemeDao.updateAll(modifiedMorphemes)
         
         return modifiedMorphemes
+    
+    def filterMorphLemmes(self, morphLemmesList):
+        # Do nothing
+        return morphLemmesList
+        

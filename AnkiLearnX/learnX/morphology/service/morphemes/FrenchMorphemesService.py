@@ -49,3 +49,8 @@ class FrenchMorphemesService(MorphemesService):
         self.morphemeDao.updateAll(modifiedMorphemes)
         
         return modifiedMorphemes
+    
+    def filterMorphLemmes(self, morphLemmesList):
+        for morphLemme in morphLemmesList:
+            morphLemme.pos = ""
+        return morphLemmesList

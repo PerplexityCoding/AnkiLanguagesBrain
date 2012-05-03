@@ -129,7 +129,7 @@ class FactsService:
     def computeFactsMaturity(self, language):
         
         decksId = self.decksService.listDecksIdByLanguage(language)
-        facts = self.fact_dao.findByChangedMorphemes(decksId)
+        facts = self.fact_dao.selectAll(decksId, None) #FIXME: Buggggg with other decks !! replace with all facts for now ?
         for fact in facts:
             morphemes = self.morpheme_dao.getMorphemesFromFact(fact)
         
@@ -183,7 +183,7 @@ class FactsService:
             
         self.fact_dao.updateAll(facts) 
 
-        self.morpheme_dao.clearMorphemesStatus()
+        #self.morpheme_dao.clearMorphemesStatus()
 
         return facts
 

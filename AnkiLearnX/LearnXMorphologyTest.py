@@ -11,6 +11,7 @@ from learnX.morphology.service.FactsService import *
 from learnX.morphology.db.LearnXdB import *
 from learnX.utils.Log import *
 from learnX.morphology.db.dao.MorphemeLemmeDao import *
+from learnX.morphology.db.dto.Deck import *
 
 from learnX.morphology.service.FactsService import *
 
@@ -29,6 +30,23 @@ languagesService = serviceLocator.getLanguagesService()
 #print(tagger.posTag("Bonjour ca va ?"))
 #print(tagger.posTag("Bonjour ca va et toi ?"))
 
+decks = serviceLocator.getDecksService().listDecks()
+#for deck in decks:
+#    deck.fields = {
+#        Deck.LEARNX_SCORE_KEY : ("LearnXScore", False, True),
+#        Deck.VOCAB_SCORE_KEY : ("VocabScore", False, True),
+#        Deck.UNKNOWNS_KEY : ("UnknownMorphemes", False, False),
+#        Deck.LEARNTS_KEY : ("LearntMorphemes", False, False),
+#        Deck.KNOWNS_KEY : ("KnownMorphemes", False, False),
+#        Deck.MATURES_KEY : ("MatureMorphemes", False, False),
+#        Deck.COPY_UNKNOWN_1_TO_KEY : ("VocabExpression", False, False),
+#        Deck.COPY_MATURE_TO_KEY : ("SentenceExpression", False, False),
+#        Deck.DEFINITION_NAME_KEY : ("DefinitionKey", False, False),
+#        Deck.DEFINITION_KEY : ("Definition", False, False),
+#        Deck.DEFINITION_SCORE_KEY : ("DefinitionScore", False, False)
+#    }
+#    serviceLocator.getDecksService().updateDeck(deck)
+    
 
 #languagesService.countMorphemes(None)
 
