@@ -5,7 +5,7 @@ from PyQt4.QtGui import *
 
 from learnX.utils.Log import *
 
-from ankiqt import mw
+from aqt import mw
 
 class LanguageConfig(QDialog):
     def __init__(self, language, parent=None):

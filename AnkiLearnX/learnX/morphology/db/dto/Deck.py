@@ -14,13 +14,12 @@ class Deck:
 
     DEFINITION_SCORE_KEY = "DefinitionScore"
     
-    def __init__(self, name, path, enabled, languageId, expressionField,
+    def __init__(self, ankiDeckId, enabled, languageId, expressionField,
                  fields, id = -1, matureTreshold = 21, knownTreshold = 7, learnTreshold = 3, 
                  total = 0, learnt = 0, known = 0, mature = 0, posOptions = None, definitionField = None,
                  definitionKeyField = None):
         self.id = id
-        self.name = str(name)
-        self.path = str(path)
+        self.ankiDeckId = ankiDeckId
         self.enabled = enabled
         self.languageId = languageId
         self.language = None
@@ -66,13 +65,12 @@ class Deck:
     def __eq__(self, o):
         if not isinstance(o, Deck): return False
         if self.id != o.id: return False
-        if self.name != o.name: return False
-        if self.path != o.path: return False
+        if self.ankiDeckId != o.ankiDeckId: return False
         return True
 
     def __hash__(self):
-        return hash((self.id, self.name, self.path))
+        return hash((self.id, self.ankiDeckId))
 
     def __repr__(self):
-        return u'\t'.join([self.name, self.path, str(self.enabled), str(self.languageId), self.expressionField,
+        return u'\t'.join([str(self.ankiDeckId), str(self.enabled), str(self.languageId), self.expressionField,
                            str(self.fields), str(self.totalMorphemes), str(self.knownMorphemes), str(self.matureMorphemes)])

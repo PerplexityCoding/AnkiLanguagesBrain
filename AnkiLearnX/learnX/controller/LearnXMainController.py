@@ -7,11 +7,15 @@ from learnX.morphology.db.dto.Card import *
 from learnX.utils.AnkiHelper import *
 from learnX.utils.Log import *
 
-from anki.utils import deleteTags, addTags, canonifyTags, stripHTML
+#from anki.utils import deleteTags, addTags, canonifyTags, stripHTML
 
 class LearnXMainController:
     def __init__(self, interface):
         self.interface = interface
+        
+        self.col = interface.col
+        self.deckManager = interface.deckManager
+        
         
         self.servicesLocator = ServicesLocator.getInstance()
         self.decksService = self.servicesLocator.getDecksService()
@@ -48,37 +52,36 @@ class LearnXMainController:
         
         self.morphemesService = self.servicesLocator.getMorphemesService(deck.language)
         
-        realDeck = AnkiHelper.getDeck(deck.path)
+        realDeck = self.deckManager.get(deck.ankiDeckId)
         log(realDeck)
         log("Get All Facts / Cards")
-        self.ankiFacts = ankiFacts = AnkiHelper.getFacts(realDeck)
-        self.ankiCards = ankiCards = AnkiHelper.getCards(realDeck)
+        self.ankiCards = ankiCards = self.deckManager.cids(realDeck["id"])
         i = 0
         
-        log("Store All Facts")
-        facts = self.factsService.getAllFacts(deck, ankiFacts)
+        log("Store All Facts : " + str(len(ankiCards)) + " cards")
+        facts = self.factsService.getAllFacts(self.col, deck, ankiCards)
         
         log("Determine Modified Facts : " + str(len(facts)))
         
         #XXX: Ne pas faire la vérification la 1er fois, prendre tous les facts !
         # Verifier a ne prendre que les facts modifié
+        # Pas besoin pour anki 2 ?
         modifiedFacts = []
         for fact in facts:
-            if fact.ankiLastModified == fact.lastUpdated:
+            if fact.ankiFact.mod == fact.lastUpdated:
                 continue
-            expression = ankiFacts[fact.ankiFactIndex][deck.expressionField]
-            if fact.expressionHash != None and int(fact.expressionHash) == hash(expression) :
+            if fact.expressionHash != None and Utils.fieldChecksum(fact.ankiFact.__getitem__(deck.expressionField)) == fact.expressionHash:
                 continue
-            fact.expression = expression
             modifiedFacts.append(fact)
         
         log("Analyze Morphemes on " + str(len(modifiedFacts)) + " facts")
         if len(modifiedFacts) > 0:
             self.morphemesService.analyzeMorphemes(modifiedFacts, deck, deck.language)
 
-        log("computeMorphemesMaturity")
-        modifiedCards = self.factsService.getAllCardsChanged(deck, ankiCards)
-
+        log("getAllCardsChanged")
+        modifiedCards = self.factsService.getAllCardsChanged(self.col, deck, ankiCards)
+        
+        log("computeMorphemesMaturity: " + str(len(modifiedCards)) + " cards")
         if len(modifiedCards) > 0:
             self.morphemesService.computeMorphemesMaturity(modifiedCards)
         
@@ -86,8 +89,8 @@ class LearnXMainController:
         self.morphemesService.computeMorphemesScore(deck.language)
         
         log("Analyze Definitions")
-        if deck.definitionField:
-            self.morphemesService.analyseDefinition(deck, deck.language, facts, ankiFacts)
+        #if deck.definitionField:
+        #    self.morphemesService.analyseDefinition(deck, deck.language, facts, ankiFacts)
         
         log("decksService.countMorphemes Start")
         self.decksService.countMorphemes(deck)
@@ -99,57 +102,24 @@ class LearnXMainController:
         self.factsService.computeFactsMaturity(deck.language)
         
         log("Saves Decks Start")
-        realDeck.save()
-        realDeck.close()
+        self.col.save()
         log("Saves Decks Stop")
         
     def processFacts(self, language):
         
-        log("self.setupProcessFacts()")
-        self.setupProcessFacts(language)
+        #log("self.setupProcessFacts()")
+        #self.setupProcessFacts(language)
 
         log("self.markFacts()")     
         self.markFacts(language)
         
-        log("self.changeDueCards()")     
-        self.changeDueCards(language)
-        
-        log("self.saveDecks(ankiFactsId)")     
-        self.closeDecks(language)
+        #log("self.changeDueCards()")     
+        #self.changeDueCards(language)
         
         self.factsService.clearAllFactsStatus(language)
         
-    def setupProcessFacts(self, language):
-        self.decks = decks = dict()
-        self.ankiDecks = ankiDecks = dict()
-        self.ankiDeckFacts = ankiDeckFacts = dict()
-        self.ankiDeckCards = ankiDeckCards = dict()
-        #self.modifiedDecksPath = modifiedDecksPath = self.decksService.getDecksPathChanged()
-        decksList = self.decksService.listDecks()
-        modifiedDecksPath = []
-        for deck in decksList:
-            log(deck.language)
-            if deck.enabled and deck.language == language:
-                modifiedDecksPath.append(deck.path)
-        self.modifiedDecksPath = modifiedDecksPath
-        
-        # Init Mapping AnkiCards -> Cards and AnkiFacts -> Fact
-        
-        for modifiedDeckPath in modifiedDecksPath:
-            ankiDecks[modifiedDeckPath] = realDeck = AnkiHelper.getDeck(modifiedDeckPath)
-            decks[modifiedDeckPath] = self.decksService.getDeckByPath(modifiedDeckPath)
-            
-            ankiFacts = AnkiHelper.getFacts(realDeck)
-            ankiFactsDict = dict()
-            for ankiFact in ankiFacts:
-                ankiFactsDict[ankiFact.id] = ankiFact
-            ankiDeckFacts[modifiedDeckPath] = ankiFactsDict
-                
-            ankiCards = AnkiHelper.getCards(realDeck)
-            ankiCardsDict = dict()
-            for ankiCard in ankiCards:
-                ankiCardsDict[ankiCard.id] = ankiCard    
-            ankiDeckCards[modifiedDeckPath] = ankiCardsDict
+        self.col.save()
+
     
     def getMorphemesScore(self, morphemes):
         matureMorphemes = []
@@ -177,10 +147,10 @@ class LearnXMainController:
         #i = 0
         for fact in facts:
             try:
-                ankiFact = self.ankiDeckFacts[fact.deck.path][fact.ankiFactId]
+                ankiFact = self.col.getNote(fact.ankiFactId)
             except Exception: continue
             
-            deck = self.decks[fact.deck.path]
+            deck = fact.deck
             fields = deck.fields
             
             morphemes = self.factsService.getMorphemes(fact)
@@ -219,10 +189,10 @@ class LearnXMainController:
                     if fields[Deck.COPY_MATURE_TO_KEY][1]:
                         try: ankiFact[fields[Deck.COPY_MATURE_TO_KEY][0]] = u'%s' % ankiFact[deck.expressionField]
                         except KeyError: pass
-                    
-                ankiFact.tags = canonifyTags(deleteTags(fact.getAllStatusTag(), ankiFact.tags))
-                ankiFact.tags = canonifyTags(addTags(fact.getStatusTag(), ankiFact.tags))
-            
+                
+                self.col.tags.remFromStr(fact.getAllStatusTag(), self.col.tags.join(ankiFact.tags))
+                self.col.tags.addToStr(fact.getAllStatusTag(), self.col.tags.join(ankiFact.tags))
+                                                       
             if deck.definitionField:
                 try:
                     ankiFact.tags = canonifyTags(deleteTags(u'LxDefKnown,LxDefMatch', ankiFact.tags))
@@ -249,8 +219,6 @@ class LearnXMainController:
                 except KeyError: pass
             
             ankiFactsId.append(ankiFact.id)
-            
-        self.saveDecks(ankiFactsId, language)
     
     def changeDueCards(self, language):
         
@@ -259,9 +227,9 @@ class LearnXMainController:
         
         for card in cards:
             try:
-                ankiCard = self.ankiDeckCards[card.deckPath][card.ankiCardId]
+                ankiCard = self.col.getCard(card.ankiCardId)
             except Exception: continue
-            deck = self.ankiDecks[card.deckPath]
+            deck = self.ankiDecks[card.ankiDeckId]
             
             try:
                 if deck.cardIsNew(ankiCard):
@@ -271,12 +239,10 @@ class LearnXMainController:
             except KeyError:
                 log('Error during sorting')
 
-        self.saveDecks(None, language)
-    
     # Mark Duplicate
     def markDuplicateFacts(self, deck):
         
-        ankiDeck = AnkiHelper.getDeck(deck.path)
+        ankiDeck = self.deckManager.get(deck.ankiDeckId)
         
         cards = self.factsService.getAllCardsOrderByScore(deck = deck)
         ankiFactsId = list()
@@ -310,26 +276,6 @@ class LearnXMainController:
 
         log(ankiFactsId)
         ankiDeck.updateFactTags(ankiFactsId)
-        ankiDeck.save()
-        ankiDeck.close()
-    
-    def saveDecks(self, ankiFactsId, language):
-        log("Save Decks !")
-        for modifiedDeckPath in self.modifiedDecksPath:
-            ankiDeck = self.ankiDecks[modifiedDeckPath]
-            
-            if ankiFactsId:
-                ankiDeck.updateFactTags(ankiFactsId)
-                ankiDeck.updateCardQACacheFromIds(ankiFactsId, type="facts")
-            
-            ankiDeck.setModified()
-            ankiDeck.save()
-    
-    def closeDecks(self, language):
+        self.col.save()
 
-        for modifiedDeckPath in self.modifiedDecksPath:
-            ankiDeck = self.ankiDecks[modifiedDeckPath]
-            
-            ankiDeck.save()
-            ankiDeck.close()
-    
+

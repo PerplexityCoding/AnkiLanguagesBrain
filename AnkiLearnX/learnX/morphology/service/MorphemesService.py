@@ -10,6 +10,7 @@ from learnX.morphology.db.dto.Card import *
 from learnX.morphology.db.dto.Morpheme import *
 
 from learnX.utils.Log import *
+from learnX.utils.Utils import *
 from learnX.utils.KanjiHelper import *
 
 from learnX.morphology.lemmatizer.cst.CstLemmatizer import *
@@ -31,7 +32,7 @@ class MorphemesService:
         self.factsService = self.serviceLocator.getFactsService()
 
     def extractMorphemes(self, expression, deck, language):
-        
+        log((expression,))
         morphemes = language.posTagger.posMorphemes(expression, deck, language)
         return morphemes
     
@@ -137,7 +138,7 @@ class MorphemesService:
         #log("Extract Morphemes")
         allUniqueMorphLemmes = dict()
         for fact in facts:
-            morphLemmes = self.extractMorphemes(fact.expression, deck, language)
+            morphLemmes = self.extractMorphemes(fact.ankiFact.__getitem__(deck.expressionField), deck, language)
             factMorphLemmes = list()
             for morphLemme in morphLemmes:
                 if morphLemme in allUniqueMorphLemmes:
@@ -166,9 +167,9 @@ class MorphemesService:
                 if morpheme not in factUniqueMorphemes:
                     factUniqueMorphemes[morpheme] = morpheme
             fact.morphemes = self.getList(factUniqueMorphemes)
-            fact.expressionHash = hash(fact.expression)
-            fact.lastUpdated = fact.ankiLastModified
-            fact.expression = None
+            fact.expressionHash = Utils.fieldChecksum(fact.ankiFact.__getitem__(deck.expressionField))
+            fact.lastUpdated = fact.ankiFact.mod
+            fact.ankiFact = None
         
         allMorphemesList = self.getList(allMorphemes)
         log("All Unique Morphemes (Lemmatized): " + str(len(allMorphemesList)))

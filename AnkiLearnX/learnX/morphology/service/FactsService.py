@@ -39,21 +39,20 @@ class FactsService:
         
         return fact
     
-    def getAllFacts(self, deck, ankiFacts):
+    def getAllFacts(self, col, deck, ankiCards):
         
         facts = []
         factsToInsert = []
-        i = 0
-        for ankiFact in ankiFacts:
+        for ankiCard in ankiCards:
+            ankiCard = col.getCard(ankiCard)
+            ankiFact = ankiCard.note()
             fact = self.fact_dao.findByAnkiFactId(deck, ankiFact.id)
             if fact == None:
                 fact = Fact(deck.id, ankiFact.id, None, None, False, Fact.STATUS_NONE, False, 0)
                 fact.deck = deck
                 factsToInsert.append(fact)
-            fact.ankiFactIndex = i
-            fact.ankiLastModified = ankiFact.modified
+            fact.ankiFact = ankiFact
             facts.append(fact)
-            i += 1
 
         if len(factsToInsert) > 0:
             self.fact_dao.insertAll(factsToInsert)
@@ -69,24 +68,25 @@ class FactsService:
         return self.card_dao.getCardsOrderByScore(decksId)
     
     def calcCardStatus(self, deck, ankiCard):
-        if ankiCard.interval < deck.learnTreshold: 
+        if ankiCard.ivl < deck.learnTreshold: 
             return Card.STATUS_NONE
-        if ankiCard.interval < deck.knownTreshold:
+        if ankiCard.ivl < deck.knownTreshold:
             return Card.STATUS_LEARNT
-        if ankiCard.interval < deck.matureTreshold:
+        if ankiCard.ivl < deck.matureTreshold:
             return Card.STATUS_KNOWN
         return Card.STATUS_MATURE
         
-    def getAllCardsChanged(self, deck, ankiCards):
+    def getAllCardsChanged(self, col, deck, ankiCards):
         
         changedCards = []
         cardsToInsert = []
         cardsToUpdate = []
         for ankiCard in ankiCards:
+            ankiCard = col.getCard(ankiCard)
             card = self.card_dao.findById(deck, ankiCard.id)
             status = self.calcCardStatus(deck, ankiCard)
             if card == None:
-                fact = self.getFact(deck, ankiCard.fact.id)
+                fact = self.getFact(deck, ankiCard.note().id)
                 card = Card(deck.id, fact.id, ankiCard.id, status, True)
                 card.deck = deck
                 card.fact = fact
@@ -98,7 +98,7 @@ class FactsService:
                     changedCards.append(card)
                 card.status = status               
                 cardsToUpdate.append(card)  
-            card.ankiLastModified = ankiCard.modified
+            card.ankiLastModified = ankiCard.mod
             
         if len(cardsToInsert) > 0:
             self.card_dao.insertAll(cardsToInsert)

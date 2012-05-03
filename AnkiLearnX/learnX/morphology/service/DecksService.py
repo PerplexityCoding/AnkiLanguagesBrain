@@ -36,29 +36,21 @@ class DecksService:
             decksId.append(deck.id)
         return decksId
         
-    def getDecksPathChanged(self):
-        return self.deckDao.listDeckPathWithFactsModified()
+    #def getAnkiDecksIdChanged(self):
+    #    return self.deckDao.listAnkiDeckIdWithFactsModified()
     
-    def createDeck(self, deckName, deckPath):
+    def createDeck(self, ankiDeckId):
         
-        deck = Deck(deckName, deckPath, False, None, None, None)
+        deck = Deck(ankiDeckId, False, None, None, None)
         deck = self.deckDao.insert(deck)
         
         return deck
     
-    def getDeck(self, deckName, deckPath):
+    def getDeck(self, ankiDeckId):
         
-        deck = self.deckDao.findByName(deckName, deckPath)
+        deck = self.deckDao.findByAnkiDeckId(ankiDeckId)
         if deck == None:
-            deck = self.createDeck(deckName, deckPath)
-        
-        if deck.languageId != None:
-            deck.language = self.languagesService.getLanguageById(deck.languageId)
-        
-        return deck
-    
-    def getDeckByPath(self, deckPath):
-        deck = self.deckDao.findByPath(deckPath)
+            deck = self.createDeck(ankiDeckId)
         
         if deck.languageId != None:
             deck.language = self.languagesService.getLanguageById(deck.languageId)

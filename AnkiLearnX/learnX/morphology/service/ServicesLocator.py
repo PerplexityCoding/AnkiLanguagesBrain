@@ -1,5 +1,4 @@
 
-from learnX.morphology.service.Mecab import *
 from learnX.morphology.service.FactsService import *
 from learnX.morphology.service.DecksService import *
 from learnX.morphology.service.LanguagesService import *

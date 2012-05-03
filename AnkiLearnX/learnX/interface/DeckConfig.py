@@ -5,11 +5,11 @@ from PyQt4.QtGui import *
 
 from learnX.utils.Log import *
 from learnX.controller.DeckConfigController import *
-from learnX.utils.AnkiHelper import *
 from learnX.morphology.service.ServicesLocator import *
 
-from ankiqt import mw
-from anki.models import FieldModel
+from aqt import mw
+#from anki.models import FieldModel
+import anki.stdmodels
 
 class DeckConfig(QDialog):
     def __init__(self, deck, parent=None):
@@ -20,6 +20,9 @@ class DeckConfig(QDialog):
         self.setWindowTitle('Configure Deck Option')
         self.resize(600, 0)
         
+        self.deckManager = parent.deckManager
+        self.modelManager = parent.modelManager
+
         self.mainVBox = mainVBox = QVBoxLayout(self)
         self.controller = DeckConfigController(self)
         
@@ -27,8 +30,8 @@ class DeckConfig(QDialog):
         
         self.setupLanguages()        
         self.setupExpression()
-        self.setupFields()
-        self.setupModes()
+        #self.setupFields()
+        #self.setupModes()
         self.setupPOSOptions()
         self.setupOptions()
         self.setupButtons()
@@ -42,13 +45,13 @@ class DeckConfig(QDialog):
         
         self.languageCombo = languageCombo = QComboBox()
         
-        languagesNameAvailable = self.parent.languagesService.getAvailableLanguageName()
+        languagesNameAvailable = self.languagesService.getAvailableLanguageName()
         #log(languagesName)
 
         currentIndex = 0
         languageCombo.addItem("------------------------")
         for languageName in languagesNameAvailable:
-            languageCode = self.parent.languagesService.getCodeFromLanguageName(languageName)
+            languageCode = self.languagesService.getCodeFromLanguageName(languageName)
             log(languageCode)
             log(deck.language)
             if deck.language != None and deck.language.nameId == languageCode:
@@ -64,7 +67,7 @@ class DeckConfig(QDialog):
     def setupExpression(self):
         mainVBox = self.mainVBox
         deck = self.deck
-        ankiDeck = AnkiHelper.getDeck(deck.path)
+        ankiDeck = self.deckManager.get(deck.ankiDeckId)
         
         expressionFrame = QGroupBox("(2) Choose Expression")
         
@@ -76,10 +79,10 @@ class DeckConfig(QDialog):
         expressionCombo.addItem("------------------------")
                 
         allFields = list()
-        for model in ankiDeck.models:
-            for fieldModel in model.fieldModels:
-                if fieldModel.name not in allFields:
-                    allFields.append(fieldModel.name)
+        for model in self.modelManager.all():
+            for fieldName in self.modelManager.fieldNames(model):
+                if fieldName not in allFields:
+                    allFields.append(fieldName)
         allFields.sort()
         selectIndex = 0
         i = 1
@@ -96,8 +99,6 @@ class DeckConfig(QDialog):
         expressionFrame.setLayout(layout)
         
         mainVBox.addWidget(expressionFrame)
-        
-        ankiDeck.close()
         
     def setupFields(self):
         
@@ -133,7 +134,7 @@ class DeckConfig(QDialog):
         
         mainVBox = self.mainVBox
         deck = self.deck
-        ankiDeck = AnkiHelper.getDeck(deck.path)
+        ankiDeck = self.deckManager.get(deck.ankiDeckId)
         
         modesFrame = QGroupBox("(3) Choose Modes")
         

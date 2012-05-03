@@ -1,6 +1,7 @@
-from ankiqt import mw
+from aqt import mw
 
 class Globals:
     
-    LearnXPath = 'E:\\Project\\Git\\AnkiLearnX\\AnkiLearnX'
-    # LearnXPath = mw.pluginsFolder()
+    #LearnXPath = 'E:\\Project\\Git\\AnkiLearnX\\AnkiLearnX'
+    LearnXPath = mw.pm.addonFolder()
+    

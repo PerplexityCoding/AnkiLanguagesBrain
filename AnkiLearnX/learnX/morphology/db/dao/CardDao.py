@@ -59,7 +59,7 @@ class CardDao:
         
         c = db.cursor()
         
-        sql = "Select c.id, c.deck_id, c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.deck_path "
+        sql = "Select c.id, c.deck_id, c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.anki_deck_id "
         sql += "From Decks d, Cards c, Facts f "
         sql += "Where c.fact_id = f.id and c.deck_id = d.id "
         
@@ -85,7 +85,7 @@ class CardDao:
         cards = []
         for row in c:
             card = Card(row[1],row[2],row[3],row[5],row[6],row[0])
-            card.deckPath = row[7]
+            card.ankiDeckId = row[7]
             cards.append(card)
 
         c.close()
@@ -115,7 +115,7 @@ class CardDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        sql = "select c.id, c.deck_id,  c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.deck_path "
+        sql = "select c.id, c.deck_id,  c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.anki_deck_id "
         sql += "from Cards c, Decks d where c.status = 0 and c.deck_id = d.id "
         
         t = []
@@ -138,7 +138,7 @@ class CardDao:
         cards = []
         for row in c:
             card = Card(row[1],row[2],row[3],row[5],row[6],row[0])
-            card.deckPath = row[7]
+            card.ankiDeckId = row[7]
             cards.append(card)
         
         return cards

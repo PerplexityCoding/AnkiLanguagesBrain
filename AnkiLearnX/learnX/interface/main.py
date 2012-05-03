@@ -1,6 +1,6 @@
 ﻿#-*- coding: utf-8 -*-
 
-from ankiqt import mw
+from aqt import mw
 
 from learnX.utils.Log import *
 from learnX.morphology.service.ServicesLocator import *
@@ -16,7 +16,9 @@ from learnX.controller.LanguageConfigController import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from anki.deck import DeckStorage
+from anki import Collection
+
+#from anki.deck import DeckStorage
 
 import datetime, os
 
@@ -31,6 +33,10 @@ class LearnX(QDialog):
         self.decksService = self.servicesLocator.getDecksService()
         self.languagesService = self.servicesLocator.getLanguagesService()
         self.morphemesService = self.servicesLocator.getMorphemesService()
+        
+        self.col = self.mw.col
+        self.deckManager = self.mw.col.decks
+        self.modelManager = self.mw.col.models
         
         self.mainController = LearnXMainController(self)
         self.morphemesController = MorphemesBrowserController()
@@ -115,7 +121,7 @@ class LearnX(QDialog):
             self.configDeck(deck)
     
     def configDeck(self, deck):
-
+        log("Config deck")
         self.deckConfig = DeckConfig(deck, self)
         self.deckConfig.show()
 
@@ -127,11 +133,11 @@ class LearnX(QDialog):
         #k = 0
         #self.confButtons = []
         self.checkBoxes = []
-        for deckSummary in self.mw.browserDecks:
+        for ankiDeck in self.deckManager.all():
             
-            deck = self.decksService.getDeck(deckSummary["name"], deckSummary["path"])
+            deck = self.decksService.getDeck(ankiDeck["id"])
             
-            checkBox = QCheckBox(deck.name)
+            checkBox = QCheckBox(ankiDeck["name"])
             checkBox.setChecked(deck.enabled)
             self.checkBoxes.append(checkBox)
             
@@ -257,13 +263,15 @@ class LearnX(QDialog):
         mainVBox.addWidget(toolBarFrame)
     
 def openWindows():
-    mw.mainWin.learnX = LearnX(mw)
-    mw.mainWin.learnX.show()
+    mw.toolbar.learnX = LearnX(mw)
+    mw.toolbar.learnX.show()
 
 def init():
-    mw.mainWin.learnXAction = QAction('LearnX', mw)
-    mw.connect(mw.mainWin.learnXAction, SIGNAL('triggered()'), openWindows)
-    mw.mainWin.toolBar.addAction(mw.mainWin.learnXAction)
+    a = QAction(mw)
+    a.setText("Morphemes")
+    mw.form.menuTools.addAction(a)
+    mw.connect(a, SIGNAL("triggered()"), openWindows)
 
 log("OK")
-mw.addHook('init', init)
+#mw.addHook('init', init)
+init()

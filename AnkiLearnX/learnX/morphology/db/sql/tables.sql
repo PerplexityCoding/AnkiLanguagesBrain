@@ -23,8 +23,7 @@ CREATE TABLE Languages (
 
 CREATE TABLE Decks (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	deck_name TEXT UNIQUE NOT NULL,
-	deck_path TEXT NOT NULL,
+	anki_deck_id INTEGER NOT NULL,
 	enabled INTEGER(1) NOT NULL,
 	language_id INTEGER REFERENCES Languages(id),
 	expression_field TEXT NOT NULL,

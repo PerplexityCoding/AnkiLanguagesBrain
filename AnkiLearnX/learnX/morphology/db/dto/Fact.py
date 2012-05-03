@@ -47,7 +47,7 @@ class Fact:
         return u'LxNone'
     
     def getAllStatusTag(self):
-        return u'LxNone,LxRev,LxRevEasy,LxRevMedium,LxRevHard,LxLearn,LxLearnEasy,LxLearnMedium,LxLearnHard,LxTooDifficult'
+        return u'LxNone LxRev LxRevEasy LxRevMedium LxRevHard LxLearn LxLearnEasy LxLearnMedium LxLearnHard LxTooDifficult'
 
     def __repr__(self):
         return u'\t'.join([str(self.id), str(self.deckId), str(self.ankiFactId),str(self.lastUpdated),

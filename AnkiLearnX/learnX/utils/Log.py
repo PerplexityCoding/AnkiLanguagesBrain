@@ -1,6 +1,6 @@
 ﻿#-*- coding: utf-8 -*-
 
-#from ankiqt import mw, forms, ui
+#from aqt import mw, forms, ui
 import datetime, os
 import codecs
 from learnX.utils.Globals import *
