@@ -68,7 +68,7 @@ class FactsService:
         return self.card_dao.getCardsOrderByScore(decksId)
     
     def calcCardStatus(self, deck, ankiCard):
-        if ankiCard.ivl < deck.learnTreshold: 
+        if ankiCard.ivl == 0:
             return Card.STATUS_NONE
         if ankiCard.ivl < deck.knownTreshold:
             return Card.STATUS_LEARNT

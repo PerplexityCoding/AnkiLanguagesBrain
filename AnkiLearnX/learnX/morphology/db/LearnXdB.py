@@ -22,7 +22,9 @@ class LearnXdB:
         learnXPath = Globals.LearnXPath
         
         self.dbPath = os.path.join(learnXPathDb, 'collection.morphemes.db')
-        self.sqlPath = os.path.join(learnXPath, 'learnX', 'morphology', 'db', 'sql', 'tables.sql')        
+        self.sqlPath = os.path.join(learnXPath, 'learnX', 'morphology', 'db', 'sql', 'tables.sql')
+        if os.path.exists(self.dbPath) == False:
+            self.createDataBase()
         
         self.conn = sqlite3.connect(self.dbPath)
         

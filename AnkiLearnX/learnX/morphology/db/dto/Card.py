@@ -18,6 +18,7 @@ class Card:
         self.deck = None
         self.ankiCard = None
         self.morphemes = None
+        self.score = 0
 
     def __repr__(self):
         return u'\t'.join([str(self.id), str(self.deckId), str(self.factId), str(self.ankiCardId),

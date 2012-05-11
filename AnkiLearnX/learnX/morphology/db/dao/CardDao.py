@@ -2,6 +2,7 @@ from learnX.morphology.db.LearnXdB import *
 from learnX.morphology.db.dto.Card import *
 
 from learnX.utils.Log import *
+from learnX.utils.Utils import *
 
 class CardDao:
     def __init__(self):
@@ -59,33 +60,18 @@ class CardDao:
         
         c = db.cursor()
         
-        sql = "Select c.id, c.deck_id, c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.anki_deck_id "
+        sql = "Select c.id, c.deck_id, c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.anki_deck_id, f.score "
         sql += "From Decks d, Cards c, Facts f "
-        sql += "Where c.fact_id = f.id and c.deck_id = d.id "
-        
-        t = []
-        if decksId != None and len(decksId) > 0:
-            sql += "and ("
-            i = 1
-            for deckId in decksId:
-                t.append(deckId)
-                sql += "d.id = ?"
-                if i < len(decksId):
-                    sql += " or "
-                i += 1
-            sql += ")"
-        
+        sql += "Where c.fact_id = f.id and c.deck_id = d.id and c.status = 0 and d.id in %s" % Utils.ids2str(decksId)
         sql += " order by f.score asc"
         
-        if len(t) > 0:
-            c.execute(sql, t)
-        else:
-            c.execute(sql)
+        c.execute(sql)
         
         cards = []
         for row in c:
             card = Card(row[1],row[2],row[3],row[5],row[6],row[0])
             card.ankiDeckId = row[7]
+            card.score = int(row[8])
             cards.append(card)
 
         c.close()

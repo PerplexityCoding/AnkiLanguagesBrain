@@ -7,6 +7,8 @@ from learnX.morphology.db.dto.Card import *
 from learnX.utils.AnkiHelper import *
 from learnX.utils.Log import *
 
+from anki.utils import intTime, joinFields, ids2str
+
 #from anki.utils import deleteTags, addTags, canonifyTags, stripHTML
 
 class LearnXMainController:
@@ -113,8 +115,8 @@ class LearnXMainController:
         log("self.markFacts()")     
         self.markFacts(language)
         
-        #log("self.changeDueCards()")     
-        #self.changeDueCards(language)
+        log("self.changeDueCards()")     
+        self.changeDueCards(language)
         
         self.factsService.clearAllFactsStatus(language)
         
@@ -145,10 +147,14 @@ class LearnXMainController:
         ankiFactsId = list()
         
         #i = 0
+        modifiedFields = []
         for fact in facts:
             try:
                 ankiFact = self.col.getNote(fact.ankiFactId)
             except Exception: continue
+            
+            origFlds = []
+            origFlds.extend(ankiFact.fields)
             
             deck = fact.deck
             fields = deck.fields
@@ -156,39 +162,39 @@ class LearnXMainController:
             morphemes = self.factsService.getMorphemes(fact)
             morphemesScore, matureMorphemes, knownMorphemes, learnMorphemes, unknownMorphemes = self.getMorphemesScore(morphemes)
             
-            if fact.statusChanged == True: # FIXME: sure ?
-                if fields[Deck.LEARNX_SCORE_KEY][1]:
-                    try: ankiFact[fields[Deck.LEARNX_SCORE_KEY][0]] = u'%d' % int(fact.score)
-                    except KeyError: pass
+            if True: # FIXME: sure ?
+                #if fields[Deck.LEARNX_SCORE_KEY][1]:
+                try: ankiFact[fields[Deck.LEARNX_SCORE_KEY][0]] = u'%d' % int(fact.score)
+                except KeyError: pass
                 
-                if fields[Deck.VOCAB_SCORE_KEY][1]:
-                    try: ankiFact[fields[Deck.VOCAB_SCORE_KEY][0]] = u'%d' % int(morphemesScore)
-                    except KeyError: pass
+                #if fields[Deck.VOCAB_SCORE_KEY][1]:
+                try: ankiFact[fields[Deck.VOCAB_SCORE_KEY][0]] = u'%d' % int(morphemesScore)
+                except KeyError: pass
         
-                if fields[Deck.UNKNOWNS_KEY][1]:
-                    try: ankiFact[fields[Deck.UNKNOWNS_KEY][0]] = u','.join(u for u in unknownMorphemes)
-                    except KeyError: pass
+                #if fields[Deck.UNKNOWNS_KEY][1]:
+                try: ankiFact[fields[Deck.UNKNOWNS_KEY][0]] = u','.join(u for u in unknownMorphemes)
+                except KeyError: pass
         
-                if fields[Deck.LEARNTS_KEY][1]:
-                    try: ankiFact[fields[Deck.LEARNTS_KEY][0]] = u','.join(u for u in learnMorphemes)
-                    except KeyError: pass
+                #if fields[Deck.LEARNTS_KEY][1]:
+                try: ankiFact[fields[Deck.LEARNTS_KEY][0]] = u','.join(u for u in learnMorphemes)
+                except KeyError: pass
                     
-                if fields[Deck.KNOWNS_KEY][1]:
-                    try: ankiFact[fields[Deck.KNOWNS_KEY][0]] = u','.join(u for u in knownMorphemes)
-                    except KeyError: pass
+                #if fields[Deck.KNOWNS_KEY][1]:
+                try: ankiFact[fields[Deck.KNOWNS_KEY][0]] = u','.join(u for u in knownMorphemes)
+                except KeyError: pass
                     
-                if fields[Deck.MATURES_KEY][1]:
-                    try: ankiFact[fields[Deck.MATURES_KEY][0]] = u','.join(u for u in matureMorphemes)
-                    except KeyError: pass
+                #if fields[Deck.MATURES_KEY][1]:
+                try: ankiFact[fields[Deck.MATURES_KEY][0]] = u','.join(u for u in matureMorphemes)
+                except KeyError: pass
     
                 if len(unknownMorphemes) == 1:
-                    if fields[Deck.COPY_UNKNOWN_1_TO_KEY][1]:
-                        try: ankiFact[fields[Deck.COPY_UNKNOWN_1_TO_KEY][0]] = u','.join(u for u in unknownMorphemes)
-                        except KeyError: pass
+                    #if fields[Deck.COPY_UNKNOWN_1_TO_KEY][1]:
+                    try: ankiFact[fields[Deck.COPY_UNKNOWN_1_TO_KEY][0]] = u','.join(u for u in unknownMorphemes)
+                    except KeyError: pass
                 elif len(unknownMorphemes) == 0:
-                    if fields[Deck.COPY_MATURE_TO_KEY][1]:
-                        try: ankiFact[fields[Deck.COPY_MATURE_TO_KEY][0]] = u'%s' % ankiFact[deck.expressionField]
-                        except KeyError: pass
+                    #if fields[Deck.COPY_MATURE_TO_KEY][1]:
+                    try: ankiFact[fields[Deck.COPY_MATURE_TO_KEY][0]] = u'%s' % ankiFact[deck.expressionField]
+                    except KeyError: pass
                 
                 self.col.tags.remFromStr(fact.getAllStatusTag(), self.col.tags.join(ankiFact.tags))
                 self.col.tags.addToStr(fact.getAllStatusTag(), self.col.tags.join(ankiFact.tags))
@@ -218,26 +224,26 @@ class LearnXMainController:
                   
                 except KeyError: pass
             
+            flds = joinFields(ankiFact.fields)
+            if flds != joinFields(origFlds):
+                modifiedFields.append(dict(nid=ankiFact.id,flds=flds,u=self.col.usn(),m=intTime()))
             ankiFactsId.append(ankiFact.id)
+    
+        self.col.db.executemany("update notes set flds=:flds,mod=:m,usn=:u where id=:nid", modifiedFields)
+        self.col.updateFieldCache(ankiFactsId)
+    
     
     def changeDueCards(self, language):
         
+        now = intTime()
         cards = self.factsService.getAllCardsOrderByScore(language = language)
-        newtime = 472777200.0 # 25 Decembre 1984 :)
-        
+
+        d = []
         for card in cards:
-            try:
-                ankiCard = self.col.getCard(card.ankiCardId)
-            except Exception: continue
-            deck = self.ankiDecks[card.ankiDeckId]
-            
-            try:
-                if deck.cardIsNew(ankiCard):
-                    ankiCard.due = newtime
-                    ankiCard.combinedDue = newtime
-                    newtime += 3600
-            except KeyError:
-                log('Error during sorting')
+            if card.score != 0:
+                due = card.score
+                d.append(dict(now=now, due=due, usn=self.col.usn(), cid=card.ankiCardId))
+        self.col.db.executemany("update cards set due=:due,mod=:now,usn=:usn where id = :cid", d)
 
     # Mark Duplicate
     def markDuplicateFacts(self, deck):
