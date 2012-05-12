@@ -87,12 +87,15 @@ class FactsService:
             status = self.calcCardStatus(deck, ankiCard)
             if card == None:
                 fact = self.getFact(deck, ankiCard.note().id)
-                card = Card(deck.id, fact.id, ankiCard.id, status, True)
+                card = Card(deck.id, fact.id, ankiCard.id, ankiCard.ivl, status, True)
                 card.deck = deck
                 card.fact = fact
                 cardsToInsert.append(card)
                 changedCards.append(card)
             else:
+                if card.interval != ankiCard.ivl:
+                    card.interval = ankiCard.ivl
+                    card.statusChanged = True
                 if status != card.status:
                     card.statusChanged = True
                     changedCards.append(card)
