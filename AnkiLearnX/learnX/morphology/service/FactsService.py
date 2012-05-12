@@ -1,18 +1,18 @@
 #-*- coding: utf-8 -*-
 
-from learnX.morphology.db.dao.FactDao import *
+from learnX.morphology.db.dao.NoteDao import *
 from learnX.morphology.db.dao.CardDao import *
 from learnX.morphology.db.dao.MorphemeDao import *
 from learnX.morphology.db.dao.DeckDao import *
 from learnX.morphology.db.dao.DefinitionDao import *
 
 from learnX.morphology.db.dto.Morpheme import *
-from learnX.morphology.db.dto.Fact import *
+from learnX.morphology.db.dto.Note import *
 
-class FactsService:
+class NotesService:
     def __init__(self, serviceLocator):
         self.serviceLocator = serviceLocator
-        self.fact_dao = FactDao()
+        self.note_dao = NoteDao()
         self.card_dao = CardDao()
         self.morpheme_dao = MorphemeDao()
         self.deck_dao = DeckDao()
@@ -21,43 +21,43 @@ class FactsService:
     def setupServices(self):
         self.decksService = self.serviceLocator.getDecksService()
         
-    def getFact(self, deck, ankiFactId):
-        fact = self.fact_dao.findByAnkiFactId(deck, ankiFactId)
-        if fact == None:
-            fact = Fact(deck.id, ankiFactId, None, None, False, Fact.STATUS_NONE, False, 0)
-            fact.deck = deck
-            fact = self.fact_dao.insert(fact)
+    def getNote(self, deck, ankiNoteId):
+        note = self.note_dao.findByAnkiNoteId(deck, ankiNoteId)
+        if note == None:
+            note = Note(deck.id, ankiNoteId, None, None, False, Note.STATUS_NONE, False, 0)
+            note.deck = deck
+            note = self.note_dao.insert(note)
 
-        return fact
+        return note
     
-    def getDefinition(self, fact):
-        return self.definitionDao.getDefinition(fact.id)
+    def getDefinition(self, note):
+        return self.definitionDao.getDefinition(note.id)
 
-    def getFactById(self, ankiFactId):
-        fact = self.fact_dao.findById(ankiFactId)
-        fact.deck = self.deck_dao.findById(fact.deckId)
+    def getNoteById(self, ankiNoteId):
+        note = self.note_dao.findById(ankiNoteId)
+        note.deck = self.deck_dao.findById(note.deckId)
         
-        return fact
+        return note
     
-    def getAllFacts(self, col, deck, ankiCards):
+    def getAllNotes(self, col, deck, ankiCards):
         
-        facts = []
-        factsToInsert = []
+        notes = []
+        notesToInsert = []
         for ankiCard in ankiCards:
             ankiCard = col.getCard(ankiCard)
-            ankiFact = ankiCard.note()
-            fact = self.fact_dao.findByAnkiFactId(deck, ankiFact.id)
-            if fact == None:
-                fact = Fact(deck.id, ankiFact.id, None, None, False, Fact.STATUS_NONE, False, 0)
-                fact.deck = deck
-                factsToInsert.append(fact)
-            fact.ankiFact = ankiFact
-            facts.append(fact)
+            ankiNote = ankiCard.note()
+            note = self.note_dao.findByAnkiNoteId(deck, ankiNote.id)
+            if note == None:
+                note = Note(deck.id, ankiNote.id, None, None, False, Note.STATUS_NONE, False, 0)
+                note.deck = deck
+                notesToInsert.append(note)
+            note.ankiNote = ankiNote
+            notes.append(note)
 
-        if len(factsToInsert) > 0:
-            self.fact_dao.insertAll(factsToInsert)
+        if len(notesToInsert) > 0:
+            self.note_dao.insertAll(notesToInsert)
         
-        return facts
+        return notes
     
     def getAllCardsOrderByScore(self, deck = None, language = None):
         if language:
@@ -86,10 +86,10 @@ class FactsService:
             card = self.card_dao.findById(deck, ankiCard.id)
             status = self.calcCardStatus(deck, ankiCard)
             if card == None:
-                fact = self.getFact(deck, ankiCard.note().id)
-                card = Card(deck.id, fact.id, ankiCard.id, ankiCard.ivl, status, True)
+                note = self.getNote(deck, ankiCard.note().id)
+                card = Card(deck.id, note.id, ankiCard.id, ankiCard.ivl, status, True)
                 card.deck = deck
-                card.fact = fact
+                card.note = note
                 cardsToInsert.append(card)
                 changedCards.append(card)
             else:
@@ -111,30 +111,30 @@ class FactsService:
         
         return changedCards
     
-    def getAllFactsChanged(self, language):
-        return self.getAllFactsByLanguage(language, 1)
+    def getAllNotesChanged(self, language):
+        return self.getAllNotesByLanguage(language, 1)
     
-    def getAllFactsByLanguage(self, language, statusChanged = None):
+    def getAllNotesByLanguage(self, language, statusChanged = None):
         
         decksId = self.decksService.listDecksIdByLanguage(language)
-        facts = self.fact_dao.selectAll(decksId, statusChanged) 
+        notes = self.note_dao.selectAll(decksId, statusChanged) 
         decks = dict()
-        for fact in facts:
+        for note in notes:
             deck = None
             try:
-                deck = decks[fact.deckId]
+                deck = decks[note.deckId]
             except KeyError as e:
-                deck = self.deck_dao.findById(fact.deckId)
-                decks[fact.deckId] = deck
-            fact.deck = deck
-        return facts
+                deck = self.deck_dao.findById(note.deckId)
+                decks[note.deckId] = deck
+            note.deck = deck
+        return notes
     
-    def computeFactsMaturity(self, language):
+    def computeNotesMaturity(self, language):
         
         decksId = self.decksService.listDecksIdByLanguage(language)
-        facts = self.fact_dao.selectAll(decksId, None) #FIXME: Buggggg with other decks !! replace with all facts for now ?
-        for fact in facts:
-            morphemes = self.morpheme_dao.getMorphemesFromFact(fact)
+        notes = self.note_dao.selectAll(decksId, None) #FIXME: Buggggg with other decks !! replace with all notes for now ?
+        for note in notes:
+            morphemes = self.morpheme_dao.getMorphemesFromNote(note)
         
             matureMorphemes = []
             knownMorphemes = []
@@ -157,52 +157,52 @@ class FactsService:
             learnt = len(learnMorphemes)
             unknown = len(unknownMorphemes)
             
-            status = fact.status
+            status = note.status
             if unknown == 0:
                 if learnt == 0 and known == 0:
-                    status = Fact.STATUS_REVIEW_EASY
+                    status = Note.STATUS_REVIEW_EASY
                 elif learnt > 0:
-                    status = Fact.STATUS_REVIEW_HARD
+                    status = Note.STATUS_REVIEW_HARD
                 else :
-                    status = Fact.STATUS_REVIEW_MEDIUM
+                    status = Note.STATUS_REVIEW_MEDIUM
             elif unknown == 1:
                 if learnt == 0 and known == 0:
-                    status = Fact.STATUS_LEARN_EASY
+                    status = Note.STATUS_LEARN_EASY
                 elif learnt > 0:
-                    status = Fact.STATUS_LEARN_HARD
+                    status = Note.STATUS_LEARN_HARD
                 else :
-                    status = Fact.STATUS_LEARN_MEDIUM
+                    status = Note.STATUS_LEARN_MEDIUM
             else:
-                status = Fact.STATUS_TOO_DIFFICULT
+                status = Note.STATUS_TOO_DIFFICULT
 
-            if status != fact.status:
-                fact.status = status
-                fact.statusChanged = True
+            if status != note.status:
+                note.status = status
+                note.statusChanged = True
             
             score = (mature * 1 + known * 2 + learnt * 6 + unknown * 30) * 300 + morphemesScore
-            if score != fact.score:
-                fact.score = score
-                fact.statusChanged = True
+            if score != note.score:
+                note.score = score
+                note.statusChanged = True
             
-        self.fact_dao.updateAll(facts) 
+        self.note_dao.updateAll(notes) 
 
         #self.morpheme_dao.clearMorphemesStatus()
 
-        return facts
+        return notes
 
-    def changeMorphemes(self, fact, morphemes):
-        self.fact_dao.insertFactMorphemes(fact, morphemes)
+    def changeMorphemes(self, note, morphemes):
+        self.note_dao.insertNoteMorphemes(note, morphemes)
         
-        fact.morphemes = morphemes
-        return fact
+        note.morphemes = morphemes
+        return note
     
-    def getMorphemes(self, fact):
-        return self.morpheme_dao.getMorphemesFromFact(fact, True)
+    def getMorphemes(self, note):
+        return self.morpheme_dao.getMorphemesFromNote(note, True)
 
     def getAllNewCards(self, language):
         decksId = self.decksService.listDecksIdByLanguage(language)
         return self.card_dao.getAllNewCards(decksId)
 
-    def clearAllFactsStatus(self, language):
+    def clearAllNotesStatus(self, language):
         decksId = self.decksService.listDecksIdByLanguage(language)
-        self.fact_dao.clearAllFactsStatus(decksId)
+        self.note_dao.clearAllNotesStatus(decksId)
