@@ -22,14 +22,14 @@ class LearnXMainController:
         self.servicesLocator = ServicesLocator.getInstance()
         self.decksService = self.servicesLocator.getDecksService()
         self.languagesService = self.servicesLocator.getLanguagesService()
-        self.factsService = self.servicesLocator.getFactsService()
+        self.notesService = self.servicesLocator.getNotesService()
         
     def analyze(self, deck):
         self.analyzeDeck(deck)
         
-        log("Process Facts Start")
-        self.processFacts(deck.language)
-        log("Process Facts Stop")
+        log("Process Notes Start")
+        self.processNotes(deck.language)
+        log("Process Notes Stop")
         
         self.interface.refreshAll()
         
@@ -42,9 +42,9 @@ class LearnXMainController:
         for deck in decks:
             self.analyzeDeck(deck)
         
-        log("Process Facts Start")
-        self.processFacts(deck.language)
-        log("Process Facts Stop")
+        log("Process Notes Start")
+        self.processNotes(deck.language)
+        log("Process Notes Stop")
         
         self.interface.refreshAll()
         
@@ -56,32 +56,32 @@ class LearnXMainController:
         
         realDeck = self.deckManager.get(deck.ankiDeckId)
         log(realDeck)
-        log("Get All Facts / Cards")
+        log("Get All Notes / Cards")
         self.ankiCards = ankiCards = self.deckManager.cids(realDeck["id"])
         i = 0
         
-        log("Store All Facts : " + str(len(ankiCards)) + " cards")
-        facts = self.factsService.getAllFacts(self.col, deck, ankiCards)
+        log("Store All Notes : " + str(len(ankiCards)) + " cards")
+        notes = self.notesService.getAllNotes(self.col, deck, ankiCards)
         
-        log("Determine Modified Facts : " + str(len(facts)))
+        log("Determine Modified Notes : " + str(len(notes)))
         
-        #XXX: Ne pas faire la vérification la 1er fois, prendre tous les facts !
-        # Verifier a ne prendre que les facts modifié
+        #XXX: Ne pas faire la vérification la 1er fois, prendre tous les notes !
+        # Verifier a ne prendre que les notes modifié
         # Pas besoin pour anki 2 ?
-        modifiedFacts = []
-        for fact in facts:
-            if fact.ankiFact.mod == fact.lastUpdated:
+        modifiedNotes = []
+        for note in notes:
+            if note.ankiNote.mod == note.lastUpdated:
                 continue
-            if fact.expressionHash != None and Utils.fieldChecksum(fact.ankiFact.__getitem__(deck.expressionField)) == fact.expressionHash:
+            if note.expressionHash != None and Utils.fieldChecksum(note.ankiNote.__getitem__(deck.expressionField)) == note.expressionHash:
                 continue
-            modifiedFacts.append(fact)
+            modifiedNotes.append(note)
         
-        log("Analyze Morphemes on " + str(len(modifiedFacts)) + " facts")
-        if len(modifiedFacts) > 0:
-            self.morphemesService.analyzeMorphemes(modifiedFacts, deck, deck.language)
+        log("Analyze Morphemes on " + str(len(modifiedNotes)) + " notes")
+        if len(modifiedNotes) > 0:
+            self.morphemesService.analyzeMorphemes(modifiedNotes, deck, deck.language)
 
         log("getAllCardsChanged")
-        modifiedCards = self.factsService.getAllCardsChanged(self.col, deck, ankiCards)
+        modifiedCards = self.notesService.getAllCardsChanged(self.col, deck, ankiCards)
         
         log("computeMorphemesMaturity: " + str(len(modifiedCards)) + " cards")
         if len(modifiedCards) > 0:
@@ -92,7 +92,7 @@ class LearnXMainController:
         
         log("Analyze Definitions")
         #if deck.definitionField:
-        #    self.morphemesService.analyseDefinition(deck, deck.language, facts, ankiFacts)
+        #    self.morphemesService.analyseDefinition(deck, deck.language, notes, ankiNotes)
         
         log("decksService.countMorphemes Start")
         self.decksService.countMorphemes(deck)
@@ -100,25 +100,25 @@ class LearnXMainController:
         log("decksService.countMorphemes Start")
         self.languagesService.countMorphemes(deck.language)
         
-        log("factsService.computeFactsMaturity Start")
-        self.factsService.computeFactsMaturity(deck.language)
+        log("notesService.computeNotesMaturity Start")
+        self.notesService.computeNotesMaturity(deck.language)
         
         log("Saves Decks Start")
         self.col.save()
         log("Saves Decks Stop")
         
-    def processFacts(self, language):
+    def processNotes(self, language):
         
-        #log("self.setupProcessFacts()")
-        #self.setupProcessFacts(language)
+        #log("self.setupProcessNotes()")
+        #self.setupProcessNotes(language)
 
-        log("self.markFacts()")     
-        self.markFacts(language)
+        log("self.markNotes()")     
+        self.markNotes(language)
         
         log("self.changeDueCards()")     
         self.changeDueCards(language)
         
-        self.factsService.clearAllFactsStatus(language)
+        self.notesService.clearAllNotesStatus(language)
         
         self.col.save()
 
@@ -142,67 +142,67 @@ class LearnXMainController:
             morphemesScore += morpheme.score
         return morphemesScore, matureMorphemes, knownMorphemes, learnMorphemes, unknownMorphemes
     
-    def markFacts(self, language):
-        facts = self.factsService.getAllFactsByLanguage(language)
-        ankiFactsId = list()
+    def markNotes(self, language):
+        notes = self.notesService.getAllNotesByLanguage(language)
+        ankiNotesId = list()
         
         #i = 0
         modifiedFields = []
-        for fact in facts:
+        for note in notes:
             try:
-                ankiFact = self.col.getNote(fact.ankiFactId)
+                ankiNote = self.col.getNote(note.ankiNoteId)
             except Exception: continue
             
             origFlds = []
-            origFlds.extend(ankiFact.fields)
+            origFlds.extend(ankiNote.fields)
             
-            deck = fact.deck
+            deck = note.deck
             fields = deck.fields
             
-            morphemes = self.factsService.getMorphemes(fact)
+            morphemes = self.notesService.getMorphemes(note)
             morphemesScore, matureMorphemes, knownMorphemes, learnMorphemes, unknownMorphemes = self.getMorphemesScore(morphemes)
             
             if True: # FIXME: sure ?
                 #if fields[Deck.LEARNX_SCORE_KEY][1]:
-                try: ankiFact[fields[Deck.LEARNX_SCORE_KEY][0]] = u'%d' % int(fact.score)
+                try: ankiNote[fields[Deck.LEARNX_SCORE_KEY][0]] = u'%d' % int(note.score)
                 except KeyError: pass
                 
                 #if fields[Deck.VOCAB_SCORE_KEY][1]:
-                try: ankiFact[fields[Deck.VOCAB_SCORE_KEY][0]] = u'%d' % int(morphemesScore)
+                try: ankiNote[fields[Deck.VOCAB_SCORE_KEY][0]] = u'%d' % int(morphemesScore)
                 except KeyError: pass
         
                 #if fields[Deck.UNKNOWNS_KEY][1]:
-                try: ankiFact[fields[Deck.UNKNOWNS_KEY][0]] = u','.join(u for u in unknownMorphemes)
+                try: ankiNote[fields[Deck.UNKNOWNS_KEY][0]] = u','.join(u for u in unknownMorphemes)
                 except KeyError: pass
         
                 #if fields[Deck.LEARNTS_KEY][1]:
-                try: ankiFact[fields[Deck.LEARNTS_KEY][0]] = u','.join(u for u in learnMorphemes)
+                try: ankiNote[fields[Deck.LEARNTS_KEY][0]] = u','.join(u for u in learnMorphemes)
                 except KeyError: pass
                     
                 #if fields[Deck.KNOWNS_KEY][1]:
-                try: ankiFact[fields[Deck.KNOWNS_KEY][0]] = u','.join(u for u in knownMorphemes)
+                try: ankiNote[fields[Deck.KNOWNS_KEY][0]] = u','.join(u for u in knownMorphemes)
                 except KeyError: pass
                     
                 #if fields[Deck.MATURES_KEY][1]:
-                try: ankiFact[fields[Deck.MATURES_KEY][0]] = u','.join(u for u in matureMorphemes)
+                try: ankiNote[fields[Deck.MATURES_KEY][0]] = u','.join(u for u in matureMorphemes)
                 except KeyError: pass
     
                 if len(unknownMorphemes) == 1:
                     #if fields[Deck.COPY_UNKNOWN_1_TO_KEY][1]:
-                    try: ankiFact[fields[Deck.COPY_UNKNOWN_1_TO_KEY][0]] = u','.join(u for u in unknownMorphemes)
+                    try: ankiNote[fields[Deck.COPY_UNKNOWN_1_TO_KEY][0]] = u','.join(u for u in unknownMorphemes)
                     except KeyError: pass
                 elif len(unknownMorphemes) == 0:
                     #if fields[Deck.COPY_MATURE_TO_KEY][1]:
-                    try: ankiFact[fields[Deck.COPY_MATURE_TO_KEY][0]] = u'%s' % ankiFact[deck.expressionField]
+                    try: ankiNote[fields[Deck.COPY_MATURE_TO_KEY][0]] = u'%s' % ankiNote[deck.expressionField]
                     except KeyError: pass
                 
-                self.col.tags.remFromStr(fact.getAllStatusTag(), self.col.tags.join(ankiFact.tags))
-                self.col.tags.addToStr(fact.getAllStatusTag(), self.col.tags.join(ankiFact.tags))
+                self.col.tags.remFromStr(note.getAllStatusTag(), self.col.tags.join(ankiNote.tags))
+                self.col.tags.addToStr(note.getAllStatusTag(), self.col.tags.join(ankiNote.tags))
                                                        
             if deck.definitionField:
                 try:
-                    ankiFact.tags = canonifyTags(deleteTags(u'LxDefKnown,LxDefMatch', ankiFact.tags))
-                    definition = self.factsService.getDefinition(fact)
+                    ankiNote.tags = canonifyTags(deleteTags(u'LxDefKnown,LxDefMatch', ankiNote.tags))
+                    definition = self.notesService.getDefinition(note)
                     
                     if definition and definition.definitionHash and int(definition.definitionHash) != 0:
                     
@@ -210,33 +210,32 @@ class LearnXMainController:
                         dictMorphemesScore, defMatureMorphemes, defKnownMorphemes, defLearnMorphemes, defUnknownMorphemes = self.getMorphemesScore(defMorphemes)
                         
                         if len(defUnknownMorphemes) == 0:
-                            ankiFact.tags = canonifyTags(addTags(u'LxDefKnown', ankiFact.tags))
+                            ankiNote.tags = canonifyTags(addTags(u'LxDefKnown', ankiNote.tags))
                         
                         defKeyMorphemes = self.morphemesService.getMorphemesDefinitionKey(definition)
                         defKeyMorphemesBase = "".join(m.morphLemme.base for m in defKeyMorphemes)
                         
                         if len(unknownMorphemes) == 1 and unknownMorphemes[0] in defKeyMorphemesBase:
-                            ankiFact.tags = canonifyTags(addTags(u'LxDefMatch', ankiFact.tags))
+                            ankiNote.tags = canonifyTags(addTags(u'LxDefMatch', ankiNote.tags))
                         
                         if fields[Deck.DEFINITION_SCORE_KEY][1]:
-                            try: ankiFact[fields[Deck.DEFINITION_SCORE_KEY][0]] = u'%d' % int(dictMorphemesScore)
+                            try: ankiNote[fields[Deck.DEFINITION_SCORE_KEY][0]] = u'%d' % int(dictMorphemesScore)
                             except KeyError: pass
                   
                 except KeyError: pass
             
-            flds = joinFields(ankiFact.fields)
+            flds = joinFields(ankiNote.fields)
             if flds != joinFields(origFlds):
-                modifiedFields.append(dict(nid=ankiFact.id,flds=flds,u=self.col.usn(),m=intTime()))
-            ankiFactsId.append(ankiFact.id)
+                modifiedFields.append(dict(nid=ankiNote.id,flds=flds,u=self.col.usn(),m=intTime()))
+            ankiNotesId.append(ankiNote.id)
     
         self.col.db.executemany("update notes set flds=:flds,mod=:m,usn=:u where id=:nid", modifiedFields)
-        self.col.updateFieldCache(ankiFactsId)
-    
+        self.col.updateFieldCache(ankiNotesId)
     
     def changeDueCards(self, language):
         
         now = intTime()
-        cards = self.factsService.getAllCardsOrderByScore(language = language)
+        cards = self.notesService.getAllCardsOrderByScore(language = language)
 
         d = []
         for card in cards:
@@ -246,42 +245,42 @@ class LearnXMainController:
         self.col.db.executemany("update cards set due=:due,mod=:now,usn=:usn where id = :cid", d)
 
     # Mark Duplicate
-    def markDuplicateFacts(self, deck):
+    def markDuplicateNotes(self, deck):
         
         ankiDeck = self.deckManager.get(deck.ankiDeckId)
         
-        cards = self.factsService.getAllCardsOrderByScore(deck = deck)
-        ankiFactsId = list()
+        cards = self.notesService.getAllCardsOrderByScore(deck = deck)
+        ankiNotesId = list()
     
-        ankiFacts = AnkiHelper.getFacts(ankiDeck)
-        ankiFactsDict = dict()
-        for ankiFact in ankiFacts:
-            ankiFactsDict[ankiFact.id] = ankiFact
+        ankiNotes = AnkiHelper.getNotes(ankiDeck)
+        ankiNotesDict = dict()
+        for ankiNote in ankiNotes:
+            ankiNotesDict[ankiNote.id] = ankiNote
     
         uniqueMorphemes = dict()
         #i = 0
         for card in cards:
-            fact = self.factsService.getFactById(card.factId)
-            morphemes = self.factsService.getMorphemes(fact)
+            note = self.notesService.getNoteById(card.noteId)
+            morphemes = self.notesService.getMorphemes(note)
             
-            factHasNewMorphemes = False
+            noteHasNewMorphemes = False
             for morpheme in morphemes:
                 if morpheme.id not in uniqueMorphemes:
                     uniqueMorphemes[morpheme.id] = morpheme.id
-                    factHasNewMorphemes = True
+                    noteHasNewMorphemes = True
             
             try:
-                ankiFact = ankiFactsDict[fact.ankiFactId]
+                ankiNote = ankiNotesDict[note.ankiNoteId]
             except Exception:continue
             
-            ankiFact.tags = canonifyTags(deleteTags(u'LxDuplicate', ankiFact.tags))
-            if factHasNewMorphemes == False:
-                log(str(fact) + " is Duplicate")
-                ankiFact.tags = canonifyTags(addTags(u'LxDuplicate', ankiFact.tags))
-                ankiFactsId.append(int(ankiFact.id))
+            ankiNote.tags = canonifyTags(deleteTags(u'LxDuplicate', ankiNote.tags))
+            if noteHasNewMorphemes == False:
+                log(str(note) + " is Duplicate")
+                ankiNote.tags = canonifyTags(addTags(u'LxDuplicate', ankiNote.tags))
+                ankiNotesId.append(int(ankiNote.id))
 
-        log(ankiFactsId)
-        ankiDeck.updateFactTags(ankiFactsId)
+        log(ankiNotesId)
+        ankiDeck.updateNoteTags(ankiNotesId)
         self.col.save()
 
 

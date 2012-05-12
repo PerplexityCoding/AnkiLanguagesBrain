@@ -124,8 +124,8 @@ class LanguageDao:
                 i += 1
             decksIdsSql += ")"
         
-        sql = "Select count (distinct fm.morpheme_id) From FactsMorphemes fm, Facts f "
-        sql += "Where f.id = fm.fact_id " + decksIdsSql
+        sql = "Select count (distinct fm.morpheme_id) From NotesMorphemes fm, Notes f "
+        sql += "Where f.id = fm.note_id " + decksIdsSql
         log(sql)
         c = db.cursor()
         t = list()
@@ -138,8 +138,8 @@ class LanguageDao:
             language.totalMorphemes = row[0]
         c.close
         
-        sql = "Select count (distinct fm.morpheme_id) From FactsMorphemes fm, Facts f, Morphemes m "
-        sql += "Where f.id = fm.fact_id and fm.morpheme_id = m.id and m.status = ? " + decksIdsSql
+        sql = "Select count (distinct fm.morpheme_id) From NotesMorphemes fm, Notes f, Morphemes m "
+        sql += "Where f.id = fm.note_id and fm.morpheme_id = m.id and m.status = ? " + decksIdsSql
         
         c = db.cursor()
         t = list()

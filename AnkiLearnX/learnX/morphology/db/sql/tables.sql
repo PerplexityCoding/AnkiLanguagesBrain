@@ -1,13 +1,10 @@
 
 DROP TABLE IF EXISTS Languages;
 DROP TABLE IF EXISTS Decks;
-DROP TABLE IF EXISTS Facts;
+DROP TABLE IF EXISTS Notes;
 DROP TABLE IF EXISTS Definitions;
 DROP TABLE IF EXISTS Cards;
 DROP TABLE IF EXISTS Morphemes;
-DROP TABLE IF EXISTS FactsMorphemes;
-DROP TABLE IF EXISTS DefinitionsMorphemes;
-DROP TABLE IF EXISTS DefinitionsKeysMorphemes;
 DROP TABLE IF EXISTS MorphemeLemmes;
 
 CREATE TABLE Languages (
@@ -40,70 +37,55 @@ CREATE TABLE Decks (
 	definition_key_field TEXT
 );
 
-CREATE TABLE Facts (
+CREATE TABLE Notes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	deck_id INTEGER REFERENCES Deck(id),
-	anki_fact_id INTEGER NOT NULL,
+	deck_id INTEGER REFERENCES Decks(id),
+	anki_note_id INTEGER NOT NULL,
 	last_updated INTEGER,
 	expression_hash TEXT,
 	morphemes_changed INTEGER(1),
 	status INTEGER(4),
 	status_changed INTEGER(1),
 	score INTEGER,
-	UNIQUE (deck_id, anki_fact_id)
+	UNIQUE (deck_id, anki_note_id)
 );
 
 CREATE TABLE Definitions (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	fact_id INTEGER REFERENCES Facts(id),
+	note_id INTEGER REFERENCES Notes(id),
 	definition_hash TEXT,
 	definition_key_hash TEXT,
-	UNIQUE (fact_id)
+	UNIQUE (note_id)
 );
 
 CREATE TABLE Cards (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	deck_id INTEGER REFERENCES Deck(id),
-	fact_id INTEGER REFERENCES Facts(id),
+	deck_id INTEGER REFERENCES Decks(id),
+	note_id INTEGER REFERENCES Notes(id),
 	anki_card_id INTEGER NOT NULL,
+	interval INTEGER,
 	status INTEGER(4),
 	status_changed INTEGER(1),
 	last_updated INTEGER,
-	UNIQUE (deck_id, anki_card_id, fact_id)
+	UNIQUE (deck_id, anki_card_id, note_id)
 );
 
 CREATE TABLE Morphemes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	status INTEGER(4) NOT NULL,
-	status_changed INTEGER(1),
-	morph_lemme_id INTEGER NOT NULL,
-	score INTEGER
-);
-
-CREATE TABLE FactsMorphemes (
-	fact_id INTEGER REFERENCES Fact(id),
-	morpheme_id INTEGER REFERENCES Morphemes(id),
-	UNIQUE (fact_id, morpheme_id)
-);
-
-CREATE TABLE DefinitionsMorphemes (
-	definition_id INTEGER REFERENCES Definitions(id),
-	morpheme_id INTEGER REFERENCES Morphemes(id),
-	UNIQUE (definition_id, morpheme_id)
-);
-
-CREATE TABLE DefinitionsKeysMorphemes (
-	definition_id INTEGER REFERENCES Definitions(id),
-	morpheme_id INTEGER REFERENCES Morphemes(id),
-	UNIQUE (definition_id, morpheme_id)
+	note_id INTEGER REFERENCES Note(id),
+	max_interval INTEGER,
+	score INTEGER,
+	changed INTEGER(1),
+	morph_lemme_id NUMERIC NOT NULL
 );
 
 CREATE TABLE MorphemeLemmes (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id NUMERIC PRIMARY KEY,
 	pos TEXT NOT NULL,
 	sub_pos TEXT,
 	read TEXT NOT NULL,
-	base TEXT NOT NULL
+	base TEXT NOT NULL,
+	score INTEGER
 );
 
 PRAGMA encoding = "UTF-8";

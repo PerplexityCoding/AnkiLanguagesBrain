@@ -21,7 +21,7 @@ class MorphemeDao:
             if morpheme.morphLemme:
                 morpheme.morphLemmeId = morpheme.morphLemme.id
             t = (morpheme.morphLemmeId,)
-            c.execute("Select id, status, status_changed, score From Morphemes Where morph_lemme_id = ?", t)
+            c.execute("Select id, status, changed, score From Morphemes Where morph_lemme_id = ?", t)
             row = c.fetchone()
             if row:
                 morpheme.id = row[0]
@@ -35,7 +35,7 @@ class MorphemeDao:
         c = db.cursor()
         for morpheme in morphemesToInsert:
             t = (morpheme.status, morpheme.statusChanged, morpheme.morphLemmeId, morpheme.score)
-            c.execute("Insert into Morphemes(status, status_changed, morph_lemme_id, score) "
+            c.execute("Insert into Morphemes(status, changed, morph_lemme_id, score) "
                       "Values (?,?,?,?)", t)
         db.commit()
         c.close()
@@ -58,7 +58,7 @@ class MorphemeDao:
             morpheme.morphLemmeId = morpheme.morphLemme.id
         
         t = (morpheme.morphLemmeId,)
-        c.execute("Select id, status, status_changed From Morphemes Where morph_lemme_id = ?", t)
+        c.execute("Select id, status, changed From Morphemes Where morph_lemme_id = ?", t)
         
         row = c.fetchone()
         if row:
@@ -71,14 +71,14 @@ class MorphemeDao:
             
             c = db.cursor()
             t = (morpheme.status, morpheme.statusChanged, morpheme.morphLemmeId, morpheme.score)
-            c.execute("Insert into Morphemes(status, status_changed, morph_lemme_id, score) "
+            c.execute("Insert into Morphemes(status, changed, morph_lemme_id, score) "
                       "Values (?,?,?,?)", t)
             db.commit()
             c.close()
             
             c = db.cursor()
             
-            c.execute("Select count(*) From MorphemeLemmes")
+            c.execute("Select count(*) From MorphemeLemmes") #Fixme : etrange
             for row in c:
                 morpheme.id = row[0] - 1
             c.close()
@@ -91,7 +91,7 @@ class MorphemeDao:
         c = db.cursor()
         
         t = (lemmeId,)
-        c.execute("Select id, status, status_changed, morph_lemme_id, score From Morphemes Where morph_lemme_id = ?", t)
+        c.execute("Select id, status, changed, morph_lemme_id, score From Morphemes Where morph_lemme_id = ?", t)
         
         row = c.fetchone()
         if row:
@@ -104,7 +104,7 @@ class MorphemeDao:
         c = db.cursor()
         
         t = (id,)
-        c.execute("Select id, status, status_changed, morph_lemme_id, score From Morphemes Where id = ?", t)
+        c.execute("Select id, status, changed, morph_lemme_id, score From Morphemes Where id = ?", t)
         
         row = c.fetchone()
         if row:
@@ -117,7 +117,7 @@ class MorphemeDao:
         
         for morpheme in morphemes:
             t = (morpheme.status, morpheme.statusChanged, morpheme.morphLemmeId, morpheme.score, morpheme.id)
-            c.execute("Update Morphemes Set status = ?, status_changed = ?, morph_lemme_id = ?, score = ? Where id = ?", t)
+            c.execute("Update Morphemes Set status = ?, changed = ?, morph_lemme_id = ?, score = ? Where id = ?", t)
         
         db.commit()
         c.close()
@@ -129,8 +129,8 @@ class MorphemeDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        sql = "Select c.id from Cards c, Facts f, FactsMorphemes fm "
-        sql += "Where c.fact_id = f.id and f.id = fm.fact_id and fm.morpheme_id = ? and c.status = ? limit 1"
+        sql = "Select c.id from Cards c, Notes f, NotesMorphemes fm "
+        sql += "Where c.note_id = f.id and f.id = fm.note_id and fm.morpheme_id = ? and c.status = ? limit 1"
         
         t = (morpheme.id, Card.STATUS_MATURE)
         c.execute(sql, t)
@@ -166,9 +166,9 @@ class MorphemeDao:
         c = db.cursor()
         
         t = (card.id,)
-        c.execute("Select m.id, m.status, m.status_changed, m.morph_lemme_id, m.score "
-                  "From Morphemes m, FactsMorphemes mf, Cards c "
-                  "Where mf.morpheme_id = m.id and mf.fact_id = c.fact_id and c.id = ?", t)
+        c.execute("Select m.id, m.status, m.changed, m.morph_lemme_id, m.score "
+                  "From Morphemes m, NotesMorphemes mf, Cards c "
+                  "Where mf.morpheme_id = m.id and mf.note_id = c.note_id and c.id = ?", t)
         morphemes = []
         for row in c:
             morphemes.append(Morpheme(row[1], row[2], row[3], None, row[4], row[0]))
@@ -177,19 +177,19 @@ class MorphemeDao:
         
         return morphemes
     
-    def getMorphemesFromFact(self, fact, withLemme = False):
+    def getMorphemesFromNote(self, note, withLemme = False):
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        t = (fact.id,)
-        sql =  "Select m.id, m.status, m.status_changed, m.morph_lemme_id, m.score "
+        t = (note.id,)
+        sql =  "Select m.id, m.status, m.changed, m.morph_lemme_id, m.score "
         if withLemme:
             sql += ", ml.base, ml.pos, ml.sub_pos, ml.read, ml.id "
-        sql += "From Morphemes m, FactsMorphemes mf "
+        sql += "From Morphemes m, NotesMorphemes mf "
         if withLemme:
             sql += ", MorphemeLemmes ml "
-        sql += "Where mf.morpheme_id = m.id and mf.fact_id = ?"
+        sql += "Where mf.morpheme_id = m.id and mf.note_id = ?"
         if withLemme:
             sql += " and ml.id == m.morph_lemme_id "
         
@@ -211,7 +211,7 @@ class MorphemeDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        c.execute("Update Morphemes Set status_changed = 0")
+        c.execute("Update Morphemes Set changed = 0")
         
         db.commit()
         c.close()

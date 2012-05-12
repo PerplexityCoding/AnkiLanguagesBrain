@@ -16,12 +16,12 @@ class CardDao:
         for card in cards:
             if card.deck:
                 card.deckId = card.deck.id
-            if card.fact:
-                card.factId = card.fact.id
+            if card.note:
+                card.noteId = card.note.id
             
-            t = (card.deckId, card.factId, card.ankiCardId, card.status, card.statusChanged, card.lastUpdated)
-            c.execute("Insert into Cards(deck_id, fact_id, anki_card_id, status, status_changed, last_updated)"
-                      "Values (?,?,?,?,?,?)", t)
+            t = (card.deckId, card.noteId, card.ankiCardId, card.interval, card.status, card.statusChanged, card.lastUpdated)
+            c.execute("Insert into Cards(deck_id, note_id, anki_card_id, interval, status, status_changed, last_updated)"
+                      "Values (?,?,?,?,?,?,?)", t)
         db.commit()
         c.close()
         
@@ -47,7 +47,7 @@ class CardDao:
         
         card = None
         for row in c:
-            card = Card(row[1], row[2], row[3], row[4], row[5], row[6], row[0])
+            card = Card(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[0])
             card.deck = deck
 
         c.close()
@@ -60,18 +60,18 @@ class CardDao:
         
         c = db.cursor()
         
-        sql = "Select c.id, c.deck_id, c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.anki_deck_id, f.score "
-        sql += "From Decks d, Cards c, Facts f "
-        sql += "Where c.fact_id = f.id and c.deck_id = d.id and c.status = 0 and d.id in %s" % Utils.ids2str(decksId)
+        sql = "Select c.id, c.deck_id, c.note_id, c.anki_card_id, c.interval, c.status, c.status_changed, c.last_updated, d.anki_deck_id, f.score "
+        sql += "From Decks d, Cards c, Notes f "
+        sql += "Where c.note_id = f.id and c.deck_id = d.id and c.status = 0 and d.id in %s" % Utils.ids2str(decksId)
         sql += " order by f.score asc"
         
         c.execute(sql)
         
         cards = []
         for row in c:
-            card = Card(row[1],row[2],row[3],row[5],row[6],row[0])
-            card.ankiDeckId = row[7]
-            card.score = int(row[8])
+            card = Card(row[1],row[2],row[3],row[5],row[6],row[7],row[0])
+            card.ankiDeckId = row[8]
+            card.score = int(row[9])
             cards.append(card)
 
         c.close()
@@ -85,12 +85,12 @@ class CardDao:
         c = db.cursor()
         
         t = (morphemeId)
-        c.execute("select c.id, c.deck_id,  c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated "
-                  "From Cards c, Facts f, FactsMorphemes fm where c.fact_id = f.id and f.id = fm.fact_id and fm.morpheme_id = 1", t)
+        c.execute("select c.id, c.deck_id,  c.note_id, c.anki_card_id, c.interval, c.status, c.status_changed, c.last_updated "
+                  "From Cards c, Notes f, NotesMorphemes fm where c.note_id = f.id and f.id = fm.note_id and fm.morpheme_id = 1", t)
         
         card = None
         for row in c:
-            card = Card(row[1], row[2], row[3], row[4], row[5], row[6], row[0])
+            card = Card(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[0])
 
         c.close()
         
@@ -101,7 +101,7 @@ class CardDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        sql = "select c.id, c.deck_id,  c.fact_id, c.anki_card_id, c.status, c.status_changed, c.last_updated, d.anki_deck_id "
+        sql = "select c.id, c.deck_id,  c.note_id, c.anki_card_id, c.interval, c.status, c.status_changed, c.last_updated, d.anki_deck_id "
         sql += "from Cards c, Decks d where c.status = 0 and c.deck_id = d.id "
         
         t = []
@@ -123,8 +123,8 @@ class CardDao:
         
         cards = []
         for row in c:
-            card = Card(row[1],row[2],row[3],row[5],row[6],row[0])
-            card.ankiDeckId = row[7]
+            card = Card(row[1],row[2],row[3],row[5],row[6],row[7],row[0])
+            card.ankiDeckId = row[8]
             cards.append(card)
         
         return cards
@@ -137,11 +137,11 @@ class CardDao:
         for card in cards:
             if card.deck:
                 card.deckId = card.deck.id
-            if card.fact:
-                card.factId = card.fact.id
+            if card.note:
+                card.noteId = card.note.id
             
-            t = (card.deckId, card.factId, card.ankiCardId, card.status, card.statusChanged, card.lastUpdated, card.id)
-            c.execute("Update Cards Set deck_id = ?, fact_id = ?, anki_card_id = ?, status = ?, status_changed = ?, last_updated = ?"
+            t = (card.deckId, card.noteId, card.ankiCardId, card.interval, card.status, card.statusChanged, card.lastUpdated, card.id)
+            c.execute("Update Cards Set deck_id = ?, note_id = ?, anki_card_id = ?, interval = ?, status = ?, status_changed = ?, last_updated = ?"
                       "Where id = ?", t)
             
         db.commit()

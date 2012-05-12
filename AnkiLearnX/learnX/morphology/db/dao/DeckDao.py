@@ -32,12 +32,12 @@ class DeckDao:
         
         return decks
     
-    #def listAnkiDeckIdWithFactsModified(self):
+    #def listAnkiDeckIdWithNotesModified(self):
         
     #    db = self.learnXdB.openDataBase()
         
     #    c = db.cursor()
-    #    c.execute("select distinct d.anki_deck_id from Facts f, Decks d Where f.deck_id = d.id and f.status_changed = 1")
+    #    c.execute("select distinct d.anki_deck_id from Notes f, Decks d Where f.deck_id = d.id and f.status_changed = 1")
         
     #    decksPath = []
     #    for row in c:
@@ -172,8 +172,8 @@ class DeckDao:
     def countMorphemes(self, deck):
         db = self.learnXdB.openDataBase()
         
-        sql = "Select count (distinct fm.morpheme_id) From FactsMorphemes fm, Facts f "
-        sql += "Where f.id = fm.fact_id and f.deck_id = ?"
+        sql = "Select count (distinct fm.morpheme_id) From NotesMorphemes fm, Notes f "
+        sql += "Where f.id = fm.note_id and f.deck_id = ?"
         
         c = db.cursor()
         t = (deck.id,)
@@ -184,8 +184,8 @@ class DeckDao:
             deck.totalMorphemes = row[0]
         c.close
         
-        sql = "Select count (distinct fm.morpheme_id) From FactsMorphemes fm, Facts f, Morphemes m "
-        sql += "Where f.id = fm.fact_id and f.deck_id = ? and fm.morpheme_id = m.id and m.status = ?"
+        sql = "Select count (distinct fm.morpheme_id) From NotesMorphemes fm, Notes f, Morphemes m "
+        sql += "Where f.id = fm.note_id and f.deck_id = ? and fm.morpheme_id = m.id and m.status = ?"
         
         c = db.cursor()
         t = (deck.id, Morpheme.STATUS_LEARNT)

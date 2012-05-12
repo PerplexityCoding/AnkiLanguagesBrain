@@ -29,7 +29,7 @@ class JapaneseMorphemeModel(QAbstractTableModel):
         self.initMorphemesLen = len(self.morphemes)
         self.currentMorphemesLen = len(self.morphemes)
         
-        self.columns = ["Expression", "Reading", "Part of Speech", "Sub P-o-S", "Status", "Changed", "Facts Count", "Score"]
+        self.columns = ["Expression", "Reading", "Part of Speech", "Sub P-o-S", "Status", "Changed", "Notes Count", "Score"]
         
     # Model interface
     ######################################################################
@@ -76,7 +76,7 @@ class JapaneseMorphemeModel(QAbstractTableModel):
                 else:
                     s = "no"
             elif columnId == 6:
-                s = morpheme.factsCount  
+                s = morpheme.notesCount  
             elif columnId == 7:
                 s = int(morpheme.score)          
             return QVariant(s)

@@ -5,13 +5,13 @@ class DefinitionDao:
     def __init__(self):
         self.learnXdB = LearnXdB.getInstance()
         
-    def getDefinition(self, factId):
+    def getDefinition(self, noteId):
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        t = (factId,)
-        c.execute("Select id, fact_id, definition_hash, definition_key_hash From Definitions Where fact_id = ?", t)
+        t = (noteId,)
+        c.execute("Select id, note_id, definition_hash, definition_key_hash From Definitions Where note_id = ?", t)
         
         row = c.fetchone()
         if row:
@@ -22,15 +22,15 @@ class DefinitionDao:
             
             c = db.cursor()
             
-            t = (factId,)
-            c.execute("Insert Into Definitions (fact_id) Values (?)", t)
+            t = (noteId,)
+            c.execute("Insert Into Definitions (note_id) Values (?)", t)
             db.commit()
             c.close()
             
-            definition = Definition(factId, None, None, -1)
+            definition = Definition(noteId, None, None, -1)
             
             c = db.cursor()
-            c.execute("Select id From Definitions Where fact_id = ?", t)
+            c.execute("Select id From Definitions Where note_id = ?", t)
             row = c.fetchone()
             if row:
                 definition.id = row[0]
@@ -38,7 +38,7 @@ class DefinitionDao:
 
         return definition
     
-    def getDefinitions(self, facts):
+    def getDefinitions(self, notes):
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
@@ -46,30 +46,30 @@ class DefinitionDao:
         result = list()
         
         definitionToInsert = list()
-        for fact in facts:
-            t = (fact.id,)
-            c.execute("Select id, fact_id, definition_hash, definition_key_hash From Definitions Where fact_id = ?", t)
+        for note in notes:
+            t = (note.id,)
+            c.execute("Select id, note_id, definition_hash, definition_key_hash From Definitions Where note_id = ?", t)
             row = c.fetchone()
             if row:
                 definition = Definition(row[1], row[2], row[3], row[0])
             else:
-                definition = Definition(fact.id, None, None, -1)
+                definition = Definition(note.id, None, None, -1)
                 definitionToInsert.append(definition)
-            definition.fact = fact
+            definition.note = note
             result.append(definition)
         c.close()
         
         c = db.cursor()
         for definition in definitionToInsert:
-            t = (definition.fact.id,)
-            c.execute("Insert Into Definitions (fact_id) Values (?)", t)
+            t = (definition.note.id,)
+            c.execute("Insert Into Definitions (note_id) Values (?)", t)
         db.commit()
         c.close()
                 
         c = db.cursor()
         for definition in definitionToInsert:
-            t = (definition.fact.id,)
-            c.execute("Select id From Definitions Where fact_id = ?", t)
+            t = (definition.note.id,)
+            c.execute("Select id From Definitions Where note_id = ?", t)
             row = c.fetchone()
             if row:
                 definition.id = row[0]

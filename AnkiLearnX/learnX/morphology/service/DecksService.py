@@ -37,7 +37,7 @@ class DecksService:
         return decksId
         
     #def getAnkiDecksIdChanged(self):
-    #    return self.deckDao.listAnkiDeckIdWithFactsModified()
+    #    return self.deckDao.listAnkiDeckIdWithNotesModified()
     
     def createDeck(self, ankiDeckId):
         

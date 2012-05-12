@@ -2,27 +2,27 @@
 from learnX.utils.Log import *
 
 #from anki.deck import DeckStorage
-#from anki.facts import Fact
+#from anki.notes import Note
 #from anki.cards import Card
 
 class AnkiHelper:
     
     @staticmethod
-    def getFacts(deck): # m LazyList Fact
-        return deck.s.query(Fact).all()
+    def getNotes(deck): # m LazyList Note
+        return deck.s.query(Note).all()
 
     @staticmethod
     def getCards(deck):
         return deck.s.query(Card).all()
 
     @staticmethod
-    def getFactIdToCardsDb(deck): # m Map FactId {Card}
+    def getNoteIdToCardsDb(deck): # m Map NoteId {Card}
         d = {}
         for c in deck.s.query(Card).all():
             try:
-                d[c.factId].append(c)
+                d[c.noteId].append(c)
             except KeyError:
-                d[c.factId] = [c]
+                d[c.noteId] = [c]
         return d
 
     @staticmethod

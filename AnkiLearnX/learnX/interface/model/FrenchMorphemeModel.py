@@ -29,7 +29,7 @@ class FrenchMorphemeModel(QAbstractTableModel):
         self.initMorphemesLen = len(self.morphemes)
         self.currentMorphemesLen = len(self.morphemes)
         
-        self.columns = ["Expression", "Part of Speech", "Status", "Changed", "Facts Count", "Score"]
+        self.columns = ["Expression", "Part of Speech", "Status", "Changed", "Notes Count", "Score"]
         
     # Model interface
     ######################################################################
@@ -79,7 +79,7 @@ class FrenchMorphemeModel(QAbstractTableModel):
                 else:
                     s = "no"
             elif columnId == 4:
-                s = morpheme.factsCount  
+                s = morpheme.notesCount  
             elif columnId == 5:
                 s = int(morpheme.score)          
             return QVariant(s)

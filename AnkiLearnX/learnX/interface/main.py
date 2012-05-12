@@ -172,7 +172,7 @@ class LearnX(QDialog):
                 
                 duplicate = QPushButton("Mark Duplicates")
                 duplicate.setEnabled(deck.enabled and deck.language != None and deck.totalMorphemes > 0)
-                self.connect(duplicate, SIGNAL("clicked()"), lambda d=deck: self.mainController.markDuplicateFacts(d))
+                self.connect(duplicate, SIGNAL("clicked()"), lambda d=deck: self.mainController.markDuplicateNotes(d))
                 decksGrid.addWidget(duplicate, i, 8)
                 
             i += 1

@@ -10,63 +10,6 @@ class MorphemeLemmeDao:
     def __init__(self):
         self.learnXdB = LearnXdB.getInstance()
     
-    def persist(self, morpheme):
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        
-        t = (morpheme.pos, morpheme.subPos, morpheme.read, morpheme.base)
-        c.execute("Select id From MorphemeLemmes Where pos = ? and sub_pos = ? and read = ? and base = ?", t)
-        
-        morphemeId = c.fetchone()
-        if morphemeId:
-            morpheme.id = morphemeId[0]
-            c.close()
-            return morpheme
-        else:
-            c.close()
-            
-            c = db.cursor()
-            c.execute("Insert into MorphemeLemmes(pos, sub_pos, read, base) "
-                      "Values (?,?,?,?)", t)
-            db.commit()
-            c.close()
-            
-            c = db.cursor()
-            c.execute("Select count(*) From MorphemeLemmes")
-            for row in c:
-                morpheme.id = row[0] - 1
-            c.close()
-            
-            return morpheme
-    
-    def find(self, morpheme):
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        
-        t = (morpheme.pos, morpheme.subPos, morpheme.read, morpheme.base)
-        c.execute("Select id From MorphemeLemmes Where pos = ? and sub_pos = ? and read = ? and base = ?", t)
-        
-        morphemeId = c.fetchone()
-        if morphemeId:
-            morpheme.id = morphemeId[0]
-            c.close()
-            return morpheme
-        return None
-    
-    def findById(self, morphemeId):
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        
-        t = (morphemeId,)
-        c.execute("Select id, base, pos, sub_pos, read From MorphemeLemmes Where id = ?", t)
-        
-        row = c.fetchone()
-        if row:
-            morpheme = MorphemeLemme(row[1], None, row[2], row[3], row[4], row[0])
-            c.close()
-            return morpheme
-        return None
-    
     def persistAll(self, morphemes):
         db = self.learnXdB.openDataBase()
         c = db.cursor()
@@ -75,46 +18,49 @@ class MorphemeLemmeDao:
         for morpheme in morphemes:
             morphLemme = morpheme.morphLemme
             
-            t = (morphLemme.pos, morphLemme.subPos, morphLemme.read, morphLemme.base,)
-            c.execute("Select id From MorphemeLemmes Where pos = ? and sub_pos = ? and read = ? and base = ?", t)            
+            t = (morphLemme.id,)
+            c.execute("Select id From MorphemeLemmes Where id = ?", t)            
             morphemeId = c.fetchone()
-            if morphemeId:
-                morphLemme.id = morphemeId[0]
-            else:
+            if morphemeId == None:
                 lemmeMorphemesToInsert.append(morphLemme)
         c.close()
             
         c = db.cursor()
         for lemmeMorpheme in lemmeMorphemesToInsert:
-            t = (lemmeMorpheme.pos, lemmeMorpheme.subPos, lemmeMorpheme.read, lemmeMorpheme.base)
-            c.execute("Insert into MorphemeLemmes(pos, sub_pos, read, base) "
-                      "Values (?,?,?,?)", t)
+            t = (lemmeMorpheme.id, lemmeMorpheme.pos, lemmeMorpheme.subPos, lemmeMorpheme.read, lemmeMorpheme.base, lemmeMorpheme.score)
+            c.execute("Insert into MorphemeLemmes(id, pos, sub_pos, read, base, score) "
+                      "Values (?,?,?,?,?,?)", t)
         db.commit()
-        c.close()
-        
-        c = db.cursor()
-        for lemmeMorpheme in lemmeMorphemesToInsert:
-            t = (lemmeMorpheme.pos, lemmeMorpheme.subPos, lemmeMorpheme.read, lemmeMorpheme.base)
-            c.execute("Select id From MorphemeLemmes Where pos = ? and sub_pos = ? and read = ? and base = ?", t)
-            morphemeId = c.fetchone()
-            if morphemeId:
-                lemmeMorpheme.id = morphemeId[0]
         c.close()
             
         return morphemes
     
+    def findById(self, id):
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        t = (id,)
+        c.execute("Select id, base, pos, sub_pos, read, score From MorphemeLemmes Where id = ?", t)
+        
+        row = c.fetchone()
+        if row:
+            morpheme = MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], row[0])
+            c.close()
+            return morpheme
+        return None
+        
     def getMorphemes(self, decksId = None, expressions = None, status = None, status_changed = None, pos = None, subPos = None):
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        sql = "Select base, pos, sub_pos, read, m.id, m.status, m.status_changed, mm.id, count(fm.fact_id) as c, m.score "
-        sql += "From Morphemes m, FactsMorphemes fm, MorphemeLemmes mm, Facts f "
+        sql = "Select base, pos, sub_pos, read, m.id, m.status, m.status_changed, mm.id, count(fm.note_id) as c, m.score "
+        sql += "From Morphemes m, NotesMorphemes fm, MorphemeLemmes mm, Notes f "
         
         if decksId != None:
             sql += ", Decks d "
         
-        sql += "Where mm.id = m.morph_lemme_id and m.id = fm.morpheme_id and f.id = fm.fact_id "
+        sql += "Where mm.id = m.morph_lemme_id and m.id = fm.morpheme_id and f.id = fm.note_id "
         
         if decksId != None:
             sql += "and d.id = f.deck_id "
@@ -167,41 +113,12 @@ class MorphemeLemmeDao:
         for row in c:
             morphemeLemme = MorphemeLemme(row[0], None, row[1], row[2], row[3], row[4])
             morpheme = Morpheme(row[5], row[6], row[7], morphemeLemme, row[9], row[4])
-            morpheme.factsCount = row[8]
+            morpheme.notesCount = row[8]
             morphemes.append(morpheme)
         log("getMorphemes get Result End")
         
         c.close()
         
         return morphemes
-    
-    def getAllPOS(self): #FIXME: language
-        
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        
-        c.execute("Select distinct pos from MorphemeLemmes")
-        
-        posList = []
-        for row in c:
-            posList.append(row[0])
-        
-        c.close()
-            
-        return posList
-    
-    def getAllSubPOS(self): #FIXME: language
-        
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        
-        c.execute("Select distinct sub_pos from MorphemeLemmes")
-        
-        subPosList = []
-        for row in c:
-            subPosList.append(row[0])
-        
-        c.close()
-            
-        return subPosList
+
         

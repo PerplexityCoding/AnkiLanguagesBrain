@@ -1,7 +1,7 @@
 
 from learnX.morphology.db.dao.MorphemeLemmeDao import *
 from learnX.morphology.db.dao.MorphemeDao import *
-from learnX.morphology.db.dao.FactDao import *
+from learnX.morphology.db.dao.NoteDao import *
 from learnX.morphology.db.dao.CardDao import *
 from learnX.morphology.db.dao.DeckDao import *
 from learnX.morphology.db.dao.DefinitionDao import *
@@ -22,14 +22,14 @@ class MorphemesService:
         
         self.lemmeDao = MorphemeLemmeDao()
         self.morphemeDao = MorphemeDao()
-        self.factDao = FactDao()
+        self.noteDao = NoteDao()
         self.cardDao = CardDao()
         self.deckDao = DeckDao()
         self.definitionDao = DefinitionDao()
     
     def setupServices(self):
         self.decksService = self.serviceLocator.getDecksService()
-        self.factsService = self.serviceLocator.getFactsService()
+        self.notesService = self.serviceLocator.getNotesService()
 
     def extractMorphemes(self, expression, deck, language):
         log((expression,))
@@ -46,16 +46,16 @@ class MorphemesService:
             dictList.append(value)
         return dictList
     
-    # Store temporarly (not in database) definition morphemes and score in facts
+    # Store temporarly (not in database) definition morphemes and score in notes
     # Dont work with lemmatizater
     def getMorphemesFromDB(self, expression, deck, language):
         
         # Unique Morphemes
         log("Extract Morphemes")
         morphLemmes = self.extractMorphemes(expression, deck, language)
-        factMorphemes = list()
+        noteMorphemes = list()
         for morphemeLemme in morphLemmes:
-            morphLemmeDB = self.lemmeDao.find(morphemeLemme)
+            morphLemmeDB = self.lemmeDao.findById(morphemeLemme.id)
             if morphLemmeDB == None:
                 morpheme = Morpheme(0, 0, -1, None, 0, -1)
                 morpheme.morphLemme = morphemeLemme
@@ -64,32 +64,32 @@ class MorphemesService:
                 if morpheme == None:
                     continue
                 morpheme.morphLemme = morphLemmeDB
-            if morpheme not in factMorphemes:
-                factMorphemes.append(morpheme)
-        return factMorphemes
+            if morpheme not in noteMorphemes:
+                noteMorphemes.append(morpheme)
+        return noteMorphemes
     
-    def analyseDefinition(self, deck, language, facts, ankiFacts):
+    def analyseDefinition(self, deck, language, notes, ankiNotes):
         
-        definitions = self.definitionDao.getDefinitions(facts)
+        definitions = self.definitionDao.getDefinitions(notes)
         
         modifiedDefinition = list()
         keyModifiedDefinition = list()
         defModifiedDefinition = list()
         
         for definition in definitions:
-            fact = definition.fact
-            if fact.ankiLastModified == fact.lastUpdated:
+            note = definition.note
+            if note.ankiLastModified == note.lastUpdated:
                 continue
             
             isModified = False
-            definitionExpression = ankiFacts[fact.ankiFactIndex][deck.definitionField]
+            definitionExpression = ankiNotes[note.ankiNoteIndex][deck.definitionField]
             if definition.definitionHash == None or int(definition.definitionHash) != hash(definitionExpression):
                 definition.definitionMorphemes = self.getMorphemesFromDB(definitionExpression, deck, language)
                 definition.definitionHash = hash(definitionExpression)
                 defModifiedDefinition.append(definition)
                 isModified = True
             
-            definitionKeyExpression = ankiFacts[fact.ankiFactIndex][deck.definitionKeyField]
+            definitionKeyExpression = ankiNotes[note.ankiNoteIndex][deck.definitionKeyField]
             if definition.definitionKeyHash == None or int(definition.definitionKeyHash) != hash(definitionKeyExpression):
                 definition.definitionMorphemesKey = self.getMorphemesFromDB(definitionKeyExpression, deck, language)
                 definition.definitionKeyHash = hash(definitionKeyExpression)
@@ -132,21 +132,21 @@ class MorphemesService:
             
         return morphemes
     
-    def analyzeMorphemes(self, facts, deck, language):
+    def analyzeMorphemes(self, notes, deck, language):
         
         # Unique Morphemes
         #log("Extract Morphemes")
         allUniqueMorphLemmes = dict()
-        for fact in facts:
-            morphLemmes = self.extractMorphemes(fact.ankiFact.__getitem__(deck.expressionField), deck, language)
-            factMorphLemmes = list()
+        for note in notes:
+            morphLemmes = self.extractMorphemes(note.ankiNote.__getitem__(deck.expressionField), deck, language)
+            noteMorphLemmes = list()
             for morphLemme in morphLemmes:
                 if morphLemme in allUniqueMorphLemmes:
                     morphLemme = allUniqueMorphLemmes[morphLemme]
                 else:
                     allUniqueMorphLemmes[morphLemme] = morphLemme
-                factMorphLemmes.append(morphLemme)
-            fact.morphLemmes = factMorphLemmes
+                noteMorphLemmes.append(morphLemme)
+            note.morphLemmes = noteMorphLemmes
         
         log("Lemmatize Morphemes : " + str(len(allUniqueMorphLemmes)))
         if language.lemmatizer:
@@ -154,22 +154,22 @@ class MorphemesService:
         
         self.filterMorphLemmes(self.getList(allUniqueMorphLemmes))
         
-        log("Compute Facts <-> Morphemes")
+        log("Compute Notes <-> Morphemes")
         allMorphemes = dict()
-        for fact in facts:
-            factUniqueMorphemes = dict()
-            for morphLemme in fact.morphLemmes:
+        for note in notes:
+            noteUniqueMorphemes = dict()
+            for morphLemme in note.morphLemmes:
                 morpheme = Morpheme(Morpheme.STATUS_NONE, False, morphLemme.id, morphLemme, 0)
                 if morpheme in allMorphemes:    
                     morpheme = allMorphemes[morpheme]
                 else:
                     allMorphemes[morpheme] = morpheme
-                if morpheme not in factUniqueMorphemes:
-                    factUniqueMorphemes[morpheme] = morpheme
-            fact.morphemes = self.getList(factUniqueMorphemes)
-            fact.expressionHash = Utils.fieldChecksum(fact.ankiFact.__getitem__(deck.expressionField))
-            fact.lastUpdated = fact.ankiFact.mod
-            fact.ankiFact = None
+                if morpheme not in noteUniqueMorphemes:
+                    noteUniqueMorphemes[morpheme] = morpheme
+            note.morphemes = self.getList(noteUniqueMorphemes)
+            note.expressionHash = Utils.fieldChecksum(note.ankiNote.__getitem__(deck.expressionField))
+            note.lastUpdated = note.ankiNote.mod
+            note.ankiNote = None
         
         allMorphemesList = self.getList(allMorphemes)
         log("All Unique Morphemes (Lemmatized): " + str(len(allMorphemesList)))
@@ -178,15 +178,15 @@ class MorphemesService:
         self.lemmeDao.persistAll(allMorphemesList)
         self.morphemeDao.persistAll(allMorphemesList)
         
-        log("insertAllFactMorphemes")
-        self.factDao.insertAllFactMorphemes(facts)
+        log("insertAllNoteMorphemes")
+        self.noteDao.insertAllNoteMorphemes(notes)
         
         log("updateAll")
-        self.factDao.updateAll(facts)
+        self.noteDao.updateAll(notes)
         
-        for fact in facts:
-            fact.morphLemmes = None
-            fact.morphemes = None
+        for note in notes:
+            note.morphLemmes = None
+            note.morphemes = None
     
     def computeMorphemesMaturity(self, cards):
         
@@ -219,9 +219,9 @@ class MorphemesService:
             self.morphemeDao.updateAll(modifiedMorphemes)
         self.cardDao.updateAll(cards)
     
-    #def analyze(self, fact):
+    #def analyze(self, note):
         
-    #    morphemes = self.extractMorphemes(fact.expression)
+    #    morphemes = self.extractMorphemes(note.expression)
         
     #    attachedMorphemes = []
     #    for morpheme in morphemes:
@@ -229,7 +229,7 @@ class MorphemesService:
     #        morpheme = self.morphemeDao.persist(morpheme)
     #        attachedMorphemes.append(morpheme)
         
-    #    self.factsService.changeMorphemes(fact, attachedMorphemes)
+    #    self.notesService.changeMorphemes(note, attachedMorphemes)
         
     #    return morphemes
         
