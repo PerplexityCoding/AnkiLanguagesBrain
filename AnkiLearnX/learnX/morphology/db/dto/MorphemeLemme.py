@@ -20,7 +20,7 @@ class MorphemeLemme:
         return True
 
     def __hash__(self):
-        return hash
+        return self.id
         
     def __repr__(self):
         return u'\t'.join([str(self.id), str(self.pos), str(self.subPos), str(self.read), str(self.base), str(self.score)])

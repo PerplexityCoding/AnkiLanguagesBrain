@@ -8,6 +8,33 @@ class CardDao:
     def __init__(self):
         self.learnXdB = LearnXdB.getInstance()
     
+    def persistAll(self, cards):
+        
+        db = self.learnXdB.openDataBase()
+        
+        c = db.cursor()
+        toInsert = list()
+        for card in cards:
+            t = (card.id, )
+            c.execute("Select * From Cards Where id = ?", t)
+            
+            row = c.fetchone()
+            if row:
+                card.__init__(row[0], row[1], row[2], row[3], row[4], row[5], row[6])
+            else:
+                toInsert.append(card)
+        c.close()
+        
+        c = db.cursor()
+        for card in toInsert:
+             t = (card.id, card.deckId, card.noteId, card.interval, card.status, card.statusChanged, card.lastUpdated)
+             c.execute("Insert into Cards(id, deck_id, note_id, interval, status, status_changed, last_updated)"
+                       "Values (?,?,?,?,?,?,?)", t)
+        db.commit()
+        c.close()
+        
+        return cards
+    
     def insertAll(self, cards):
         db = self.learnXdB.openDataBase()
         
@@ -70,7 +97,7 @@ class CardDao:
         cards = []
         for row in c:
             card = Card(row[1],row[2],row[3],row[5],row[6],row[7],row[0])
-            card.ankiDeckId = row[8]
+            card.deckId = row[8]
             card.score = int(row[9])
             cards.append(card)
 
@@ -124,7 +151,7 @@ class CardDao:
         cards = []
         for row in c:
             card = Card(row[1],row[2],row[3],row[5],row[6],row[7],row[0])
-            card.ankiDeckId = row[8]
+            card.deckId = row[8]
             cards.append(card)
         
         return cards
@@ -134,17 +161,14 @@ class CardDao:
         
         c = db.cursor()
         
-        for card in cards:
-            if card.deck:
-                card.deckId = card.deck.id
-            if card.note:
-                card.noteId = card.note.id
-            
-            t = (card.deckId, card.noteId, card.ankiCardId, card.interval, card.status, card.statusChanged, card.lastUpdated, card.id)
-            c.execute("Update Cards Set deck_id = ?, note_id = ?, anki_card_id = ?, interval = ?, status = ?, status_changed = ?, last_updated = ?"
+        for card in cards:            
+            t = (card.deckId, card.noteId, card.interval, card.status, card.statusChanged, card.lastUpdated, card.id)
+            c.execute("Update Cards Set deck_id = ?, note_id = ?, interval = ?, status = ?, status_changed = ?, last_updated = ?"
                       "Where id = ?", t)
             
         db.commit()
         c.close()
         
         return cards
+
+    

@@ -113,10 +113,6 @@ class LearnX(QDialog):
         else:
             deck = self.decksService.disableDeck(deck)
         
-        #conf = self.confButtons[index2]
-        #conf.setEnabled(deck.enabled)
-        #log(deck.enabled)
-        
         if deck.enabled:
             self.configDeck(deck)
     

@@ -32,7 +32,7 @@ class DeckConfigController:
         
         mainVBox = interface.mainVBox
         deck = interface.deck
-        realDeck = self.deckManager.get(deck.ankiDeckId)
+        realDeck = self.deckManager.get(deck.id)
         
         # Save Fields
         #for fieldsGrid in interface.fieldsComponents:

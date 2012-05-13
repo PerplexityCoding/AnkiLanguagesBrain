@@ -31,20 +31,80 @@ class MorphemesService:
         self.decksService = self.serviceLocator.getDecksService()
         self.notesService = self.serviceLocator.getNotesService()
 
+
     def extractMorphemes(self, expression, deck, language):
-        log((expression,))
         morphemes = language.posTagger.posMorphemes(expression, deck, language)
         return morphemes
     
-    #def analyze(self, expression, language):
-    #    morphemes = self.extractMorphemes(expression, None, None)
-    #    return morphemes
+    def analyzeLemmes(self, notes, deck, language):
+    
+        # Unique Morphemes
+        log("Extract Morphemes")
+        allUniqueMorphLemmes = dict()
+        for note in notes:
+            morphLemmes = self.extractMorphemes(note.ankiNote[deck.expressionField], deck, language)
+            noteMorphLemmes = list()
+            for morphLemme in morphLemmes:
+                if morphLemme in allUniqueMorphLemmes:
+                    morphLemme = allUniqueMorphLemmes[morphLemme]
+                else:
+                    allUniqueMorphLemmes[morphLemme] = morphLemme
+                noteMorphLemmes.append(morphLemme)
+            note.morphLemmes = noteMorphLemmes
+        
+        allUniqueMorphLemmes = self.getList(allUniqueMorphLemmes)
+        
+        log("Lemmatize Morphemes : " + str(len(allUniqueMorphLemmes)))
+        if language.lemmatizer:
+            language.lemmatizer.lemmatizeMorphemes(allUniqueMorphLemmes)
+        
+        self.filterMorphLemmes(allUniqueMorphLemmes)
+        
+        self.rankMorphLemmes(allUniqueMorphLemmes)
+        
+        log("persist All Lemmes")
+        self.lemmeDao.persistAll(allUniqueMorphLemmes)
+    
+    def analyzeMorphemes(self, notes, deck, language):
+        
+        log("Compute Notes <-> Morphemes")
+        allMorphemes = list()
+        for note in notes:
+            noteUniqueMorphemes = list()
+            for morphLemme in note.morphLemmes:
+                morpheme = Morpheme(note.id, Morpheme.STATUS_NONE, False, morphLemme.id, 0)
+                if morpheme not in noteUniqueMorphemes:    
+                    noteUniqueMorphemes.append(morpheme)
+                    allMorphemes.append(morpheme)
+            note.expressionCsum = Utils.fieldChecksum(note.ankiNote[deck.expressionField])
+            note.lastUpdated = note.ankiNote.mod
+            note.ankiNote = None
+        
+        log("persist All Morphemes")
+        self.morphemeDao.persistAll(allMorphemes)
+        
+        log("update All")
+        self.noteDao.updateAll(notes) 
+        
+        for note in notes:
+            note.morphLemmes = None
     
     def getList(self, dict):
         dictList = list()
         for key, value in dict.iteritems():
             dictList.append(value)
         return dictList
+    
+    
+    def refreshInterval(self, modifiedCards):
+        
+        for card in modifiedCards:
+            card.interval = card.ankiCard.ivl
+            
+        self.cardDao.updateAll(modifiedCards)
+    
+        self.morphemeDao.updateInterval(modifiedCards)
+        
     
     # Store temporarly (not in database) definition morphemes and score in notes
     # Dont work with lemmatizater
@@ -132,61 +192,7 @@ class MorphemesService:
             
         return morphemes
     
-    def analyzeMorphemes(self, notes, deck, language):
-        
-        # Unique Morphemes
-        #log("Extract Morphemes")
-        allUniqueMorphLemmes = dict()
-        for note in notes:
-            morphLemmes = self.extractMorphemes(note.ankiNote.__getitem__(deck.expressionField), deck, language)
-            noteMorphLemmes = list()
-            for morphLemme in morphLemmes:
-                if morphLemme in allUniqueMorphLemmes:
-                    morphLemme = allUniqueMorphLemmes[morphLemme]
-                else:
-                    allUniqueMorphLemmes[morphLemme] = morphLemme
-                noteMorphLemmes.append(morphLemme)
-            note.morphLemmes = noteMorphLemmes
-        
-        log("Lemmatize Morphemes : " + str(len(allUniqueMorphLemmes)))
-        if language.lemmatizer:
-            language.lemmatizer.lemmatizeMorphemes(self.getList(allUniqueMorphLemmes))
-        
-        self.filterMorphLemmes(self.getList(allUniqueMorphLemmes))
-        
-        log("Compute Notes <-> Morphemes")
-        allMorphemes = dict()
-        for note in notes:
-            noteUniqueMorphemes = dict()
-            for morphLemme in note.morphLemmes:
-                morpheme = Morpheme(Morpheme.STATUS_NONE, False, morphLemme.id, morphLemme, 0)
-                if morpheme in allMorphemes:    
-                    morpheme = allMorphemes[morpheme]
-                else:
-                    allMorphemes[morpheme] = morpheme
-                if morpheme not in noteUniqueMorphemes:
-                    noteUniqueMorphemes[morpheme] = morpheme
-            note.morphemes = self.getList(noteUniqueMorphemes)
-            note.expressionHash = Utils.fieldChecksum(note.ankiNote.__getitem__(deck.expressionField))
-            note.lastUpdated = note.ankiNote.mod
-            note.ankiNote = None
-        
-        allMorphemesList = self.getList(allMorphemes)
-        log("All Unique Morphemes (Lemmatized): " + str(len(allMorphemesList)))
-        
-        log("persistAll")
-        self.lemmeDao.persistAll(allMorphemesList)
-        self.morphemeDao.persistAll(allMorphemesList)
-        
-        log("insertAllNoteMorphemes")
-        self.noteDao.insertAllNoteMorphemes(notes)
-        
-        log("updateAll")
-        self.noteDao.updateAll(notes)
-        
-        for note in notes:
-            note.morphLemmes = None
-            note.morphemes = None
+    
     
     def computeMorphemesMaturity(self, cards):
         
@@ -219,19 +225,6 @@ class MorphemesService:
             self.morphemeDao.updateAll(modifiedMorphemes)
         self.cardDao.updateAll(cards)
     
-    #def analyze(self, note):
-        
-    #    morphemes = self.extractMorphemes(note.expression)
-        
-    #    attachedMorphemes = []
-    #    for morpheme in morphemes:
-    #        morpheme.morphLemme = self.lemmeDao.persist(morpheme.morphLemme)
-    #        morpheme = self.morphemeDao.persist(morpheme)
-    #        attachedMorphemes.append(morpheme)
-        
-    #    self.notesService.changeMorphemes(note, attachedMorphemes)
-        
-    #    return morphemes
         
     def getAllPOS(self, language):
         try:

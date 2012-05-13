@@ -8,6 +8,33 @@ class NoteDao:
     def __init__(self):
         self.learnXdB = LearnXdB.getInstance()
         
+    def persistNotes(self, notes):
+        
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        toInsert = list()
+        for note in notes:
+            t = (note.id, )
+            c.execute("Select * From Notes Where id = ?", t)
+            
+            row = c.fetchone()
+            if row:
+                note.__init__(row[0], row[1], row[2], row[3], row[4], row[5], row[6])
+            else:
+                toInsert.append(note)
+        c.close()
+        
+        c = db.cursor()
+        for note in toInsert:
+             t = (note.id, note.lastUpdated, note.expressionCsum, note.morphemesChanged, note.status, note.statusChanged, note.score)
+             c.execute("Insert into Notes(id, last_updated, expression_csum, morphemes_changed, status, status_changed, score)"
+                       "Values (?,?,?,?,?,?,?)", t)
+        db.commit()
+        c.close()
+        
+        return notes
+    
     def insert(self, note):
         db = self.learnXdB.openDataBase()
         
@@ -16,8 +43,8 @@ class NoteDao:
         if note.deck:
             note.deckId = note.deck.id
         
-        t = (note.deckId, note.ankiNoteId, note.lastUpdated, note.expressionHash, note.morphemesChanged, note.status, note.statusChanged, note.score)
-        c.execute("Insert into Notes(deck_id, anki_note_id, last_updated, expression_hash, morphemes_changed, status, status_changed, score)"
+        t = (note.ankiNoteId, note.lastUpdated, note.expressionCsum, note.morphemesChanged, note.status, note.statusChanged, note.score)
+        c.execute("Insert into Notes(anki_note_id, last_updated, expression_csum, morphemes_changed, status, status_changed, score)"
                   "Values (?,?,?,?,?,?,?,?)", t)
         db.commit()
         c.close()
@@ -43,8 +70,8 @@ class NoteDao:
             if note.deck:
                 note.deckId = note.deck.id
             
-            t = (note.deckId, note.ankiNoteId, note.lastUpdated, note.expressionHash, note.morphemesChanged, note.status, note.statusChanged, note.score)
-            c.execute("Insert into Notes(deck_id, anki_note_id, last_updated, expression_hash, morphemes_changed, status, status_changed, score)"
+            t = (note.deckId, note.ankiNoteId, note.lastUpdated, note.expressionCsum, note.morphemesChanged, note.status, note.statusChanged, note.score)
+            c.execute("Insert into Notes(deck_id, anki_note_id, last_updated, expression_csum, morphemes_changed, status, status_changed, score)"
                       "Values (?,?,?,?,?,?,?,?)", t)
         db.commit()
         c.close()
@@ -65,48 +92,29 @@ class NoteDao:
         db = self.learnXdB.openDataBase()    
         c = db.cursor()
         
-        t = (note.deckId, note.ankiNoteId, note.lastUpdated, note.expressionHash, note.morphemesChanged, note.status,
+        t = (note.lastUpdated, note.expressionCsum, note.morphemesChanged, note.status,
              note.statusChanged, note.score, note.id)
-        c.execute("Update Notes Set Where deck_id = ?, anki_note_id = ?, last_updated = ?, "
-                  "expression_hash = ?, morphemes_changed = ?, status = ?, status_changed = ?, score = ?"
+        c.execute("Update Notes Set last_updated = ?, expression_csum = ?, morphemes_changed = ?,"
+                  "status = ?, status_changed = ?, score = ? "
                   "Where id = ?", t)
         db.commit()
         c.close()
         
         return note
-    
+
     def updateAll(self, notes):
         db = self.learnXdB.openDataBase()    
         c = db.cursor()
-        
         for note in notes:
-            t = (note.deckId, note.ankiNoteId, note.lastUpdated, note.expressionHash, note.morphemesChanged, note.status,
+            t = (note.lastUpdated, note.expressionCsum, note.morphemesChanged, note.status,
                  note.statusChanged, note.score, note.id)
-            c.execute("Update Notes Set deck_id = ?, anki_note_id = ?, last_updated = ?, "
-                      "expression_hash = ?, morphemes_changed = ?, status = ?, status_changed = ?, score = ? "
+            c.execute("Update Notes Set last_updated = ?, expression_csum = ?, morphemes_changed = ?,"
+                      "status = ?, status_changed = ?, score = ? "
                       "Where id = ?", t)
         db.commit()
         c.close()
         
         return notes
-    
-    def findByAnkiNoteId(self, deck, ankiNoteId):
-        
-        db = self.learnXdB.openDataBase()
-        
-        c = db.cursor()
-        
-        t = (deck.id, ankiNoteId)
-        c.execute("Select * From Notes Where deck_id = ? and anki_note_id = ?", t)
-        
-        note = None
-        for row in c:
-            note = Note(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[0])
-            note.deck = deck
-
-        c.close()
-        
-        return note
     
     def findById(self, noteId):
     
@@ -132,7 +140,7 @@ class NoteDao:
         
         c = db.cursor()
         
-        sql = "Select distinct f.id, f.deck_id, f.anki_note_id, f.last_updated, f.expression_hash, "
+        sql = "Select distinct f.id, f.deck_id, f.anki_note_id, f.last_updated, f.expression_csum, "
         sql += "f.morphemes_changed, f.status, f.status_changed, f.score "
         sql += "From Morphemes m, NotesMorphemes mf, Notes f "
         sql += "Where mf.morpheme_id = m.id and f.id = mf.note_id and m.status_changed = 1 "
@@ -215,24 +223,6 @@ class NoteDao:
         for morpheme in morphemes:
             t = (note.id, morpheme.id)
             c.execute("Insert Into NotesMorphemes(note_id, morpheme_id) Values(?,?)", t)
-        db.commit()
-        c.close()
-        
-    def insertAllNoteMorphemes(self, notes):
-        db = self.learnXdB.openDataBase()
-        
-        c = db.cursor()
-        for note in notes:
-            t = (note.id,)
-            c.execute("Delete From NotesMorphemes Where note_id = ?", t)
-        db.commit()
-        c.close()
-        
-        c = db.cursor()
-        for note in notes:
-            for morpheme in note.morphemes:
-                t = (note.id, morpheme.id)
-                c.execute("Insert Into NotesMorphemes(note_id, morpheme_id) Values(?,?)", t)
         db.commit()
         c.close()
     

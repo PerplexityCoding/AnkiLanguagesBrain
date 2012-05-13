@@ -20,7 +20,7 @@ class DeckDao:
         
         decks = []
         for row in c:
-            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[0], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15])
+            deck = Deck(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14])
             if deck.fields:
                 deck.fields = pickle.loads(str(deck.fields))
             if deck.posOptions:
@@ -32,21 +32,6 @@ class DeckDao:
         
         return decks
     
-    #def listAnkiDeckIdWithNotesModified(self):
-        
-    #    db = self.learnXdB.openDataBase()
-        
-    #    c = db.cursor()
-    #    c.execute("select distinct d.anki_deck_id from Notes f, Decks d Where f.deck_id = d.id and f.status_changed = 1")
-        
-    #    decksPath = []
-    #    for row in c:
-    #       decksPath.append(row[0])
-        
-    #    c.close()
-        
-    #    return decksPath
-    
     def listDecksByLanguage(self, languageId):
         
         db = self.learnXdB.openDataBase()
@@ -57,7 +42,7 @@ class DeckDao:
         
         decks = []
         for row in c:
-            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[0], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15])
+            deck = Deck(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14])
             if deck.fields:
                 deck.fields = pickle.loads(str(deck.fields))
             if deck.posOptions:
@@ -79,22 +64,14 @@ class DeckDao:
         if posOptions:
             posOptions = sqlite3.Binary(pickle.dumps(posOptions, 2))
             
-        t = (deck.ankiDeckId, deck.enabled, deck.languageId, deck.expressionField, deckFields,
+        t = (deck.id, deck.enabled, deck.languageId, deck.expressionField, deckFields,
              deck.matureTreshold, deck.knownTreshold, deck.learnTreshold, deck.totalMorphemes, deck.learntMorphemes, deck.knownMorphemes,
              deck.matureMorphemes, posOptions, deck.definitionField, deck.definitionKeyField)
-        c.execute("Insert into Decks(anki_deck_id, enabled, language_id, expression_field,"
+        c.execute("Insert into Decks(id, enabled, language_id, expression_field,"
                   "deck_fields, mature_treshold, known_treshold, learn_treshold,"
                   "total_morphemes, learnt_morphemes, known_morphemes, mature_morphemes, pos_options, definition_field, definition_key_field) "
                   "Values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", t)
         db.commit()
-        c.close()
-        
-        c = db.cursor()
-        
-        u = (deck.ankiDeckId,)
-        c.execute("Select id From Decks Where anki_deck_id = ?", u)
-        for row in c:
-            deck.id = row[0]
         c.close()
         
         return deck
@@ -113,12 +90,12 @@ class DeckDao:
         if posOptions:
             posOptions = sqlite3.Binary(pickle.dumps(posOptions, 2))
         
-        t = (deck.ankiDeckId, deck.enabled, deck.languageId, deck.expressionField, deckFields,
+        t = (deck.enabled, deck.languageId, deck.expressionField, deckFields,
              deck.matureTreshold, deck.knownTreshold, deck.learnTreshold,
              deck.totalMorphemes, deck.learntMorphemes, deck.knownMorphemes, deck.matureMorphemes, posOptions,
              deck.definitionField, deck.definitionKeyField, deck.id)
         log(t)
-        c.execute("Update Decks Set anki_deck_id = ?, enabled = ?, language_id = ?, "
+        c.execute("Update Decks Set enabled = ?, language_id = ?, "
                   "expression_field = ?, deck_fields = ?, mature_treshold = ?, known_treshold = ?, learn_treshold = ?, "
                   "total_morphemes = ?, learnt_morphemes = ?, known_morphemes = ?, mature_morphemes = ?, pos_options = ?, "
                   "definition_field = ?, definition_key_field = ? "
@@ -127,28 +104,8 @@ class DeckDao:
         db.commit()
         c.close()
         
-        return self.findByAnkiDeckId(deck.ankiDeckId)
+        return deck
         
-    def findByAnkiDeckId(self, ankiDeckId):
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        
-        t = (ankiDeckId,)
-        c.execute("Select * From Decks Where anki_deck_id = ?", t)
-        
-        deck = None
-        for row in c:
-            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[0], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15])
-            if deck.fields:
-                deck.fields = pickle.loads(str(deck.fields))
-            if deck.posOptions:
-                deck.posOptions = pickle.loads(str(deck.posOptions))
-            
-        db.commit()
-        c.close()
-
-        return deck    
-    
     def findById(self, id):
         db = self.learnXdB.openDataBase()
         c = db.cursor()
@@ -158,7 +115,7 @@ class DeckDao:
         
         deck = None
         for row in c:
-            deck = Deck(row[1], row[2], row[3], row[4], row[5], row[0], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15])
+            deck = Deck(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14])
             if deck.fields:
                 deck.fields = pickle.loads(str(deck.fields))
             if deck.posOptions:

@@ -19,8 +19,7 @@ CREATE TABLE Languages (
 );
 
 CREATE TABLE Decks (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	anki_deck_id INTEGER NOT NULL,
+	id INTEGER PRIMARY KEY,
 	enabled INTEGER(1) NOT NULL,
 	language_id INTEGER REFERENCES Languages(id),
 	expression_field TEXT NOT NULL,
@@ -38,16 +37,23 @@ CREATE TABLE Decks (
 );
 
 CREATE TABLE Notes (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	deck_id INTEGER REFERENCES Decks(id),
-	anki_note_id INTEGER NOT NULL,
+	id INTEGER PRIMARY KEY,
 	last_updated INTEGER,
-	expression_hash TEXT,
+	expression_csum TEXT,
 	morphemes_changed INTEGER(1),
 	status INTEGER(4),
 	status_changed INTEGER(1),
-	score INTEGER,
-	UNIQUE (deck_id, anki_note_id)
+	score INTEGER
+);
+
+CREATE TABLE Cards (
+	id INTEGER PRIMARY KEY,
+	deck_id INTEGER REFERENCES Decks(id),
+	note_id INTEGER REFERENCES Notes(id),
+	interval INTEGER,
+	status INTEGER(4),
+	status_changed INTEGER(1),
+	last_updated INTEGER
 );
 
 CREATE TABLE Definitions (
@@ -58,25 +64,14 @@ CREATE TABLE Definitions (
 	UNIQUE (note_id)
 );
 
-CREATE TABLE Cards (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	deck_id INTEGER REFERENCES Decks(id),
-	note_id INTEGER REFERENCES Notes(id),
-	anki_card_id INTEGER NOT NULL,
-	interval INTEGER,
-	status INTEGER(4),
-	status_changed INTEGER(1),
-	last_updated INTEGER,
-	UNIQUE (deck_id, anki_card_id, note_id)
-);
-
 CREATE TABLE Morphemes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	note_id INTEGER REFERENCES Note(id),
 	max_interval INTEGER,
 	score INTEGER,
 	changed INTEGER(1),
-	morph_lemme_id NUMERIC NOT NULL
+	morph_lemme_id NUMERIC NOT NULL,
+	UNIQUE (note_id, morph_lemme_id)
 );
 
 CREATE TABLE MorphemeLemmes (

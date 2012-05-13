@@ -36,29 +36,17 @@ class DecksService:
             decksId.append(deck.id)
         return decksId
         
-    #def getAnkiDecksIdChanged(self):
-    #    return self.deckDao.listAnkiDeckIdWithNotesModified()
-    
-    def createDeck(self, ankiDeckId):
-        
-        deck = Deck(ankiDeckId, False, None, None, None)
-        deck = self.deckDao.insert(deck)
-        
-        return deck
-    
     def getDeck(self, ankiDeckId):
         
-        deck = self.deckDao.findByAnkiDeckId(ankiDeckId)
+        deck = self.deckDao.findById(ankiDeckId)
         if deck == None:
-            deck = self.createDeck(ankiDeckId)
+            deck = Deck(ankiDeckId, False, None, None, None)
+            deck = self.deckDao.insert(deck)
         
         if deck.languageId != None:
             deck.language = self.languagesService.getLanguageById(deck.languageId)
         
         return deck
-    
-    def getDeckById(self, id):
-        return self.deckDao.findById(id)
     
     def countMorphemes(self, deck):
         self.deckDao.countMorphemes(deck)

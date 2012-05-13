@@ -4,6 +4,7 @@ from learnX.morphology.db.dto.MorphemeLemme import *
 from learnX.morphology.db.dto.Card import *
 
 from learnX.utils.Log import *
+from learnX.utils.Utils import *
 
 import math
 
@@ -14,39 +15,29 @@ class MorphemeDao:
     def persistAll(self, morphemes):
         db = self.learnXdB.openDataBase()
         
-        morphemesToInsert = []
-        c = db.cursor()
+        log("select")
         
+        c = db.cursor()
+        morphemesToInsert = list()
         for morpheme in morphemes:
-            if morpheme.morphLemme:
-                morpheme.morphLemmeId = morpheme.morphLemme.id
-            t = (morpheme.morphLemmeId,)
-            c.execute("Select id, status, changed, score From Morphemes Where morph_lemme_id = ?", t)
+            t = (morpheme.morphLemmeId, morpheme.noteId)
+            c.execute("Select id From Morphemes Where morph_lemme_id = ? and note_id = ?", t)
             row = c.fetchone()
-            if row:
-                morpheme.id = row[0]
-                morpheme.status = row[1]
-                morpheme.statusChanged = row[2]
-                morpheme.score = row[3]
-            else:
+            if row == None:
                 morphemesToInsert.append(morpheme)
         c.close()
         
-        c = db.cursor()
-        for morpheme in morphemesToInsert:
-            t = (morpheme.status, morpheme.statusChanged, morpheme.morphLemmeId, morpheme.score)
-            c.execute("Insert into Morphemes(status, changed, morph_lemme_id, score) "
-                      "Values (?,?,?,?)", t)
-        db.commit()
-        c.close()
+        log("insert")
         
         c = db.cursor()
         for morpheme in morphemesToInsert:
-            t = (morpheme.morphLemmeId,)
-            c.execute("Select id From Morphemes Where morph_lemme_id = ?", t)
-            for row in c:
-                morpheme.id = row[0]
+            t = (morpheme.noteId, morpheme.interval, morpheme.changed, morpheme.morphLemmeId, morpheme.score)
+            c.execute("Insert into Morphemes(note_id, max_interval, changed, morph_lemme_id, score) "
+                      "Values (?,?,?,?,?)", t)
+        db.commit()
         c.close()
+        
+        log("end")
     
         return morphemes    
     
@@ -235,7 +226,8 @@ class MorphemeDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        c.execute("select mm.base, mm.read from MorphemeLemmes mm, Morphemes m where mm.id = m.morph_lemme_id and (m.status = 2 or m.status = 3)")
+        c.execute("select mm.base, mm.read from MorphemeLemmes mm, Morphemes m where mm.id = m.morph_lemme_id "
+                  "and m.max_interval > 3")
         result = set()
         for row in c:
             result.add((row[0], row[1]))
@@ -257,3 +249,50 @@ class MorphemeDao:
         c.close()
         
         return result
+    
+    def updateInterval(self, cards):
+        
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        log("update interval")
+        
+        for card in cards:
+            t = (card.interval, card.noteId)
+            c.execute("Update Morphemes Set max_interval = ? Where note_id = ?", t)
+        
+        db.commit()
+        c.close()
+        
+        log("select modified morphemes")
+        
+        c = db.cursor()
+        morphemesModified = set()
+        for card in cards:
+            t = (card.noteId,)
+            c.execute("Select morph_lemme_id From Morphemes where note_id = ?", t)
+            for row in c:
+                if row[0] not in morphemesModified:
+                    morphemesModified.add(row[0])
+                    
+        log("create temp tables")
+        
+        c = db.cursor()
+        c.execute("DROP TABLE IF EXISTS MorphemesMax")
+        c.execute(
+            "Create temporary table MorphemesMax AS select morph_lemme_id, max(max_interval) as max_interval "
+            "From Morphemes group by morph_lemme_id")
+        db.commit()
+        c.close()
+        
+        c = db.cursor()
+        log("update morphemes")
+        for lemmeId in morphemesModified:
+            t = (lemmeId, lemmeId)
+            c.execute("Update Morphemes set max_interval = "
+                      "(select max_interval From MorphemesMax where morph_lemme_id = ?) "
+                      "where morph_lemme_id = ?", t)
+        db.commit()
+        c.close()
+        
+        log("end update interval")

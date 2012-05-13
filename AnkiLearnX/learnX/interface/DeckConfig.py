@@ -67,7 +67,7 @@ class DeckConfig(QDialog):
     def setupExpression(self):
         mainVBox = self.mainVBox
         deck = self.deck
-        ankiDeck = self.deckManager.get(deck.ankiDeckId)
+        ankiDeck = self.deckManager.get(deck.id)
         
         expressionFrame = QGroupBox("(2) Choose Expression")
         
@@ -134,7 +134,7 @@ class DeckConfig(QDialog):
         
         mainVBox = self.mainVBox
         deck = self.deck
-        ankiDeck = self.deckManager.get(deck.ankiDeckId)
+        ankiDeck = self.deckManager.get(deck.id)
         
         modesFrame = QGroupBox("(3) Choose Modes")
         

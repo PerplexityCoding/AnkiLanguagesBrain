@@ -1,6 +1,8 @@
 
 from learnX.utils.Log import *
 
+from aqt import mw
+
 #from anki.deck import DeckStorage
 #from anki.notes import Note
 #from anki.cards import Card
@@ -8,12 +10,15 @@ from learnX.utils.Log import *
 class AnkiHelper:
     
     @staticmethod
-    def getNotes(deck): # m LazyList Note
-        return deck.s.query(Note).all()
+    def getCards(deckid):
+        #deckname = mw.col.decks.get(deckid)["id"]
+        cids = mw.col.decks.cids(deckid)
+        
+        ankiCards = list()
+        for cid in cids:
+            ankiCards.append(mw.col.getCard(cid))
 
-    @staticmethod
-    def getCards(deck):
-        return deck.s.query(Card).all()
+        return ankiCards
 
     @staticmethod
     def getNoteIdToCardsDb(deck): # m Map NoteId {Card}

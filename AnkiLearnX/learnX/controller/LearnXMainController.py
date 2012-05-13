@@ -18,7 +18,6 @@ class LearnXMainController:
         self.col = interface.col
         self.deckManager = interface.deckManager
         
-        
         self.servicesLocator = ServicesLocator.getInstance()
         self.decksService = self.servicesLocator.getDecksService()
         self.languagesService = self.servicesLocator.getLanguagesService()
@@ -27,13 +26,13 @@ class LearnXMainController:
     def analyze(self, deck):
         self.analyzeDeck(deck)
         
-        log("Process Notes Start")
-        self.processNotes(deck.language)
-        log("Process Notes Stop")
+        #log("Process Notes Start")
+        #self.processNotes(deck.language)
+        #log("Process Notes Stop")
         
-        self.interface.refreshAll()
+        #self.interface.refreshAll()
         
-        log("End")
+        #log("End")
     
     def analyzeLanguage(self, language):
         
@@ -53,59 +52,69 @@ class LearnXMainController:
     def analyzeDeck(self, deck):
         
         self.morphemesService = self.servicesLocator.getMorphemesService(deck.language)
-        
-        realDeck = self.deckManager.get(deck.ankiDeckId)
-        log(realDeck)
+
         log("Get All Notes / Cards")
-        self.ankiCards = ankiCards = self.deckManager.cids(realDeck["id"])
+        self.ankiCards = ankiCards = AnkiHelper.getCards(deck.id)
         i = 0
         
         log("Store All Notes : " + str(len(ankiCards)) + " cards")
-        notes = self.notesService.getAllNotes(self.col, deck, ankiCards)
+        
+        notes = self.notesService.retrieveAllNotes(ankiCards)
         
         log("Determine Modified Notes : " + str(len(notes)))
         
-        #XXX: Ne pas faire la vérification la 1er fois, prendre tous les notes !
-        # Verifier a ne prendre que les notes modifié
-        # Pas besoin pour anki 2 ?
         modifiedNotes = []
         for note in notes:
             if note.ankiNote.mod == note.lastUpdated:
                 continue
-            if note.expressionHash != None and Utils.fieldChecksum(note.ankiNote.__getitem__(deck.expressionField)) == note.expressionHash:
+            if note.expressionCsum != None and Utils.fieldChecksum(note.ankiNote[deck.expressionField]) == note.expressionCsum:
                 continue
             modifiedNotes.append(note)
         
         log("Analyze Morphemes on " + str(len(modifiedNotes)) + " notes")
         if len(modifiedNotes) > 0:
+            self.morphemesService.analyzeLemmes(modifiedNotes, deck, deck.language)
             self.morphemesService.analyzeMorphemes(modifiedNotes, deck, deck.language)
 
         log("getAllCardsChanged")
-        modifiedCards = self.notesService.getAllCardsChanged(self.col, deck, ankiCards)
+        cards = self.notesService.retrieveAllCards(deck, ankiCards)
+        #Delete
+        #modifiedCards = self.notesService.getAllCardsChanged(self.col, deck, ankiCards)
         
-        log("computeMorphemesMaturity: " + str(len(modifiedCards)) + " cards")
-        if len(modifiedCards) > 0:
-            self.morphemesService.computeMorphemesMaturity(modifiedCards)
+        modifiedCards = list()
+        for card in cards:
+            if card.ankiCard.mod == card.lastUpdated:
+                continue
+            if card.ankiCard.ivl == card.interval:
+                continue
+            modifiedCards.append(card)
+        
+        #log("computeMorphemesMaturity: " + str(len(modifiedCards)) + " cards")
+        #if len(modifiedCards) > 0:
+        #    self.morphemesService.computeMorphemesMaturity(modifiedCards)
+        
+        log("refreshInterval")
+        self.morphemesService.refreshInterval(modifiedCards)
         
         log("Calculed morpheme Score Start")
         self.morphemesService.computeMorphemesScore(deck.language)
         
-        log("Analyze Definitions")
+        #log("Analyze Definitions")
         #if deck.definitionField:
         #    self.morphemesService.analyseDefinition(deck, deck.language, notes, ankiNotes)
         
-        log("decksService.countMorphemes Start")
-        self.decksService.countMorphemes(deck)
+        #log("decksService.countMorphemes Start")
+        #self.decksService.countMorphemes(deck)
         
-        log("decksService.countMorphemes Start")
-        self.languagesService.countMorphemes(deck.language)
+        #log("decksService.countMorphemes Start")
+        #self.languagesService.countMorphemes(deck.language)
         
-        log("notesService.computeNotesMaturity Start")
-        self.notesService.computeNotesMaturity(deck.language)
+        #log("notesService.computeNotesMaturity Start")
+        #self.notesService.computeNotesMaturity(deck.language)
         
-        log("Saves Decks Start")
-        self.col.save()
-        log("Saves Decks Stop")
+        #log("Saves Decks Start")
+        #self.col.save()
+        #log("Saves Decks Stop")
         
     def processNotes(self, language):
         
@@ -247,7 +256,7 @@ class LearnXMainController:
     # Mark Duplicate
     def markDuplicateNotes(self, deck):
         
-        ankiDeck = self.deckManager.get(deck.ankiDeckId)
+        ankiDeck = self.deckManager.get(deck.id)
         
         cards = self.notesService.getAllCardsOrderByScore(deck = deck)
         ankiNotesId = list()

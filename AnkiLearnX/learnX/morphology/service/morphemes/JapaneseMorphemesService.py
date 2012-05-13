@@ -59,28 +59,38 @@ class JapaneseMorphemesService(MorphemesService):
             return len(expr)
         return wordEase
     
+    def rankMorphLemmes(self, lemmes):
+        
+        log("rankMorphemes")
+        for lemme in lemmes:
+            
+            expr = lemme.base 
+            lemme.score = len(expr) * 10
+            
+            for i,c in enumerate(expr):
+                # skip non-kanji
+                if c < u'\u4E00' or c > u'\u9FBF': continue
+                
+                lemme.score += self.rankKanji(c)
+            
     def computeMorphemesScore(self, language):
         
-        decksId = self.decksService.listDecksIdByLanguage(language)
-        
         log("lemmeDao.getMorphemes() Start")
-        allMorphemes = self.lemmeDao.getMorphemes(decksId)
-        log("lemmeDao.getMorphemes() Stop")
+        #allMorphemes = self.lemmeDao.getMorphemes(decksId)
         
-        log("Rank Morphemes Start")
-        rankDb = self.morphemeDao.getAllKnownSimpleMorphemes()
-        modifiedMorphemes = list()
-        for morpheme in allMorphemes:
-            score = self.rankMorpheme(rankDb, morpheme.morphLemme.base, morpheme.morphLemme.read)
-            if morpheme.score != score:
-                morpheme.score = score
-                morpheme.statusChanged = True #FIXME
-                modifiedMorphemes.append(morpheme)
-        log("Rank Morphemes Stop")
+        #log("Rank Morphemes Start")
+        #rankDb = self.morphemeDao.getAllKnownSimpleMorphemes()
+        #modifiedMorphemes = list()
+        #for morpheme in allMorphemes:
+        #    score = self.rankMorpheme(rankDb, morpheme.morphLemme.base, morpheme.morphLemme.read)
+        #    if morpheme.score != score:
+        #        morpheme.score = score
+        #        modifiedMorphemes.append(morpheme)
+        #log("Rank Morphemes Stop")
         
-        self.morphemeDao.updateAll(modifiedMorphemes)
+        #self.morphemeDao.updateAll(modifiedMorphemes)
         
-        return modifiedMorphemes
+        #return modifiedMorphemes
     
     def filterMorphLemmes(self, morphLemmesList):
         # Do nothing

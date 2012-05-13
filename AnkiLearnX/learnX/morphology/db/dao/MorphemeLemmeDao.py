@@ -5,35 +5,49 @@ from learnX.morphology.db.dto.MorphemeLemme import *
 from learnX.morphology.db.dto.Morpheme import *
 
 from learnX.utils.Log import *
+from learnX.utils.Utils import *
 
 class MorphemeLemmeDao:
     def __init__(self):
         self.learnXdB = LearnXdB.getInstance()
     
-    def persistAll(self, morphemes):
+    def persistAll(self, lemmes):
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        lemmeMorphemesToInsert = list()
-        for morpheme in morphemes:
-            morphLemme = morpheme.morphLemme
+        morphLemmesToInsert = list()
+        for morphLemme in lemmes:
             
             t = (morphLemme.id,)
             c.execute("Select id From MorphemeLemmes Where id = ?", t)            
             morphemeId = c.fetchone()
             if morphemeId == None:
-                lemmeMorphemesToInsert.append(morphLemme)
+                morphLemmesToInsert.append(morphLemme)
         c.close()
             
         c = db.cursor()
-        for lemmeMorpheme in lemmeMorphemesToInsert:
-            t = (lemmeMorpheme.id, lemmeMorpheme.pos, lemmeMorpheme.subPos, lemmeMorpheme.read, lemmeMorpheme.base, lemmeMorpheme.score)
+        for morphLemme in morphLemmesToInsert:
+            t = (morphLemme.id, morphLemme.pos, morphLemme.subPos, morphLemme.read, morphLemme.base, morphLemme.score)
             c.execute("Insert into MorphemeLemmes(id, pos, sub_pos, read, base, score) "
                       "Values (?,?,?,?,?,?)", t)
         db.commit()
         c.close()
             
-        return morphemes
+        return lemmes
+    
+    def updateAllScore(self, lemmes):
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        c = db.cursor()
+        for morphLemme in lemmes:
+            t = (morphLemme.score, morphLemme.id)
+            c.execute("Update MorphemeLemmes set score = ? Where id = ?", t)
+        db.commit()
+        c.close()
+            
+        return lemmes
+    
     
     def findById(self, id):
         db = self.learnXdB.openDataBase()
@@ -48,13 +62,31 @@ class MorphemeLemmeDao:
             c.close()
             return morpheme
         return None
+
+    def getAll(self, decksId):
+
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+
+        c.execute("Select mm.id, mm.base, mm.pos, mm.sub_pos, mm.read, mm.score "
+                  "From MorphemeLemmes mm, Morphemes m, Notes n, Cards c Where "
+                  "c.note_id = n.id and n.id = m.note_id and m.morph_lemme_id = mm.id "
+                  "and c.deck_id in %s" % Utils.ids2str(decksId))
+
+        row = c.fetchone()
+        morphemes = list()
+        for row in c:
+            morphemes.append(MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], row[0]))
+        c.close()
+        
+        return morphemes
         
     def getMorphemes(self, decksId = None, expressions = None, status = None, status_changed = None, pos = None, subPos = None):
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        sql = "Select base, pos, sub_pos, read, m.id, m.status, m.status_changed, mm.id, count(fm.note_id) as c, m.score "
+        sql = "Select base, pos, sub_pos, read, m.id, m.changed, m.interval, mm.id, count(fm.note_id) as c, m.score "
         sql += "From Morphemes m, NotesMorphemes fm, MorphemeLemmes mm, Notes f "
         
         if decksId != None:

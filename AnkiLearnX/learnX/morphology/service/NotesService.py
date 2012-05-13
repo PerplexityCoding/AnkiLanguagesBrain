@@ -21,6 +21,27 @@ class NotesService:
     def setupServices(self):
         self.decksService = self.serviceLocator.getDecksService()
         
+    def retrieveAllNotes(self, ankiCards):    
+        
+        notes = list()
+        for ankiCard in ankiCards:
+            ankiNote = ankiCard.note()
+            note = Note(ankiNote.id)
+            note.ankiNote = ankiNote
+            notes.append(note)
+            
+        return self.note_dao.persistNotes(notes)  
+        
+    def retrieveAllCards(self, deck, ankiCards):
+        
+        cards = list()
+        for ankiCard in ankiCards:
+            card = Card(ankiCard.id, deck.id, ankiCard.note().id)
+            card.ankiCard = ankiCard
+            cards.append(card)
+        
+        return self.card_dao.persistAll(cards)    
+        
     def getNote(self, deck, ankiNoteId):
         note = self.note_dao.findByAnkiNoteId(deck, ankiNoteId)
         if note == None:
@@ -35,30 +56,9 @@ class NotesService:
 
     def getNoteById(self, ankiNoteId):
         note = self.note_dao.findById(ankiNoteId)
-        note.deck = self.deck_dao.findById(note.deckId)
         
         return note
-    
-    def getAllNotes(self, col, deck, ankiCards):
         
-        notes = []
-        notesToInsert = []
-        for ankiCard in ankiCards:
-            ankiCard = col.getCard(ankiCard)
-            ankiNote = ankiCard.note()
-            note = self.note_dao.findByAnkiNoteId(deck, ankiNote.id)
-            if note == None:
-                note = Note(deck.id, ankiNote.id, None, None, False, Note.STATUS_NONE, False, 0)
-                note.deck = deck
-                notesToInsert.append(note)
-            note.ankiNote = ankiNote
-            notes.append(note)
-
-        if len(notesToInsert) > 0:
-            self.note_dao.insertAll(notesToInsert)
-        
-        return notes
-    
     def getAllCardsOrderByScore(self, deck = None, language = None):
         if language:
             decksId = self.decksService.listDecksIdByLanguage(language)

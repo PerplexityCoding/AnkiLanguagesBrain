@@ -13,19 +13,19 @@ class Note:
     
     STATUS_TOO_DIFFICULT = 30 
     
-    def __init__(self, deckId, ankiNoteId, lastUpdated, expressionHash, morphemesChanged, status, statusChanged, score, id = -1):
+    def __init__(self, id, lastUpdated = None, expressionCsum = None, morphemesChanged = False, status = 0,
+                 statusChanged = False, score = 0):
         self.id = id
-        self.deckId = deckId
-        self.ankiNoteId = ankiNoteId
         self.lastUpdated = lastUpdated
-        self.expressionHash = expressionHash
+        self.expressionCsum = expressionCsum
         self.morphemesChanged = morphemesChanged
         self.status = status
         self.statusChanged = statusChanged
         self.score = score
-        self.deck = None
-        self.ankiNote = None
-        self.morphemes = None
+
+        #self.deck = None
+        #self.ankiNote = None
+        #self.morphemes = None
 
     def getStatusTag(self):
         if self.status == self.STATUS_NONE:
@@ -51,5 +51,5 @@ class Note:
 
     def __repr__(self):
         return u'\t'.join([str(self.id), str(self.deckId), str(self.ankiNoteId),str(self.lastUpdated),
-                           str(self.expressionHash), str(self.morphemesChanged), str(self.status),
+                           str(self.expressionCsum), str(self.morphemesChanged), str(self.status),
                            str(self.score), str(self.statusChanged)])
