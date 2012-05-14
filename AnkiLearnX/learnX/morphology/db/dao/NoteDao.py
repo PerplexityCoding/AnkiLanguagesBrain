@@ -170,39 +170,16 @@ class NoteDao:
         
         return notes
     
-    def selectAll(self, decksId, statusChanged = None):
+    def selectAll(self):
         
         db = self.learnXdB.openDataBase()
         
         c = db.cursor()
-        
-        sql = "Select * From Notes Where "
-        t = []
-        
-        if decksId != None and len(decksId) > 0:
-            sql += " ("
-            i = 1
-            for deckId in decksId:
-                t.append(deckId)
-                sql += "deck_id = ?"
-                if i < len(decksId):
-                    sql += " or "
-                i += 1
-            sql += ")"
-        
-        if statusChanged != None:
-            " and status_changed = ? "
-            t.append(statusChanged)
-        
-        if len(t) > 0:
-            c.execute(sql, t)
-        else:
-            c.execute(sql)
+        c.execute("Select * From Notes")
         
         notes = []
         for row in c:
-            notes.append(Note(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[0]))
-        
+            notes.append(Note(row[0], row[1], row[2], row[3], row[4], row[5], row[6]))
         c.close()
         
         return notes

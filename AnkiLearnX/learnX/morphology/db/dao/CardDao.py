@@ -87,18 +87,17 @@ class CardDao:
         
         c = db.cursor()
         
-        sql = "Select c.id, c.deck_id, c.note_id, c.anki_card_id, c.interval, c.status, c.status_changed, c.last_updated, d.anki_deck_id, f.score "
-        sql += "From Decks d, Cards c, Notes f "
-        sql += "Where c.note_id = f.id and c.deck_id = d.id and c.status = 0 and d.id in %s" % Utils.ids2str(decksId)
-        sql += " order by f.score asc"
+        sql = "Select c.id, c.deck_id, c.note_id, c.interval, c.status, c.status_changed, c.last_updated, n.score "
+        sql += "From Cards c, Notes n "
+        sql += "Where c.note_id = n.id and c.interval = 0 and c.deck_id in %s" % Utils.ids2str(decksId)
+        sql += " order by n.score asc"
         
         c.execute(sql)
         
         cards = []
         for row in c:
-            card = Card(row[1],row[2],row[3],row[5],row[6],row[7],row[0])
-            card.deckId = row[8]
-            card.score = int(row[9])
+            card = Card(row[0], row[1], row[2], row[3], row[5], row[6])
+            card.score = int(row[7])
             cards.append(card)
 
         c.close()

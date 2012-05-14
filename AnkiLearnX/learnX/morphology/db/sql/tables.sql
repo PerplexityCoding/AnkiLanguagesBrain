@@ -67,8 +67,7 @@ CREATE TABLE Definitions (
 CREATE TABLE Morphemes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	note_id INTEGER REFERENCES Note(id),
-	max_interval INTEGER,
-	score INTEGER,
+	interval INTEGER,
 	changed INTEGER(1),
 	morph_lemme_id NUMERIC NOT NULL,
 	UNIQUE (note_id, morph_lemme_id)
@@ -80,6 +79,8 @@ CREATE TABLE MorphemeLemmes (
 	sub_pos TEXT,
 	read TEXT NOT NULL,
 	base TEXT NOT NULL,
+	rank INTEGER,
+	max_interval INTEGER,
 	score INTEGER
 );
 

@@ -72,7 +72,7 @@ class MorphemesService:
         for note in notes:
             noteUniqueMorphemes = list()
             for morphLemme in note.morphLemmes:
-                morpheme = Morpheme(note.id, Morpheme.STATUS_NONE, False, morphLemme.id, 0)
+                morpheme = Morpheme(note.id, 0, False, morphLemme.id, -1)
                 if morpheme not in noteUniqueMorphemes:    
                     noteUniqueMorphemes.append(morpheme)
                     allMorphemes.append(morpheme)
@@ -95,14 +95,13 @@ class MorphemesService:
             dictList.append(value)
         return dictList
     
-    
+    # XXX: on considère qu'il y a une seul carte par note ! pour le moment
     def refreshInterval(self, modifiedCards):
         
         for card in modifiedCards:
             card.interval = card.ankiCard.ivl
             
         self.cardDao.updateAll(modifiedCards)
-    
         self.morphemeDao.updateInterval(modifiedCards)
         
     
@@ -117,7 +116,7 @@ class MorphemesService:
         for morphemeLemme in morphLemmes:
             morphLemmeDB = self.lemmeDao.findById(morphemeLemme.id)
             if morphLemmeDB == None:
-                morpheme = Morpheme(0, 0, -1, None, 0, -1)
+                morpheme = Morpheme(-1, 0, None, 0, -1)
                 morpheme.morphLemme = morphemeLemme
             else:
                 morpheme = self.morphemeDao.findByLemmeId(morphLemmeDB.id)
@@ -189,10 +188,7 @@ class MorphemesService:
                 morpheme.morphLemme = self.lemmeDao.findById(morpheme.morphLemmeId)
                 if morpheme.morphLemme:
                     morphemes.append(morpheme)
-            
         return morphemes
-    
-    
     
     def computeMorphemesMaturity(self, cards):
         
@@ -235,6 +231,9 @@ class MorphemesService:
         try:
             return language.posOptions["activatedSubPos"]
         except Exception: pass
+    
+    def getLemmesFromNote(self, note):
+        return self.lemmeDao.getLemmesFromNote(note)
     
     def getMorphemes(self, searchText = None, decksId = None):
         

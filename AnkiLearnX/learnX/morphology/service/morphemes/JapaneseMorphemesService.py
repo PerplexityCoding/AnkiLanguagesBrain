@@ -24,26 +24,21 @@ class JapaneseMorphemesService(MorphemesService):
         return kanjiScore
 
     # Adapted from MorphMan 2
-    def rankMorpheme(self, knownDb, expr, read):
-        wordEase = 0
-        numCharsConsidered = 0
-        hasKanji = False
-        if (expr, read) in knownDb:
-            for i,c in enumerate( expr ):
-                if c < u'\u4E00' or c > u'\u9FBF': continue
-                hasKanji = True
-                wordEase += self.rankKanji(c)
+    def rankMorpheme(self, intervalDb, expr, read, rank):
+        score = rank
+        
+        if (expr, read) in intervalDb:
+            interval = intervalDb[(expr, read)]
+            score = score * pow(2, -1.0 * interval / 24.0)
         else:
-            for i,c in enumerate( expr ):
+            hasKanji = False
+            for i, c in enumerate(expr):
                 # skip non-kanji
                 if c < u'\u4E00' or c > u'\u9FBF': continue
-        
+                
                 hasKanji = True
-                charEase = 200
-                #charEase = self.rankKanji(c)
                 npow = 0
-                numCharsConsidered += 1
-                for (e,r) in knownDb:
+                for (e,r), ivl in intervalDb.iteritems():
                     # has same kanji
                     if c in e:
                         if npow > -0.5: npow -= 0.1
@@ -53,11 +48,9 @@ class JapaneseMorphemesService(MorphemesService):
                             # has same kanji at same pos with similar reading
                             if i == 0 and read[0] == r[0] or i == len(expr)-1 and read[-1] == r[-1]:
                                 npow -= 0.8
-                charEase += self.rankKanji(c)
-                wordEase += charEase * pow(2, npow)
-        if not hasKanji:
-            return len(expr)
-        return wordEase
+                        npow = npow * (1.0 - pow(2, -1.0 * ivl / 24.0))
+                score *= pow(2, npow)
+        return score
     
     def rankMorphLemmes(self, lemmes):
         
@@ -65,32 +58,37 @@ class JapaneseMorphemesService(MorphemesService):
         for lemme in lemmes:
             
             expr = lemme.base 
-            lemme.score = len(expr) * 10
+            lemme.rank = len(expr) * 10
             
             for i,c in enumerate(expr):
                 # skip non-kanji
                 if c < u'\u4E00' or c > u'\u9FBF': continue
                 
-                lemme.score += self.rankKanji(c)
+                lemme.rank += self.rankKanji(c)
             
     def computeMorphemesScore(self, language):
         
+        decksId = self.decksService.listDecksIdByLanguage(language)
+        
         log("lemmeDao.getMorphemes() Start")
-        #allMorphemes = self.lemmeDao.getMorphemes(decksId)
+        allLemmes = self.lemmeDao.getAll()
         
-        #log("Rank Morphemes Start")
-        #rankDb = self.morphemeDao.getAllKnownSimpleMorphemes()
-        #modifiedMorphemes = list()
-        #for morpheme in allMorphemes:
-        #    score = self.rankMorpheme(rankDb, morpheme.morphLemme.base, morpheme.morphLemme.read)
-        #    if morpheme.score != score:
-        #        morpheme.score = score
-        #        modifiedMorphemes.append(morpheme)
-        #log("Rank Morphemes Stop")
+        log("Rank Morphemes Start")
+        intervalDb = self.lemmeDao.getKnownLemmesIntervalDB()
         
-        #self.morphemeDao.updateAll(modifiedMorphemes)
+        log(intervalDb)
         
-        #return modifiedMorphemes
+        modifiedLemmes = list()
+        for lemme in allLemmes:
+            score = self.rankMorpheme(intervalDb, lemme.base, lemme.read, lemme.rank)
+            if lemme.score != score:
+                lemme.score = score
+                modifiedLemmes.append(lemme)
+        
+        log("Update all Score " + str(len(modifiedLemmes)))
+        self.lemmeDao.updateAllScore(modifiedLemmes)
+        
+        return modifiedLemmes
     
     def filterMorphLemmes(self, morphLemmesList):
         # Do nothing

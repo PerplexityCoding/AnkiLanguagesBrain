@@ -5,7 +5,7 @@ class Card:
     STATUS_LEARNT = 1
     STATUS_KNOWN = 2
     STATUS_MATURE = 3
-    
+
     def __init__(self, id, deckId, noteId, interval = 0, status = 0, statusChanged = False, lastUpdated = None):
         self.id = id
         self.deckId = deckId

@@ -15,21 +15,35 @@ class MorphemeLemmeDao:
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        morphLemmesToInsert = list()
-        for morphLemme in lemmes:
+        lemmesToInsert = list()
+        for lemme in lemmes:
             
-            t = (morphLemme.id,)
+            t = (lemme.id,)
             c.execute("Select id From MorphemeLemmes Where id = ?", t)            
-            morphemeId = c.fetchone()
-            if morphemeId == None:
-                morphLemmesToInsert.append(morphLemme)
+            lemmeId = c.fetchone()
+            if lemmeId == None:
+                lemmesToInsert.append(lemme)
         c.close()
             
         c = db.cursor()
-        for morphLemme in morphLemmesToInsert:
-            t = (morphLemme.id, morphLemme.pos, morphLemme.subPos, morphLemme.read, morphLemme.base, morphLemme.score)
-            c.execute("Insert into MorphemeLemmes(id, pos, sub_pos, read, base, score) "
-                      "Values (?,?,?,?,?,?)", t)
+        for lemme in lemmesToInsert:
+            t = (lemme.id, lemme.pos, lemme.subPos, lemme.read, lemme.base, lemme.rank,
+                 lemme.maxInterval, lemme.score)
+            c.execute("Insert into MorphemeLemmes(id, pos, sub_pos, read, base, rank, max_interval, score) "
+                      "Values (?,?,?,?,?,?,?,?)", t)
+        db.commit()
+        c.close()
+            
+        return lemmes
+    
+    def updateAllRank(self, lemmes):
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        c = db.cursor()
+        for lemme in lemmes:
+            t = (lemme.rank, lemme.id)
+            c.execute("Update MorphemeLemmes set rank = ? Where id = ?", t)
         db.commit()
         c.close()
             
@@ -40,47 +54,84 @@ class MorphemeLemmeDao:
         c = db.cursor()
         
         c = db.cursor()
-        for morphLemme in lemmes:
-            t = (morphLemme.score, morphLemme.id)
+        for lemme in lemmes:
+            t = (lemme.score, lemme.id)
             c.execute("Update MorphemeLemmes set score = ? Where id = ?", t)
         db.commit()
         c.close()
             
         return lemmes
     
-    
     def findById(self, id):
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
         t = (id,)
-        c.execute("Select id, base, pos, sub_pos, read, score From MorphemeLemmes Where id = ?", t)
+        c.execute("Select id, base, pos, sub_pos, read, rank, max_interval, score From MorphemeLemmes Where id = ?", t)
         
         row = c.fetchone()
         if row:
-            morpheme = MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], row[0])
+            morpheme = MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], row[6], row[7], row[0])
             c.close()
             return morpheme
         return None
-
-    def getAll(self, decksId):
-
+    
+    def getAll(self):
         db = self.learnXdB.openDataBase()
         c = db.cursor()
+        
+        c.execute("Select id, base, pos, sub_pos, read, rank, max_interval, score From MorphemeLemmes")
 
-        c.execute("Select mm.id, mm.base, mm.pos, mm.sub_pos, mm.read, mm.score "
-                  "From MorphemeLemmes mm, Morphemes m, Notes n, Cards c Where "
-                  "c.note_id = n.id and n.id = m.note_id and m.morph_lemme_id = mm.id "
-                  "and c.deck_id in %s" % Utils.ids2str(decksId))
-
-        row = c.fetchone()
         morphemes = list()
         for row in c:
-            morphemes.append(MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], row[0]))
+            morphemes.append(MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], row[6], row[7], row[0]))
         c.close()
         
         return morphemes
+    
+    def getKnownLemmesIntervalDB(self):
         
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        c.execute("Select base, read, max_interval From MorphemeLemmes where max_interval > 0")
+        intervalDb = dict()
+        for row in c:
+           intervalDb[(row[0], row[1])] = row[2]
+        c.close()
+        return intervalDb
+        
+    def getLemmesFromNote(self, note):
+        
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        t = (note.id,)
+        c.execute("Select ml.id, base, pos, sub_pos, read, rank, max_interval, ml.score "
+                  "From MorphemeLemmes ml, Morphemes m "
+                  "Where ml.id = m.morph_lemme_id and m.note_id = ?", t)
+        lemmes = list()
+        for row in c:
+           lemmes.append(MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], row[6], row[7], row[0]))
+        c.close()
+        
+        return lemmes
+        
+    def getLemmeIntervalFromNote(self, note):
+        
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        t = (note.id,)
+        c.execute("Select max_interval, score From MorphemeLemmes ml, Morphemes m "
+                  "Where ml.id = m.morph_lemme_id and m.note_id = ?", t)
+        lemmes = list()
+        for row in c:
+           lemmes.append((row[0], row[1]))
+        c.close()
+        
+        return lemmes
+
     def getMorphemes(self, decksId = None, expressions = None, status = None, status_changed = None, pos = None, subPos = None):
         
         db = self.learnXdB.openDataBase()
