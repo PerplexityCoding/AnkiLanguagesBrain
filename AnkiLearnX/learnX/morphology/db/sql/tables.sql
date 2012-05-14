@@ -13,9 +13,7 @@ CREATE TABLE Languages (
 	pos_tagger_id INTEGER NOT NULL,
 	pos_tagger_options BLOB,
 	total_morphemes INTEGER,
-	learnt_morphemes INTEGER,
-	known_morphemes INTEGER,
-	mature_morphemes INTEGER
+	known_morphemes INTEGER
 );
 
 CREATE TABLE Decks (
@@ -24,13 +22,8 @@ CREATE TABLE Decks (
 	language_id INTEGER REFERENCES Languages(id),
 	expression_field TEXT NOT NULL,
 	deck_fields BLOB,
-	mature_treshold INTEGER,
-	known_treshold INTEGER,
-	learn_treshold INTEGER,
 	total_morphemes INTEGER,
-	learnt_morphemes INTEGER,
 	known_morphemes INTEGER,
-	mature_morphemes INTEGER,
 	pos_options BLOB,
 	definition_field TEXT,
 	definition_key_field TEXT
@@ -40,9 +33,7 @@ CREATE TABLE Notes (
 	id INTEGER PRIMARY KEY,
 	last_updated INTEGER,
 	expression_csum TEXT,
-	morphemes_changed INTEGER(1),
-	status INTEGER(4),
-	status_changed INTEGER(1),
+	changed INTEGER(1),
 	score INTEGER
 );
 
@@ -51,8 +42,7 @@ CREATE TABLE Cards (
 	deck_id INTEGER REFERENCES Decks(id),
 	note_id INTEGER REFERENCES Notes(id),
 	interval INTEGER,
-	status INTEGER(4),
-	status_changed INTEGER(1),
+	changed INTEGER(1),
 	last_updated INTEGER
 );
 

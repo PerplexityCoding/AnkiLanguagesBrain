@@ -125,13 +125,12 @@ class LearnXMainController:
             origTags = tm.join(ankiNote.tags)
             
             fields = { #FIXME
-                Deck.LEARNX_SCORE_KEY : ("LearnXScore", True, True),
-                Deck.VOCAB_SCORE_KEY : ("VocabScore", True, True),
-                Deck.UNKNOWNS_KEY : ("UnknownMorphemes", True, False),
-                Deck.KNOWNS_KEY : ("KnownMorphemes", True, False),
-                Deck.COPY_UNKNOWN_1_TO_KEY : ("VocabExpression", True, False),
-                Deck.COPY_MATURE_TO_KEY : ("SentenceExpression", True, False),
-                Deck.DEFINITION_SCORE_KEY : ("DefinitionScore", True, False)
+                Deck.LEARNX_SCORE_KEY : ("LearnXScore", False, True),
+                Deck.VOCAB_SCORE_KEY : ("VocabScore", False, True),
+                Deck.UNKNOWNS_KEY : ("UnknownMorphemes", False, False),
+                Deck.KNOWNS_KEY : ("KnownMorphemes", False, False),
+                Deck.COPY_UNKNOWN_1_TO_KEY : ("VocabExpression", False, False),
+                Deck.DEFINITION_SCORE_KEY : ("DefinitionScore", False, False)
             }
             
             lemmes = self.morphemesService.getLemmesFromNote(note)
@@ -214,54 +213,22 @@ class LearnXMainController:
     def changeDueCards(self, language):
         
         now = intTime()
-        cards = self.notesService.getAllCardsOrderByScore(language = language)
+        log("select")
+        cards = self.notesService.getAllNotesByLanguage(language)
 
+        log("get Cards")
         d = []
         for card in cards:
-            if card.score != 0:
+            try:
+                ankiCard = self.col.getCard(card.id)
+            except Exception: continue
+            
+            if card.score != 0 and ankiCard.due != card.score:
                 due = card.score
                 d.append(dict(now=now, due=due, usn=self.col.usn(), cid=card.id))
-        self.col.db.executemany("update cards set due=:due, mod=:now, usn=:usn where id = :cid", d)
-
-    # Mark Duplicate
-    def markDuplicateNotes(self, deck):
-        
-        ankiDeck = self.deckManager.get(deck.id)
-        
-        cards = self.notesService.getAllCardsOrderByScore(deck = deck)
-        ankiNotesId = list()
-    
-        ankiNotes = AnkiHelper.getNotes(ankiDeck)
-        ankiNotesDict = dict()
-        for ankiNote in ankiNotes:
-            ankiNotesDict[ankiNote.id] = ankiNote
-    
-        uniqueMorphemes = dict()
-        #i = 0
-        for card in cards:
-            note = self.notesService.getNoteById(card.noteId)
-            morphemes = self.notesService.getMorphemes(note)
-            
-            noteHasNewMorphemes = False
-            for morpheme in morphemes:
-                if morpheme.id not in uniqueMorphemes:
-                    uniqueMorphemes[morpheme.id] = morpheme.id
-                    noteHasNewMorphemes = True
-            
-            try:
-                ankiNote = ankiNotesDict[note.ankiNoteId]
-            except Exception:continue
-            
-            ankiNote.tags = canonifyTags(deleteTags(u'LxDuplicate', ankiNote.tags))
-            if noteHasNewMorphemes == False:
-                log(str(note) + " is Duplicate")
-                ankiNote.tags = canonifyTags(addTags(u'LxDuplicate', ankiNote.tags))
-                ankiNotesId.append(int(ankiNote.id))
-
-        log(ankiNotesId)
-        ankiDeck.updateNoteTags(ankiNotesId)
-        
-        self.col.tags.register([u'LxDuplicate'])
-        self.col.save()
+                
+        log("update")
+        if len(d) > 0:
+            self.col.db.executemany("update cards set due=:due, mod=:now, usn=:usn where id = :cid", d)
 
 

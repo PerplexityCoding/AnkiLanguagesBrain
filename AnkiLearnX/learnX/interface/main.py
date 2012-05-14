@@ -98,9 +98,7 @@ class LearnX(QDialog):
         
         decksGrid.addWidget(self.tableTitle("Deck"), 0, 0)
         decksGrid.addWidget(self.tableTitle("Total"), 0, 1, Qt.AlignHCenter)
-        decksGrid.addWidget(self.tableTitle("Mature"), 0, 2, Qt.AlignHCenter)
         decksGrid.addWidget(self.tableTitle("Known"), 0, 3, Qt.AlignHCenter)
-        decksGrid.addWidget(self.tableTitle("Learnt"), 0, 4, Qt.AlignHCenter)
         decksGrid.addWidget(self.tableTitle("Actions"), 0, 5, 1, 4, Qt.AlignHCenter)
 
     def enabledDeck(self, deck, index):
@@ -143,10 +141,8 @@ class LearnX(QDialog):
             
             if deck.enabled:
                 decksGrid.addWidget(QLabel(str(deck.totalMorphemes)), i, 1, Qt.AlignHCenter)
-                decksGrid.addWidget(QLabel(str(deck.matureMorphemes)), i, 2, Qt.AlignHCenter)
                 decksGrid.addWidget(QLabel(str(deck.knownMorphemes)), i, 3, Qt.AlignHCenter)
-                decksGrid.addWidget(QLabel(str(deck.learntMorphemes)), i, 4, Qt.AlignHCenter)
-            
+                
                 conf = QPushButton("Conf")
                 #self.confButtons.append(conf)
                 conf.setEnabled(deck.enabled)
@@ -208,9 +204,7 @@ class LearnX(QDialog):
         else:
             languagesGrid.addWidget(self.tableTitle("Language"), 0, 0)
             languagesGrid.addWidget(self.tableTitle("Total"), 0, 1, Qt.AlignHCenter)
-            languagesGrid.addWidget(self.tableTitle("Mature"), 0, 2, Qt.AlignHCenter)
             languagesGrid.addWidget(self.tableTitle("Known"), 0, 3, Qt.AlignHCenter)
-            languagesGrid.addWidget(self.tableTitle("Learnt"), 0, 4, Qt.AlignHCenter)
             languagesGrid.addWidget(self.tableTitle("Actions"), 0, 5, 1, 3, Qt.AlignHCenter)
         
             for language in languages:
@@ -218,9 +212,7 @@ class LearnX(QDialog):
                 log(languageName)
                 languagesGrid.addWidget(QLabel(languageName), i, 0, Qt.AlignHCenter)
                 languagesGrid.addWidget(QLabel(str(language.totalMorphemes)), i, 1, Qt.AlignHCenter)
-                languagesGrid.addWidget(QLabel(str(language.matureMorphemes)), i, 2, Qt.AlignHCenter)
                 languagesGrid.addWidget(QLabel(str(language.knownMorphemes)), i, 3, Qt.AlignHCenter)
-                languagesGrid.addWidget(QLabel(str(language.learntMorphemes)), i, 4, Qt.AlignHCenter)
                 
                 conf = QPushButton("Conf")
                 self.connect(conf, SIGNAL("clicked()"), lambda l=language: self.morphemesController.launchBrowserMorphemesByLanguage(l))
@@ -237,10 +229,6 @@ class LearnX(QDialog):
                 languagesGrid.addWidget(more, i, 7)
                 
                 i += 1
-        
-        #addNewLanguageButton = QPushButton("Add New Language")
-        #mw.connect(addNewLanguageButton, SIGNAL('clicked()'), self.openLanguageChooser)
-        #languagesGrid.addWidget(addNewLanguageButton, i, 0, 1, 4)
 
     def openLanguageChooser(self):
         self.languageChooser = LanguageChooser(self)

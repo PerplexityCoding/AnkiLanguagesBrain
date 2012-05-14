@@ -86,9 +86,6 @@ class DeckConfigController:
         
         self.decksService.changeLanguage(interface.deck, unicode(interface.languageCombo.currentText()))
         
-        deck.matureTreshold = int(str(interface.matureEdit.text()))
-        deck.knownTreshold = int(str(interface.knownEdit.text()))
-        deck.learnTreshold = int(str(interface.learnEdit.text()))
         deck.expressionField = str(interface.expressionCombo.currentText())
         
         bsPosListWidget = interface.bsPosListWidget

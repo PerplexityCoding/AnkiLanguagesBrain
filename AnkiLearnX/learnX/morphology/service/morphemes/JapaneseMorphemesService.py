@@ -71,7 +71,7 @@ class JapaneseMorphemesService(MorphemesService):
         decksId = self.decksService.listDecksIdByLanguage(language)
         
         log("lemmeDao.getMorphemes() Start")
-        allLemmes = self.lemmeDao.getAll()
+        allLemmes = self.lemmeDao.getAllLemmes()
         
         log("Rank Morphemes Start")
         intervalDb = self.lemmeDao.getKnownLemmesIntervalDB()
@@ -84,7 +84,7 @@ class JapaneseMorphemesService(MorphemesService):
                 modifiedLemmes.append(lemme)
         
         log("Update all Score " + str(len(modifiedLemmes)))
-        self.lemmeDao.updateAllScore(modifiedLemmes)
+        self.lemmeDao.updateLemmesScore(modifiedLemmes)
         
         return modifiedLemmes
     

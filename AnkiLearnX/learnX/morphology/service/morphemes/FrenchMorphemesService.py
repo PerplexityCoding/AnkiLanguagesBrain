@@ -27,29 +27,6 @@ class FrenchMorphemesService(MorphemesService):
                     return score * 0.5
         return score
     
-    def computeMorphemesScore(self, language):
-        
-        decksId = self.decksService.listDecksIdByLanguage(language)
-        
-        log("lemmeDao.getMorphemes() Start")
-        allMorphemes = self.lemmeDao.getMorphemes(decksId)
-        log("lemmeDao.getMorphemes() Stop")
-        
-        log("Rank Morphemes Start")
-        rankDb = self.morphemeDao.getAllKnownBaseMorphemes()
-        modifiedMorphemes = list()
-        for morpheme in allMorphemes:
-            score = self.rankMorpheme(rankDb, morpheme.morphLemme.base)
-            if morpheme.score != score:
-                morpheme.score = score
-                morpheme.statusChanged = True #FIXME
-                modifiedMorphemes.append(morpheme)
-        log("Rank Morphemes Stop")
-        
-        self.morphemeDao.updateAll(modifiedMorphemes)
-        
-        return modifiedMorphemes
-    
     def filterMorphLemmes(self, morphLemmesList):
         for morphLemme in morphLemmesList:
             morphLemme.pos = ""

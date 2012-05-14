@@ -33,7 +33,6 @@ class DeckConfig(QDialog):
         #self.setupFields()
         #self.setupModes()
         self.setupPOSOptions()
-        self.setupOptions()
         self.setupButtons()
         
     def setupLanguages(self):
@@ -269,29 +268,6 @@ class DeckConfig(QDialog):
         
         if language:
             self.refreshPosOptions(deck, language)
-        
-    def setupOptions(self):
-        
-        mainVBox = self.mainVBox
-        
-        optionsGroup = QGroupBox("(6) Choose Maturity Options")
-        
-        mainVBox.fieldsGrid = matureGrid = QGridLayout()
-        optionsGroup.setLayout(matureGrid)
-        
-        matureGrid.addWidget(QLabel("Mature"), 0, 1, Qt.AlignHCenter)
-        matureGrid.addWidget(QLabel("Known"), 0, 2, Qt.AlignHCenter)
-        matureGrid.addWidget(QLabel("Learn"), 0, 3, Qt.AlignHCenter)
-        
-        matureGrid.addWidget(QLabel("Maturity"), 1, 0)
-        self.matureEdit = matureEdit = QLineEdit(str(self.deck.matureTreshold))
-        matureGrid.addWidget(matureEdit, 1, 1)
-        self.knownEdit = knownEdit = QLineEdit(str(self.deck.knownTreshold))
-        matureGrid.addWidget(knownEdit, 1, 2)
-        self.learnEdit = learnEdit = QLineEdit(str(self.deck.learnTreshold))
-        matureGrid.addWidget(learnEdit, 1, 3)
-        
-        mainVBox.addWidget(optionsGroup)
         
     def setupButtons(self):
         

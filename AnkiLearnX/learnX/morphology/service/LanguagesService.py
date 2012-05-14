@@ -56,19 +56,19 @@ class LanguagesService:
         return self.languagesName[language]
     
     def getLanguageByCode(self, code):
-        language = self.languageDao.findByCode(code)
+        language = self.languageDao.findLanguageByCode(code)
         if language:
             self.selectPosTagger(language)
         return language
     
     def getLanguageById(self, id):
-        language = self.languageDao.findById(id)
+        language = self.languageDao.findLanguageById(id)
         if language:
             self.selectPosTagger(language)
         return language
     
     def getLanguageByName(self, name):
-        language = self.languageDao.findByCode(self.languagesName[name])
+        language = self.languageDao.findLanguageByCode(self.languagesName[name])
         if language:
             self.selectPosTagger(language)
         return language
@@ -81,7 +81,7 @@ class LanguagesService:
             return self.Japanese
 
     def listLanguages(self):
-        return self.languageDao.list()
+        return self.languageDao.listLanguages()
 
     def selectPosTagger(self, language):
         if language.posTaggerId == 1:
@@ -98,12 +98,9 @@ class LanguagesService:
         elif languageCode == 500:
             language = self.Japanese
         self.selectPosTagger(language)
-        return self.languageDao.insert(language)
+        return self.languageDao.insertLanguage(language)
     
     def countMorphemes(self, language):
-        
-        decksId = self.decksService.listDecksIdByLanguage(language)
-        
-        self.languageDao.countMorphemes(language, decksId)
-        self.languageDao.update(language)
+        #FIXME
+        language = language
         

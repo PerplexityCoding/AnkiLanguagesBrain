@@ -12,7 +12,7 @@ class MorphemeDao:
     def __init__(self):
         self.learnXdB = LearnXdB.getInstance()
     
-    def persistAll(self, morphemes):
+    def persistMorphemes(self, morphemes):
         db = self.learnXdB.openDataBase()
         
         log("select")
@@ -40,32 +40,6 @@ class MorphemeDao:
         log("end")
     
         return morphemes    
-    
-    def findByLemmeId(self, lemmeId):
-        
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        
-        t = (lemmeId,)
-        c.execute("Select * From Morphemes Where morph_lemme_id = ?", t)
-        
-        row = c.fetchone()
-        if row:
-            return Morpheme(row[1], row[2], row[3], row[4], row[0])
-        return None
-
-    def findById(self, id):
-        
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        
-        t = (id,)
-        c.execute("Select * From Morphemes Where id = ?", t)
-        
-        row = c.fetchone()
-        if row:
-            return Morpheme(row[1], row[2], row[3], row[4], row[0])
-        return None
     
     def updateInterval(self, cards):
         

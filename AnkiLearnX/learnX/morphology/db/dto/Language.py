@@ -5,15 +5,13 @@ class Language:
     FRENCH = 2
     JAPANESE = 500
     
-    def __init__(self, nameId, posTaggerId, id = -1, total = 0, learnt = 0, known = 0, mature = 0, posOptions = None):
+    def __init__(self, nameId, posTaggerId, id = -1, total = 0, known = 0, posOptions = None):
         self.id = id
         self.nameId = nameId
         self.posTaggerId = posTaggerId
         self.posOptions = posOptions
         self.totalMorphemes = total
-        self.learntMorphemes = learnt
         self.knownMorphemes = known
-        self.matureMorphemes = mature
         self.lemmatizer = None
 
     def __ne__(self, o):

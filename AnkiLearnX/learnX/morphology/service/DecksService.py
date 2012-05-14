@@ -38,10 +38,10 @@ class DecksService:
         
     def getDeck(self, ankiDeckId):
         
-        deck = self.deckDao.findById(ankiDeckId)
+        deck = self.deckDao.findDeckById(ankiDeckId)
         if deck == None:
             deck = Deck(ankiDeckId, False, None, None, None)
-            deck = self.deckDao.insert(deck)
+            deck = self.deckDao.insertDeck(deck)
         
         if deck.languageId != None:
             deck.language = self.languagesService.getLanguageById(deck.languageId)
@@ -49,8 +49,8 @@ class DecksService:
         return deck
     
     def countMorphemes(self, deck):
-        self.deckDao.countMorphemes(deck)
-        self.deckDao.update(deck)
+        #FIXME
+        deck = deck
     
     def changeLanguage(self, deck, languageName):
 
@@ -59,24 +59,24 @@ class DecksService:
             deck.language = self.languagesService.addLanguage(languageName)
         deck.languageId = deck.language.id
         
-        deck = self.deckDao.update(deck)
+        deck = self.deckDao.updateDeck(deck)
         
         return deck
     
     def enableDeck(self, deck):
         
         deck.enabled = True
-        deck = self.deckDao.update(deck)
+        deck = self.deckDao.updateDeck(deck)
         
         return deck
         
     def disableDeck(self, deck):
         
         deck.enabled = False
-        deck = self.deckDao.update(deck)
+        deck = self.deckDao.updateDeck(deck)
         
         return deck
     
     def updateDeck(self, deck):
-        return self.deckDao.update(deck)
+        return self.deckDao.updateDeck(deck)
         

@@ -63,7 +63,7 @@ class MorphemesService:
         self.rankMorphLemmes(allUniqueMorphLemmes)
         
         log("persist All Lemmes")
-        self.lemmeDao.persistAll(allUniqueMorphLemmes)
+        self.lemmeDao.persistLemmes(allUniqueMorphLemmes)
     
     def analyzeMorphemes(self, notes, deck, language):
         
@@ -81,10 +81,10 @@ class MorphemesService:
             note.ankiNote = None
         
         log("persist All Morphemes")
-        self.morphemeDao.persistAll(allMorphemes)
+        self.morphemeDao.persistMorphemes(allMorphemes)
         
         log("update All")
-        self.noteDao.updateAll(notes) 
+        self.noteDao.updateNotes(notes) 
         
         for note in notes:
             note.morphLemmes = None
@@ -101,7 +101,7 @@ class MorphemesService:
         for card in modifiedCards:
             card.interval = card.ankiCard.ivl
             
-        self.cardDao.updateAll(modifiedCards)
+        self.cardDao.updateCards(modifiedCards)
         self.morphemeDao.updateInterval(modifiedCards)
         
     
@@ -170,7 +170,7 @@ class MorphemesService:
         
         morphemes = list()
         for morphemeId in morphemesId:
-            morpheme = self.morphemeDao.findById(morphemeId)
+            morpheme = self.morphemeDao.findMorphemeById(morphemeId)
             if morpheme:
                 morpheme.morphLemme = self.lemmeDao.findById(morpheme.morphLemmeId)
                 if morpheme.morphLemme:
@@ -183,45 +183,13 @@ class MorphemesService:
         
         morphemes = list()
         for morphemeId in morphemesId:
-            morpheme = self.morphemeDao.findById(morphemeId)
+            morpheme = self.morphemeDao.findMorphemeById(morphemeId)
             if morpheme:
                 morpheme.morphLemme = self.lemmeDao.findById(morpheme.morphLemmeId)
                 if morpheme.morphLemme:
                     morphemes.append(morpheme)
         return morphemes
     
-    def computeMorphemesMaturity(self, cards):
-        
-        log("computeMorphemesMaturity")
-        
-        morphemesInCards = dict()
-        for card in cards:
-            morphemes = self.morphemeDao.getMorphemesFromCard(card) # Very Fast 45s pour 20.000
-            #log("Morphemes: " + str(len(morphemes)))
-            for morpheme in morphemes:
-                if morpheme.id not in morphemesInCards:
-                    morphemesInCards[morpheme.id] = morpheme
-            card.lastUpdated = card.ankiLastModified
-        
-        morphemesInCardsList = self.getList(morphemesInCards)
-        log("get New Status for morphemes: " + str(len(morphemesInCardsList)))
-        
-        modifiedMorphemes = list()
-        for morpheme in morphemesInCardsList:
-            #log("morpheme: " + str(morpheme))
-            status = self.morphemeDao.getNewStatus(morpheme) # Slow :/ XXX: Optimize
-            #log("status: " + str(status))
-            if morpheme.status != status:
-                log("status modified")
-                morpheme.status = status
-                morpheme.statusChanged = True
-                modifiedMorphemes.append(morpheme)
-
-        if len(modifiedMorphemes) > 0:
-            self.morphemeDao.updateAll(modifiedMorphemes)
-        self.cardDao.updateAll(cards)
-    
-        
     def getAllPOS(self, language):
         try:
             return language.posOptions["activatedPos"]

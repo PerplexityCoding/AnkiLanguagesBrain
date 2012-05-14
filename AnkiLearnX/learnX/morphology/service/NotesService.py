@@ -38,44 +38,25 @@ class NotesService:
         
         cards = list()
         for ankiCard in ankiCards:
-            card = Card(ankiCard.id, deck.id, ankiCard.note().id)
+            note = ankiCard.note()
+            card = Card(ankiCard.id, deck.id, note.id)
             card.ankiCard = ankiCard
             cards.append(card)
         
-        return self.card_dao.persistAll(cards)    
+        return self.card_dao.persistCards(cards)    
         
-    def getNote(self, deck, ankiNoteId):
-        note = self.note_dao.findByAnkiNoteId(deck, ankiNoteId)
-        if note == None:
-            note = Note(deck.id, ankiNoteId, None, None, False, Note.STATUS_NONE, False, 0)
-            note.deck = deck
-            note = self.note_dao.insert(note)
-
-        return note
-    
     def getDefinition(self, note):
         return self.definitionDao.getDefinition(note.id)
-
-    def getNoteById(self, ankiNoteId):
-        note = self.note_dao.findById(ankiNoteId)
-        return note
         
-    def getAllCardsOrderByScore(self, deck = None, language = None):
-        if language:
-            decksId = self.decksService.listDecksIdByLanguage(language)
-        else:
-            decksId = [deck.id]
-        return self.card_dao.getCardsOrderByScore(decksId)
-    
     def getAllNotesChanged(self, language):
         return self.getAllNotesByLanguage(language)
     
     def getAllNotesByLanguage(self, language):
-        return self.note_dao.selectAll()
+        return self.note_dao.selectNotes()
     
     def computeNotesScore(self, deck):
         
-        notes = self.note_dao.selectAll()
+        notes = self.note_dao.selectNotes()
         for note in notes:
             lemmes = self.lemmeDao.getLemmeIntervalFromNote(note)
             score = 0
@@ -87,20 +68,10 @@ class NotesService:
                 score += 1000 * factor + morphemeScore
             note.score = score
             
-        self.note_dao.updateAll(notes) 
+        self.note_dao.updateNotes(notes) 
 
-    def changeMorphemes(self, note, morphemes):
-        self.note_dao.insertNoteMorphemes(note, morphemes)
-        
-        note.morphemes = morphemes
-        return note
-    
     def getMorphemes(self, note):
         return self.morpheme_dao.getMorphemesFromNote(note, True)
-
-    def getAllNewCards(self, language):
-        decksId = self.decksService.listDecksIdByLanguage(language)
-        return self.card_dao.getAllNewCards(decksId)
 
     def clearAllNotesStatus(self, language):
         decksId = self.decksService.listDecksIdByLanguage(language)
