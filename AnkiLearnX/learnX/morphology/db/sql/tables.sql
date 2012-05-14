@@ -71,7 +71,8 @@ CREATE TABLE MorphemeLemmes (
 	base TEXT NOT NULL,
 	rank INTEGER,
 	max_interval INTEGER,
-	score INTEGER
+	score INTEGER,
+	changed INTEGER(1)
 );
 
 PRAGMA encoding = "UTF-8";

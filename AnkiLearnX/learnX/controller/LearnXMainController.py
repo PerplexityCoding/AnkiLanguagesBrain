@@ -26,9 +26,9 @@ class LearnXMainController:
         self.analyzeDeck(deck)
         
         log("Process Notes Start")
-        self.processNotes(deck.language)
-        log("Process Notes Stop")
+        self.processGlobal(deck.language)
         
+        log("Refresh Interface")
         self.interface.refreshAll()
         log("End")
     
@@ -40,11 +40,10 @@ class LearnXMainController:
             self.analyzeDeck(deck)
         
         log("Process Notes Start")
-        self.processNotes(deck.language)
-        log("Process Notes Stop")
+        self.processGlobal(deck.language)
         
+        log("Refresh Interface")
         self.interface.refreshAll()
-        
         log("End")
         
     def analyzeDeck(self, deck):
@@ -89,13 +88,13 @@ class LearnXMainController:
             log("refreshInterval")
             self.morphemesService.refreshInterval(modifiedCards)
         
+    def processGlobal(self, language):
+        
         log("Calculed morpheme Score Start")
-        self.morphemesService.computeMorphemesScore(deck.language)
+        self.morphemesService.computeMorphemesScore()
         
         log("Calculed notes Score Start")
-        self.notesService.computeNotesScore(deck)
-        
-    def processNotes(self, language):
+        self.notesService.computeNotesScore()
         
         log("self.markNotes()")     
         self.markNotes(language)
@@ -103,31 +102,37 @@ class LearnXMainController:
         log("self.changeDueCards()")     
         self.changeDueCards(language)
         
+        log("self.resetLemmesChanged()") 
+        self.morphemesService.resetLemmesChanged()
+        
         self.col.save()
     
     def markNotes(self, language):
         notes = self.notesService.getAllNotesByLanguage(language)
-        ankiNotesId = list()
         
-        #i = 0
-        modifiedFields = []
+        
+        fields = { #FIXME
+            Deck.LEARNX_SCORE_KEY : ("LearnXScore", False, True),
+            Deck.VOCAB_SCORE_KEY : ("VocabScore", False, True),
+            Deck.UNKNOWNS_KEY : ("UnknownMorphemes", False, False),
+            Deck.KNOWNS_KEY : ("KnownMorphemes", False, False),
+            Deck.COPY_UNKNOWN_1_TO_KEY : ("VocabExpression", False, False),
+            Deck.DEFINITION_SCORE_KEY : ("DefinitionScore", False, False)
+        }
+        
+        modifiedFields = list()
+        ankiNotesId = list()
         for note in notes:
             try:
                 ankiNote = self.col.getNote(note.id)
             except Exception: continue
             
+            if int(ankiNote[fields[Deck.LEARNX_SCORE_KEY][0]]) == int(note.score):
+                continue
+            
             tm = self.col.tags
             origFlds = joinFields(ankiNote.fields)
             origTags = tm.join(ankiNote.tags)
-            
-            fields = { #FIXME
-                Deck.LEARNX_SCORE_KEY : ("LearnXScore", False, True),
-                Deck.VOCAB_SCORE_KEY : ("VocabScore", False, True),
-                Deck.UNKNOWNS_KEY : ("UnknownMorphemes", False, False),
-                Deck.KNOWNS_KEY : ("KnownMorphemes", False, False),
-                Deck.COPY_UNKNOWN_1_TO_KEY : ("VocabExpression", False, False),
-                Deck.DEFINITION_SCORE_KEY : ("DefinitionScore", False, False)
-            }
             
             lemmes = self.morphemesService.getLemmesFromNote(note)
             morphemesScore = 0
@@ -177,9 +182,11 @@ class LearnXMainController:
                 modifiedFields.append(dict(nid=ankiNote.id, flds=flds, tags=tags, u=self.col.usn(), m=intTime()))
             ankiNotesId.append(ankiNote.id)
     
-        self.col.tags.register([u'LxReview', u'LxToLearn', u'LxTooDifficult'])
-        self.col.db.executemany("update notes set flds=:flds, tags=:tags, mod=:m,usn=:u where id=:nid", modifiedFields)
-        self.col.updateFieldCache(ankiNotesId)
+        if len(modifiedFields) > 0:
+            self.col.tags.register([u'LxReview', u'LxToLearn', u'LxTooDifficult'])
+            self.col.db.executemany("update notes set flds=:flds, tags=:tags, mod=:m,usn=:u where id=:nid", modifiedFields)
+        if len(ankiNotesId) > 0:
+            self.col.updateFieldCache(ankiNotesId)
     
     def changeDueCards(self, language):
         

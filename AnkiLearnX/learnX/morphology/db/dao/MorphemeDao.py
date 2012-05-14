@@ -83,7 +83,8 @@ class MorphemeDao:
         for lemmeId in morphemesModified:
             t = (lemmeId, lemmeId)
             c.execute("Update MorphemeLemmes set max_interval = "
-                      "(select max_interval From MorphemesMax where morph_lemme_id = ?) "
+                      "(select max_interval From MorphemesMax where morph_lemme_id = ?), "
+                      "changed = 1 "
                       "where id = ?", t)
         db.commit()
         c.close()

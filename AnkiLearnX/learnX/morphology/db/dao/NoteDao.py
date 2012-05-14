@@ -25,13 +25,14 @@ class NoteDao:
                 toInsert.append(note)
         c.close()
         
-        c = db.cursor()
-        for note in toInsert:
-             t = (note.id, note.lastUpdated, note.expressionCsum, note.changed, note.score)
-             c.execute("Insert into Notes(id, last_updated, expression_csum, changed, score)"
-                       "Values (?,?,?,?,?)", t)
-        db.commit()
-        c.close()
+        if len(toInsert) > 0:
+            c = db.cursor()
+            for note in toInsert:
+                 t = (note.id, note.lastUpdated, note.expressionCsum, note.changed, note.score)
+                 c.execute("Insert into Notes(id, last_updated, expression_csum, changed, score)"
+                           "Values (?,?,?,?,?)", t)
+            db.commit()
+            c.close()
         
         return notes
     

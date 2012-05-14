@@ -6,6 +6,8 @@ class JapaneseMorphemesService(MorphemesService):
     
     def __init__(self, serviceLocator):
         MorphemesService.__init__(self, serviceLocator)
+        
+        self.initFactors()
     
     # return a Rank between 0 and 100
     def rankKanji(self, kanji):
@@ -23,13 +25,21 @@ class JapaneseMorphemesService(MorphemesService):
         kanjiScore = ((freqScore + strokeScore) / 2.0) * 2.0
         return kanjiScore
 
+    def initFactors(self):
+        self.cachePow = dict()
+        for i in range(1000):
+            self.cachePow[i] = pow(2, -1.0 * i / 24.0)
+
+    def getFactor(self, interval):
+        return self.cachePow[interval]
+
     # Adapted from MorphMan 2
     def rankMorpheme(self, intervalDb, expr, read, rank):
         score = rank
         
         if (expr, read) in intervalDb:
             interval = intervalDb[(expr, read)]
-            score = score * pow(2, -1.0 * interval / 24.0)
+            score = score * self.getFactor(interval)
         else:
             hasKanji = False
             for i, c in enumerate(expr):
@@ -48,7 +58,7 @@ class JapaneseMorphemesService(MorphemesService):
                             # has same kanji at same pos with similar reading
                             if i == 0 and read[0] == r[0] or i == len(expr)-1 and read[-1] == r[-1]:
                                 npow -= 0.8
-                        npow = npow * (1.0 - pow(2, -1.0 * ivl / 24.0))
+                        npow = npow * (1.0 - self.getFactor(ivl))
                 score *= pow(2, npow)
         return score
     
@@ -66,14 +76,14 @@ class JapaneseMorphemesService(MorphemesService):
                 
                 lemme.rank += self.rankKanji(c)
             
-    def computeMorphemesScore(self, language):
-        
-        decksId = self.decksService.listDecksIdByLanguage(language)
+    def computeMorphemesScore(self):
         
         log("lemmeDao.getMorphemes() Start")
-        allLemmes = self.lemmeDao.getAllLemmes()
-        
-        log("Rank Morphemes Start")
+        allLemmes = self.lemmeDao.getAllModifiedLemmes()
+        if len(allLemmes) <= 0:
+            return None
+            
+        log("Rank Morphemes Start: " + str(len(allLemmes)))
         intervalDb = self.lemmeDao.getKnownLemmesIntervalDB()
         
         modifiedLemmes = list()
@@ -84,7 +94,8 @@ class JapaneseMorphemesService(MorphemesService):
                 modifiedLemmes.append(lemme)
         
         log("Update all Score " + str(len(modifiedLemmes)))
-        self.lemmeDao.updateLemmesScore(modifiedLemmes)
+        if len(modifiedLemmes) > 0:
+            self.lemmeDao.updateLemmesScore(modifiedLemmes)
         
         return modifiedLemmes
     

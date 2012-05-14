@@ -25,13 +25,15 @@ class NotesService:
         
     def retrieveAllNotes(self, ankiCards):    
         
+        log("list all cards")
         notes = list()
         for ankiCard in ankiCards:
             ankiNote = ankiCard.note()
             note = Note(ankiNote.id)
             note.ankiNote = ankiNote
             notes.append(note)
-            
+        
+        log("persist")
         return self.note_dao.persistNotes(notes)  
         
     def retrieveAllCards(self, deck, ankiCards):
@@ -48,7 +50,7 @@ class NotesService:
     def getAllNotesByLanguage(self, language):
         return self.note_dao.selectNotes()
     
-    def computeNotesScore(self, deck):
+    def computeNotesScore(self):
         
         notes = self.note_dao.selectNotes()
         for note in notes:

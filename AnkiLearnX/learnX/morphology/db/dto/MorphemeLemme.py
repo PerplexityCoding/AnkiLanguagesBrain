@@ -1,7 +1,7 @@
 from learnX.utils.Log import *
 
 class MorphemeLemme:
-    def __init__(self, base, inflected, pos, subPos, read, rank = 0, maxInterval = 0, score = 0, id = -1):
+    def __init__(self, base, inflected, pos, subPos, read, rank = 0, maxInterval = 0, score = 0, changed = 0, id = -1):
         if id == -1:
             id = hash((pos, subPos, read, base))
         self.id = id
@@ -12,6 +12,7 @@ class MorphemeLemme:
         self.rank = rank
         self.maxInterval = maxInterval
         self.score = score
+        self.changed = changed
 
     def __ne__(self, o):
         return not self.__eq__(o)
@@ -26,4 +27,4 @@ class MorphemeLemme:
         
     def __repr__(self):
         return u'\t'.join([str(self.id), str(self.pos), str(self.subPos), str(self.read), str(self.base),
-                           str(self.rank), str(self.maxInterval), str(self.score)])
+                           str(self.rank), str(self.maxInterval), str(self.score), str(self.changed)])
