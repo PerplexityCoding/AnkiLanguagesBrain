@@ -100,6 +100,16 @@ class LanguagesService:
         self.selectPosTagger(language)
         return self.languageDao.insertLanguage(language)
     
+    def getAllPOS(self, language):
+        try:
+            return language.posOptions["activatedPos"]
+        except Exception: pass
+  
+    def getAllSubPOS(self, language):
+        try:
+            return language.posOptions["activatedSubPos"]
+        except Exception: pass
+    
     def countMorphemes(self, language):
         #FIXME
         language = language

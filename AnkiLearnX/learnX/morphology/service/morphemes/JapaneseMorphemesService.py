@@ -7,7 +7,7 @@ class JapaneseMorphemesService(MorphemesService):
     def __init__(self, serviceLocator):
         MorphemesService.__init__(self, serviceLocator)
     
-        # return a Rank between 0 and 100
+    # return a Rank between 0 and 100
     def rankKanji(self, kanji):
         kanjiFreq, kanjiStrokeCount = KanjiHelper.getKanjiInfo(kanji)
         

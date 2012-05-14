@@ -15,6 +15,7 @@ class MorphemesBrowser(QDialog):
         super(MorphemesBrowser, self).__init__(parent)
         
         self.morphemesService = ServicesLocator.getInstance().getMorphemesService()
+        self.languagesService = ServicesLocator.getInstance().getLanguagesService()
         
         if language.nameId == Language.JAPANESE:
             self.model = my_model = JapaneseMorphemeModel(deck, language, allDecks)
@@ -50,7 +51,7 @@ class MorphemesBrowser(QDialog):
         customFilter.addItem("Changed")
         customFilter.addItem("Un-Changed")
         
-        self.posList = self.morphemesService.getAllPOS(language)
+        self.posList = self.languagesService.getAllPOS(language)
         
         filterPosLabelFont = QFont()
         filterPosLabelFont.setPixelSize(12)
@@ -63,7 +64,7 @@ class MorphemesBrowser(QDialog):
             for pos in self.posList:
                 customFilter.addItem(pos)
                 
-        self.subPosList = self.morphemesService.getAllSubPOS(language)
+        self.subPosList = self.languagesService.getAllSubPOS(language)
         if self.subPosList != None and len (self.subPosList) > 0:
             customFilter.insertSeparator(self.customFilter.count())
         

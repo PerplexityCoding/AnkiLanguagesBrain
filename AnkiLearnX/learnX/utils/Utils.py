@@ -15,3 +15,10 @@ class Utils:
     def ids2str(ids):
         """Given a list of integers, return a string '(int1,int2,...)'."""
         return "(%s)" % ",".join(str(i) for i in ids)
+    
+    @staticmethod
+    def getList(dict):
+        dictList = list()
+        for key, value in dict.iteritems():
+            dictList.append(value)
+        return dictList

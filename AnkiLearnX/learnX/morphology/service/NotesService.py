@@ -45,12 +45,6 @@ class NotesService:
         
         return self.card_dao.persistCards(cards)    
         
-    def getDefinition(self, note):
-        return self.definitionDao.getDefinition(note.id)
-        
-    def getAllNotesChanged(self, language):
-        return self.getAllNotesByLanguage(language)
-    
     def getAllNotesByLanguage(self, language):
         return self.note_dao.selectNotes()
     
@@ -68,11 +62,4 @@ class NotesService:
                 score += 1000 * factor + morphemeScore
             note.score = score
             
-        self.note_dao.updateNotes(notes) 
-
-    def getMorphemes(self, note):
-        return self.morpheme_dao.getMorphemesFromNote(note, True)
-
-    def clearAllNotesStatus(self, language):
-        decksId = self.decksService.listDecksIdByLanguage(language)
-        self.note_dao.clearAllNotesStatus(decksId)
+        self.note_dao.updateNotes(notes)

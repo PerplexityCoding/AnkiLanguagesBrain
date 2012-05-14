@@ -11,7 +11,6 @@ class AnkiHelper:
     
     @staticmethod
     def getCards(deckid):
-        #deckname = mw.col.decks.get(deckid)["id"]
         cids = mw.col.decks.cids(deckid)
         
         ankiCards = list()

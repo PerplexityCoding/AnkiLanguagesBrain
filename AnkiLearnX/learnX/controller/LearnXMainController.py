@@ -9,8 +9,6 @@ from learnX.utils.Log import *
 
 from anki.utils import intTime, joinFields, ids2str
 
-#from anki.utils import deleteTags, addTags, canonifyTags, stripHTML
-
 class LearnXMainController:
     def __init__(self, interface):
         self.interface = interface
@@ -105,8 +103,6 @@ class LearnXMainController:
         log("self.changeDueCards()")     
         self.changeDueCards(language)
         
-        #self.notesService.clearAllNotesStatus(language)
-        
         self.col.save()
     
     def markNotes(self, language):
@@ -173,31 +169,6 @@ class LearnXMainController:
             else:
                 tag = u'LxTooDifficult'
             ankiNote.tags = tm.split(tm.addToStr(tag, tm.join(ankiNote.tags)))
-            
-            #if deck.definitionField:
-            #    try:
-            #        ankiNote.tags = canonifyTags(deleteTags(u'LxDefKnown,LxDefMatch', ankiNote.tags))
-            #        definition = self.notesService.getDefinition(note)
-                    
-            #        if definition and definition.definitionHash and int(definition.definitionHash) != 0:
-                    
-            #            defMorphemes = self.morphemesService.getMorphemesDefinition(definition)
-            #            dictMorphemesScore, defMatureMorphemes, defKnownMorphemes, defLearnMorphemes, defUnknownMorphemes = self.getMorphemesScore(defMorphemes)
-                        
-            #            if len(defUnknownMorphemes) == 0:
-            #                ankiNote.tags = canonifyTags(addTags(u'LxDefKnown', ankiNote.tags))
-            #            
-            #            defKeyMorphemes = self.morphemesService.getMorphemesDefinitionKey(definition)
-            #            defKeyMorphemesBase = "".join(m.morphLemme.base for m in defKeyMorphemes)
-            #            
-            #            if len(unknownMorphemes) == 1 and unknownMorphemes[0] in defKeyMorphemesBase:
-            #                ankiNote.tags = canonifyTags(addTags(u'LxDefMatch', ankiNote.tags))
-            #            
-            #            if fields[Deck.DEFINITION_SCORE_KEY][1]:
-            #                try: ankiNote[fields[Deck.DEFINITION_SCORE_KEY][0]] = u'%d' % int(dictMorphemesScore)
-            #                except KeyError: pass
-            #      
-            #    except KeyError: pass
             
             flds = joinFields(ankiNote.fields)
             tags = tm.join(ankiNote.tags)

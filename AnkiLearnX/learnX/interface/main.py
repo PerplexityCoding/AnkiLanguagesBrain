@@ -257,5 +257,4 @@ def init():
     mw.connect(a, SIGNAL("triggered()"), openWindows)
 
 log("OK")
-#mw.addHook('init', init)
 init()

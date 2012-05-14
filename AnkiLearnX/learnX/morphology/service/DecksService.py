@@ -12,16 +12,7 @@ class DecksService:
     
     def setupServices(self):
         self.languagesService = self.serviceLocator.getLanguagesService()
-    
-    # Unused
-    def listDecks(self):
-        list = self.deckDao.list()
-    
-        for deck in list:
-            if deck.languageId != None:
-                deck.language = self.languagesService.getLanguageById(deck.languageId)
-        return list
-    
+        
     def listDecksByLanguage(self, language):
         list = self.deckDao.listDecksByLanguage(language.id)
         for deck in list:
