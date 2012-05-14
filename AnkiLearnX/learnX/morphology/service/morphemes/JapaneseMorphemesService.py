@@ -76,8 +76,6 @@ class JapaneseMorphemesService(MorphemesService):
         log("Rank Morphemes Start")
         intervalDb = self.lemmeDao.getKnownLemmesIntervalDB()
         
-        log(intervalDb)
-        
         modifiedLemmes = list()
         for lemme in allLemmes:
             score = self.rankMorpheme(intervalDb, lemme.base, lemme.read, lemme.rank)

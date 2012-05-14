@@ -24,6 +24,7 @@ class LearnXMainController:
         self.notesService = self.servicesLocator.getNotesService()
         
     def analyze(self, deck):
+        log("Start")
         self.analyzeDeck(deck)
         
         log("Process Notes Start")
@@ -35,7 +36,7 @@ class LearnXMainController:
     
     def analyzeLanguage(self, language):
         
-        log(language)
+        log("Start")
         decks = self.decksService.listDecksByLanguage(language)
         for deck in decks:
             self.analyzeDeck(deck)
@@ -106,20 +107,6 @@ class LearnXMainController:
         #self.notesService.clearAllNotesStatus(language)
         
         self.col.save()
-
-    
-    def getMorphemesScore(self, morphemes):
-        knownMorphemes = []
-        unknownMorphemes = []
-        morphemesScore = 0
-        for morpheme in morphemes:
-            morphLemme = morpheme.morphLemme
-            if morpheme.interval > 0:
-                knownMorphemes.append(morphLemme.base)
-            else:
-                unknownMorphemes.append(morphLemme.base)
-            morphemesScore += morpheme.score
-        return morphemesScore, knownMorphemes, unknownMorphemes
     
     def markNotes(self, language):
         notes = self.notesService.getAllNotesByLanguage(language)
@@ -132,8 +119,9 @@ class LearnXMainController:
                 ankiNote = self.col.getNote(note.id)
             except Exception: continue
             
-            origFlds = []
-            origFlds.extend(ankiNote.fields)
+            tm = self.col.tags
+            origFlds = joinFields(ankiNote.fields)
+            origTags = tm.join(ankiNote.tags)
             
             fields = { #FIXME
                 Deck.LEARNX_SCORE_KEY : ("LearnXScore", True, True),
@@ -157,35 +145,35 @@ class LearnXMainController:
                     unknownMorphemes.append(lemme.base)
                 morphemesScore += lemme.score
             
-            if True: # FIXME: sure ?
-                if fields[Deck.LEARNX_SCORE_KEY][1]:
-                    try: ankiNote[fields[Deck.LEARNX_SCORE_KEY][0]] = u'%d' % int(note.score)
+            if fields[Deck.LEARNX_SCORE_KEY][1]:
+                try: ankiNote[fields[Deck.LEARNX_SCORE_KEY][0]] = u'%d' % int(note.score)
+                except KeyError: pass
+            
+            if fields[Deck.VOCAB_SCORE_KEY][1]:
+                try: ankiNote[fields[Deck.VOCAB_SCORE_KEY][0]] = u'%d' % int(morphemesScore)
+                except KeyError: pass
+    
+            if fields[Deck.UNKNOWNS_KEY][1]:
+                try: ankiNote[fields[Deck.UNKNOWNS_KEY][0]] = u','.join(u for u in unknownMorphemes)
+                except KeyError: pass
+    
+            if fields[Deck.KNOWNS_KEY][1]:
+                try: ankiNote[fields[Deck.KNOWNS_KEY][0]] = u','.join(u for u in knownMorphemes)
+                except KeyError: pass
+            
+            ankiNote.tags = tm.split(tm.remFromStr(u'LxReview LxToLearn LxTooDifficult', tm.join(ankiNote.tags)))
+            
+            if len(unknownMorphemes) == 1:
+                if fields[Deck.COPY_UNKNOWN_1_TO_KEY][1]:
+                    try: ankiNote[fields[Deck.COPY_UNKNOWN_1_TO_KEY][0]] = u','.join(u for u in unknownMorphemes)
                     except KeyError: pass
-                
-                if fields[Deck.VOCAB_SCORE_KEY][1]:
-                    try: ankiNote[fields[Deck.VOCAB_SCORE_KEY][0]] = u'%d' % int(morphemesScore)
-                    except KeyError: pass
-        
-                if fields[Deck.UNKNOWNS_KEY][1]:
-                    try: ankiNote[fields[Deck.UNKNOWNS_KEY][0]] = u','.join(u for u in unknownMorphemes)
-                    except KeyError: pass
-        
-                if fields[Deck.KNOWNS_KEY][1]:
-                    try: ankiNote[fields[Deck.KNOWNS_KEY][0]] = u','.join(u for u in knownMorphemes)
-                    except KeyError: pass
-                    
-                if len(unknownMorphemes) == 1:
-                    if fields[Deck.COPY_UNKNOWN_1_TO_KEY][1]:
-                        try: ankiNote[fields[Deck.COPY_UNKNOWN_1_TO_KEY][0]] = u','.join(u for u in unknownMorphemes)
-                        except KeyError: pass
-                #elif len(unknownMorphemes) == 0:
-                #    if fields[Deck.COPY_MATURE_TO_KEY][1]:
-                #        try: ankiNote[fields[Deck.COPY_MATURE_TO_KEY][0]] = u'%s' % ankiNote[deck.expressionField]
-                #        except KeyError: pass
-                
-                #self.col.tags.remFromStr(note.getAllStatusTag(), self.col.tags.join(ankiNote.tags))
-                #self.col.tags.addToStr(note.getAllStatusTag(), self.col.tags.join(ankiNote.tags))
-                                                       
+                tag = u'LxToLearn'
+            elif len(unknownMorphemes) == 0:
+                tag = u'LxReview'
+            else:
+                tag = u'LxTooDifficult'
+            ankiNote.tags = tm.split(tm.addToStr(tag, tm.join(ankiNote.tags)))
+            
             #if deck.definitionField:
             #    try:
             #        ankiNote.tags = canonifyTags(deleteTags(u'LxDefKnown,LxDefMatch', ankiNote.tags))
@@ -212,11 +200,14 @@ class LearnXMainController:
             #    except KeyError: pass
             
             flds = joinFields(ankiNote.fields)
-            if flds != joinFields(origFlds):
-                modifiedFields.append(dict(nid=ankiNote.id,flds=flds,u=self.col.usn(),m=intTime()))
+            tags = tm.join(ankiNote.tags)
+            
+            if flds != origFlds or origTags != tags:
+                modifiedFields.append(dict(nid=ankiNote.id, flds=flds, tags=tags, u=self.col.usn(), m=intTime()))
             ankiNotesId.append(ankiNote.id)
     
-        self.col.db.executemany("update notes set flds=:flds,mod=:m,usn=:u where id=:nid", modifiedFields)
+        self.col.tags.register([u'LxReview', u'LxToLearn', u'LxTooDifficult'])
+        self.col.db.executemany("update notes set flds=:flds, tags=:tags, mod=:m,usn=:u where id=:nid", modifiedFields)
         self.col.updateFieldCache(ankiNotesId)
     
     def changeDueCards(self, language):
@@ -268,6 +259,8 @@ class LearnXMainController:
 
         log(ankiNotesId)
         ankiDeck.updateNoteTags(ankiNotesId)
+        
+        self.col.tags.register([u'LxDuplicate'])
         self.col.save()
 
 
