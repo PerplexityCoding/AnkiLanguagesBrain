@@ -67,7 +67,7 @@ class LearnXMainController:
         for note in notes:
             if note.ankiNote.mod == note.lastUpdated:
                 continue
-            if note.expressionCsum != None and Utils.fieldChecksum(note.ankiNote[deck.expressionField]) == note.expressionCsum:
+            if note.expressionCsum != None and int(Utils.fieldChecksum(note.ankiNote[deck.expressionField])) == int(note.expressionCsum):
                 continue
             modifiedNotes.append(note)
         
@@ -87,8 +87,9 @@ class LearnXMainController:
                 continue
             modifiedCards.append(card)
         
-        log("refreshInterval")
-        self.morphemesService.refreshInterval(modifiedCards)
+        if len(modifiedCards) > 0:
+            log("refreshInterval")
+            self.morphemesService.refreshInterval(modifiedCards)
         
         log("Calculed morpheme Score Start")
         self.morphemesService.computeMorphemesScore(deck.language)
