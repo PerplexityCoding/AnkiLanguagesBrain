@@ -1,7 +1,7 @@
 
 class Card:
     
-    def __init__(self, id, deckId, noteId, interval = 0, changed = False, lastUpdated = None):
+    def __init__(self, id, deckId, noteId, interval = -1, changed = False, lastUpdated = None):
         self.id = id
         self.deckId = deckId
         self.noteId = noteId

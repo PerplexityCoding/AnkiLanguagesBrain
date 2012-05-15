@@ -67,7 +67,61 @@ class MorphemeDao:
         morphemesModified = set()
         for row in c:
             morphemesModified.add(row[0])
-                    
+        c.close()   
+        
+        log("mark modified notes")
+        c = db.cursor()
+        c.execute("Update Notes set changed = 1 "
+                  "Where id in (select note_id From Morphemes where morph_lemme_id in %s group by note_id)" % Utils.ids2str(morphemesModified))
+        c.close()   
+        
+        c = db.cursor()
+        log("update morphemes")
+        for lemmeId in morphemesModified:
+            t = (lemmeId, lemmeId)
+            c.execute("Update MorphemeLemmes set max_interval = "
+                      "(select max(interval) From Morphemes where morph_lemme_id = ? group by morph_lemme_id), "
+                      "changed = 1 "
+                      "where id = ?", t)
+        db.commit()
+        c.close()
+        
+        log("end update interval")
+        
+    def updateIntervalBis(self, cards):
+        
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        log("update interval")
+        
+        for card in cards:
+            t = (card.interval, card.noteId)
+            c.execute("Update Morphemes Set interval = ? Where note_id = ?", t)
+        
+        db.commit()
+        c.close()
+        
+        log("select modified morphemes")
+        
+        c = db.cursor()
+        noteIds = set()
+        for card in cards:
+            noteIds.add(card.noteId)
+        noteIds = Utils.ids2str(noteIds)
+        
+        c.execute("Select morph_lemme_id From Morphemes where note_id in %s" % noteIds)
+        morphemesModified = set()
+        for row in c:
+            morphemesModified.add(row[0])
+        c.close()   
+        
+        log("mark modified notes")
+        c = db.cursor()
+        c.execute("Update Notes set changed = 1 "
+                  "Where id in (select note_id From Morphemes where morph_lemme_id in %s group by note_id)" % Utils.ids2str(morphemesModified))
+        c.close()   
+        
         log("create temp tables")
         
         c = db.cursor()
@@ -90,3 +144,4 @@ class MorphemeDao:
         c.close()
         
         log("end update interval")
+        

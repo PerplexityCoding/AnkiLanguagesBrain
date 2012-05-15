@@ -72,7 +72,7 @@ class MorphemesService:
         for note in notes:
             noteUniqueMorphemes = list()
             for morphLemme in note.morphLemmes:
-                morpheme = Morpheme(note.id, 0, False, morphLemme.id, -1)
+                morpheme = Morpheme(note.id, -1, False, morphLemme.id, -1)
                 if morpheme not in noteUniqueMorphemes:    
                     noteUniqueMorphemes.append(morpheme)
                     allMorphemes.append(morpheme)
@@ -89,7 +89,7 @@ class MorphemesService:
         for note in notes:
             note.morphLemmes = None
     
-    # XXX: on considère qu'il y a une seul carte par note ! pour le moment
+    # FIXME: on considère qu'il y a une seul carte par note ! pour le moment
     def refreshInterval(self, modifiedCards):
         
         for card in modifiedCards:

@@ -75,5 +75,9 @@ CREATE TABLE MorphemeLemmes (
 	changed INTEGER(1)
 );
 
+CREATE INDEX lemme_changed_idx on MorphemeLemmes(changed);
+CREATE INDEX note_changed_idx on Notes(changed);
+CREATE INDEX morph_lemme_id_idx on Morphemes(morph_lemme_id);
+
 PRAGMA encoding = "UTF-8";
 

@@ -47,12 +47,12 @@ class NotesService:
         
         return self.card_dao.persistCards(cards)    
         
-    def getAllNotesByLanguage(self, language):
-        return self.note_dao.selectNotes()
+    def getAllChangedNotes(self):
+        return self.note_dao.selectAllChangedNotes()
     
     def computeNotesScore(self):
         
-        notes = self.note_dao.selectNotes()
+        notes = self.note_dao.selectAllChangedNotes()
         for note in notes:
             lemmes = self.lemmeDao.getLemmeIntervalFromNote(note)
             score = 0
@@ -65,3 +65,6 @@ class NotesService:
             note.score = score
             
         self.note_dao.updateNotes(notes)
+
+    def resetNotesChanged(self):
+        return self.note_dao.resetNotesChanged()

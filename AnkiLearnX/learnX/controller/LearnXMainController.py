@@ -85,7 +85,7 @@ class LearnXMainController:
             modifiedCards.append(card)
         
         if len(modifiedCards) > 0:
-            log("refreshInterval")
+            log("refreshInterval " + str(len(modifiedCards)))
             self.morphemesService.refreshInterval(modifiedCards)
         
     def processGlobal(self, language):
@@ -105,19 +105,22 @@ class LearnXMainController:
         log("self.resetLemmesChanged()") 
         self.morphemesService.resetLemmesChanged()
         
+        log("self.resetNotesChanged()") 
+        self.notesService.resetNotesChanged()
+        
+        log("col.save()")
         self.col.save()
     
     def markNotes(self, language):
-        notes = self.notesService.getAllNotesByLanguage(language)
-        
+        notes = self.notesService.getAllChangedNotes()
         
         fields = { #FIXME
-            Deck.LEARNX_SCORE_KEY : ("LearnXScore", False, True),
-            Deck.VOCAB_SCORE_KEY : ("VocabScore", False, True),
-            Deck.UNKNOWNS_KEY : ("UnknownMorphemes", False, False),
-            Deck.KNOWNS_KEY : ("KnownMorphemes", False, False),
-            Deck.COPY_UNKNOWN_1_TO_KEY : ("VocabExpression", False, False),
-            Deck.DEFINITION_SCORE_KEY : ("DefinitionScore", False, False)
+            Deck.LEARNX_SCORE_KEY : "LearnXScore",
+            Deck.VOCAB_SCORE_KEY : "VocabScore",
+            Deck.UNKNOWNS_KEY : "UnknownMorphemes",
+            Deck.KNOWNS_KEY : "KnownMorphemes",
+            Deck.COPY_UNKNOWN_1_TO_KEY : "VocabExpression",
+            Deck.DEFINITION_SCORE_KEY : "DefinitionScore"
         }
         
         modifiedFields = list()
@@ -127,7 +130,7 @@ class LearnXMainController:
                 ankiNote = self.col.getNote(note.id)
             except Exception: continue
             
-            if int(ankiNote[fields[Deck.LEARNX_SCORE_KEY][0]]) == int(note.score):
+            if int(ankiNote[fields[Deck.LEARNX_SCORE_KEY]]) == int(note.score):
                 continue
             
             tm = self.col.tags
@@ -146,28 +149,23 @@ class LearnXMainController:
                     unknownMorphemes.append(lemme.base)
                 morphemesScore += lemme.score
             
-            if fields[Deck.LEARNX_SCORE_KEY][1]:
-                try: ankiNote[fields[Deck.LEARNX_SCORE_KEY][0]] = u'%d' % int(note.score)
-                except KeyError: pass
+            try: ankiNote[fields[Deck.LEARNX_SCORE_KEY]] = u'%d' % int(note.score)
+            except KeyError: pass
             
-            if fields[Deck.VOCAB_SCORE_KEY][1]:
-                try: ankiNote[fields[Deck.VOCAB_SCORE_KEY][0]] = u'%d' % int(morphemesScore)
-                except KeyError: pass
+            try: ankiNote[fields[Deck.VOCAB_SCORE_KEY]] = u'%d' % int(morphemesScore)
+            except KeyError: pass
     
-            if fields[Deck.UNKNOWNS_KEY][1]:
-                try: ankiNote[fields[Deck.UNKNOWNS_KEY][0]] = u','.join(u for u in unknownMorphemes)
-                except KeyError: pass
+            try: ankiNote[fields[Deck.UNKNOWNS_KEY]] = u','.join(u for u in unknownMorphemes)
+            except KeyError: pass
     
-            if fields[Deck.KNOWNS_KEY][1]:
-                try: ankiNote[fields[Deck.KNOWNS_KEY][0]] = u','.join(u for u in knownMorphemes)
-                except KeyError: pass
+            try: ankiNote[fields[Deck.KNOWNS_KEY]] = u','.join(u for u in knownMorphemes)
+            except KeyError: pass
             
             ankiNote.tags = tm.split(tm.remFromStr(u'LxReview LxToLearn LxTooDifficult', tm.join(ankiNote.tags)))
             
             if len(unknownMorphemes) == 1:
-                if fields[Deck.COPY_UNKNOWN_1_TO_KEY][1]:
-                    try: ankiNote[fields[Deck.COPY_UNKNOWN_1_TO_KEY][0]] = u','.join(u for u in unknownMorphemes)
-                    except KeyError: pass
+                try: ankiNote[fields[Deck.COPY_UNKNOWN_1_TO_KEY]] = u','.join(u for u in unknownMorphemes)
+                except KeyError: pass
                 tag = u'LxToLearn'
             elif len(unknownMorphemes) == 0:
                 tag = u'LxReview'
@@ -192,7 +190,7 @@ class LearnXMainController:
         
         now = intTime()
         log("select")
-        cards = self.notesService.getAllNotesByLanguage(language)
+        cards = self.notesService.getAllChangedNotes()
 
         log("get Cards")
         d = []
