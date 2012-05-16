@@ -97,6 +97,9 @@ class JapaneseMorphemesService(MorphemesService):
         if len(modifiedLemmes) > 0:
             self.lemmeDao.updateLemmesScore(modifiedLemmes)
         
+            log("Mark Modified Notes")
+            self.morphemeDao.markModifiedNotes(modifiedLemmes)
+        
         return modifiedLemmes
     
     def filterMorphLemmes(self, morphLemmesList):

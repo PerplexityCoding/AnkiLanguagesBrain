@@ -69,21 +69,6 @@ class MorphemeDao:
             morphemesModified.add(row[0])
         c.close()   
         
-        log("mark modified notes")
-        c = db.cursor()
-        c.execute("Select note_id From Morphemes where morph_lemme_id in %s group by note_id" % Utils.ids2str(morphemesModified))
-        exNotesId = set()
-        for row in c:
-            exNotesId.add(row[0])
-        c.close()
-        
-        c = db.cursor()
-        for exNoteId in exNotesId:
-            t = (exNoteId, )
-            c.execute("Insert Into ChangedEntities Values (?, 1)", t)
-        db.commit()
-        c.close()
-        
         c = db.cursor()
         log("update morphemes")
         for lemmeId in morphemesModified:
@@ -97,4 +82,24 @@ class MorphemeDao:
         c.close()
         
         log("end update interval")
+
+    def markModifiedNotes(self, morphemesModified):
+
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        morphemesId = ",".join(str(m.id) for m in morphemesModified)
+        c.execute("Select note_id From Morphemes where morph_lemme_id in (%s) group by note_id" % morphemesId)
+        
+        exNotesId = set()
+        for row in c:
+            exNotesId.add(row[0])
+        c.close()
+        
+        c = db.cursor()
+        for exNoteId in exNotesId:
+            t = (exNoteId, )
+            c.execute("Insert Into ChangedEntities Values (?, 1)", t)
+        db.commit()
+        c.close()
 
