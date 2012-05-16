@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS Definitions;
 DROP TABLE IF EXISTS Cards;
 DROP TABLE IF EXISTS Morphemes;
 DROP TABLE IF EXISTS MorphemeLemmes;
+DROP TABLE IF EXISTS ChangedEntities;
 
 CREATE TABLE Languages (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,6 +20,7 @@ CREATE TABLE Languages (
 CREATE TABLE Decks (
 	id INTEGER PRIMARY KEY,
 	enabled INTEGER(1) NOT NULL,
+	first_time INTEGER(1) NOT NULL,
 	language_id INTEGER REFERENCES Languages(id),
 	expression_field TEXT NOT NULL,
 	deck_fields BLOB,
@@ -33,7 +35,6 @@ CREATE TABLE Notes (
 	id INTEGER PRIMARY KEY,
 	last_updated INTEGER,
 	expression_csum TEXT,
-	changed INTEGER(1),
 	score INTEGER
 );
 
@@ -42,7 +43,6 @@ CREATE TABLE Cards (
 	deck_id INTEGER REFERENCES Decks(id),
 	note_id INTEGER REFERENCES Notes(id),
 	interval INTEGER,
-	changed INTEGER(1),
 	last_updated INTEGER
 );
 
@@ -58,7 +58,6 @@ CREATE TABLE Morphemes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	note_id INTEGER REFERENCES Note(id),
 	interval INTEGER,
-	changed INTEGER(1),
 	morph_lemme_id NUMERIC NOT NULL,
 	UNIQUE (note_id, morph_lemme_id)
 );
@@ -71,12 +70,14 @@ CREATE TABLE MorphemeLemmes (
 	base TEXT NOT NULL,
 	rank INTEGER,
 	max_interval INTEGER,
-	score INTEGER,
-	changed INTEGER(1)
+	score INTEGER
 );
 
-CREATE INDEX lemme_changed_idx on MorphemeLemmes(changed);
-CREATE INDEX note_changed_idx on Notes(changed);
+CREATE TABLE ChangedEntities (
+	id NUMERIC,
+	typ INTEGER
+);
+
 CREATE INDEX morph_lemme_id_idx on Morphemes(morph_lemme_id);
 
 PRAGMA encoding = "UTF-8";

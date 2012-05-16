@@ -72,7 +72,7 @@ class MorphemesService:
         for note in notes:
             noteUniqueMorphemes = list()
             for morphLemme in note.morphLemmes:
-                morpheme = Morpheme(note.id, -1, False, morphLemme.id, -1)
+                morpheme = Morpheme(note.id, -1, morphLemme.id, -1)
                 if morpheme not in noteUniqueMorphemes:    
                     noteUniqueMorphemes.append(morpheme)
                     allMorphemes.append(morpheme)

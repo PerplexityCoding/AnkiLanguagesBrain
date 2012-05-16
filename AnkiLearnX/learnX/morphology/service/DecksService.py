@@ -31,7 +31,7 @@ class DecksService:
         
         deck = self.deckDao.findDeckById(ankiDeckId)
         if deck == None:
-            deck = Deck(ankiDeckId, False, None, None, None)
+            deck = Deck(ankiDeckId, False, True, None, None, None)
             deck = self.deckDao.insertDeck(deck)
         
         if deck.languageId != None:
@@ -67,6 +67,9 @@ class DecksService:
         deck = self.deckDao.updateDeck(deck)
         
         return deck
+    
+    def resetFirstTime(self, deck):
+        deck = self.deckDao.resetFirstTime(deck)
     
     def updateDeck(self, deck):
         return self.deckDao.updateDeck(deck)

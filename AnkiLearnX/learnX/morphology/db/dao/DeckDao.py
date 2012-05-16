@@ -21,7 +21,7 @@ class DeckDao:
         
         decks = []
         for row in c:
-            deck = Deck(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9])
+            deck = Deck(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10])
             if deck.fields:
                 deck.fields = pickle.loads(str(deck.fields))
             if deck.posOptions:
@@ -43,11 +43,11 @@ class DeckDao:
         if posOptions:
             posOptions = sqlite3.Binary(pickle.dumps(posOptions, 2))
             
-        t = (deck.id, deck.enabled, deck.languageId, deck.expressionField, deckFields,
+        t = (deck.id, deck.enabled, deck.firstTime, deck.languageId, deck.expressionField, deckFields,
              deck.totalMorphemes, deck.knownMorphemes, posOptions, deck.definitionField, deck.definitionKeyField)
-        c.execute("Insert into Decks(id, enabled, language_id, expression_field, "
+        c.execute("Insert into Decks(id, enabled, first_time, language_id, expression_field, "
                   "deck_fields, total_morphemes, known_morphemes, pos_options, definition_field, definition_key_field) "
-                  "Values (?,?,?,?,?,?,?,?,?,?)", t)
+                  "Values (?,?,?,?,?,?,?,?,?,?,?)", t)
         db.commit()
         c.close()
         
@@ -67,15 +67,26 @@ class DeckDao:
         if posOptions:
             posOptions = sqlite3.Binary(pickle.dumps(posOptions, 2))
         
-        t = (deck.enabled, deck.languageId, deck.expressionField, deckFields,
+        t = (deck.enabled, deck.firstTime, deck.languageId, deck.expressionField, deckFields,
              deck.totalMorphemes, deck.knownMorphemes, posOptions, deck.definitionField, deck.definitionKeyField, deck.id)
-        c.execute("Update Decks Set enabled = ?, language_id = ?, expression_field = ?, deck_fields = ?, "
+        c.execute("Update Decks Set enabled = ?, first_time = ?, language_id = ?, expression_field = ?, deck_fields = ?, "
                   "total_morphemes = ?, known_morphemes = ?, pos_options = ?, definition_field = ?, definition_key_field = ? "
                   "Where id = ?", t)
         db.commit()
         c.close()
         
         return deck
+        
+    def resetFirstTime(self, deck):
+        
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        t = (deck.id,)
+        c.execute("Update Decks Set first_time = 0 Where id = ?", t)
+        
+        db.commit()
+        c.close()
         
     def findDeckById(self, id):
         db = self.learnXdB.openDataBase()
@@ -86,7 +97,7 @@ class DeckDao:
         
         deck = None
         for row in c:
-            deck = Deck(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9])
+            deck = Deck(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10])
             if deck.fields:
                 deck.fields = pickle.loads(str(deck.fields))
             if deck.posOptions:

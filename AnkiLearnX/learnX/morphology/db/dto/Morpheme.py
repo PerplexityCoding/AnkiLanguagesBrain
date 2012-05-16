@@ -2,11 +2,10 @@ from learnX.utils.Log import *
 
 class Morpheme:
     
-    def __init__(self, noteId, interval, changed, morphLemmeId, id = -1):
+    def __init__(self, noteId, interval, morphLemmeId, id = -1):
         self.id = id
         self.noteId = noteId
         self.interval = interval
-        self.changed = changed
         self.morphLemmeId = morphLemmeId
         
     def __ne__(self, o):
@@ -21,6 +20,6 @@ class Morpheme:
         return self.morphLemmeId
         
     def __repr__(self):
-        return u'\t'.join([str(self.id), str(self.noteId), str(self.interval), str(self.changed), str(self.morphLemmeId)])
+        return u'\t'.join([str(self.id), str(self.noteId), str(self.interval), str(self.morphLemmeId)])
 
         

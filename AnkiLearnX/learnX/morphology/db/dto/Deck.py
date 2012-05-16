@@ -8,11 +8,12 @@ class Deck:
     COPY_UNKNOWN_1_TO_KEY = "Copy1Unknown"
     DEFINITION_SCORE_KEY = "DefinitionScore"
     
-    def __init__(self, id, enabled, languageId, expressionField,
+    def __init__(self, id, enabled, firstTime, languageId, expressionField,
                  fields, total = 0, known = 0, posOptions = None, definitionField = None,
                  definitionKeyField = None):
         self.id = id
         self.enabled = enabled
+        self.firstTime = firstTime
         self.languageId = languageId
         self.language = None
         if expressionField != None:
@@ -53,5 +54,5 @@ class Deck:
         return hash(self.id)
 
     def __repr__(self):
-        return u'\t'.join([str(self.id), str(self.enabled), str(self.languageId), self.expressionField,
+        return u'\t'.join([str(self.id), str(self.enabled), str(self.firstTime), str(self.languageId), self.expressionField,
                            str(self.fields), str(self.totalMorphemes), str(self.knownMorphemes)])

@@ -26,7 +26,11 @@ class LearnXMainController:
         self.analyzeDeck(deck)
         
         log("Process Notes Start")
-        self.processGlobal(deck.language)
+        self.processGlobal(deck.language, deck.firstTime)
+        
+        if deck.firstTime:
+            log("decksService.resetFirstTime()") 
+            self.decksService.resetFirstTime(deck)
         
         log("Refresh Interface")
         self.interface.refreshAll()
@@ -36,11 +40,21 @@ class LearnXMainController:
         
         log("Start")
         decks = self.decksService.listDecksByLanguage(language)
+        
+        firstTimeDecks = list()
+        firstTime = False
         for deck in decks:
             self.analyzeDeck(deck)
-        
+            if deck.firstTime == True:
+                firstTimeDecks.append(deck)
+                firstTime = True
+                
         log("Process Notes Start")
-        self.processGlobal(deck.language)
+        self.processGlobal(language, firstTime)
+        
+        log("decksService.resetFirstTime()") 
+        for ftd in firstTimeDecks:
+            self.decksService.resetFirstTime(ftd)
         
         log("Refresh Interface")
         self.interface.refreshAll()
@@ -54,7 +68,7 @@ class LearnXMainController:
         self.ankiCards = ankiCards = AnkiHelper.getCards(deck.id)
         i = 0
         
-        log("Store All Notes : " + str(len(ankiCards)) + " cards")
+        log("Retrieve All Notes : " + str(len(ankiCards)) + " cards")
         
         notes = self.notesService.retrieveAllNotes(ankiCards)
         
@@ -73,7 +87,7 @@ class LearnXMainController:
             self.morphemesService.analyzeLemmes(modifiedNotes, deck, deck.language)
             self.morphemesService.analyzeMorphemes(modifiedNotes, deck, deck.language)
 
-        log("getAllCardsChanged")
+        log("Retrieve All Cards")
         cards = self.notesService.retrieveAllCards(deck, ankiCards)
         
         modifiedCards = list()
@@ -88,7 +102,7 @@ class LearnXMainController:
             log("refreshInterval " + str(len(modifiedCards)))
             self.morphemesService.refreshInterval(modifiedCards)
         
-    def processGlobal(self, language):
+    def processGlobal(self, language, firstTime):
         
         log("Calculed morpheme Score Start")
         self.morphemesService.computeMorphemesScore()
@@ -97,21 +111,21 @@ class LearnXMainController:
         self.notesService.computeNotesScore()
         
         log("self.markNotes()")     
-        self.markNotes(language)
+        self.markNotes(language, firstTime)
         
         log("self.changeDueCards()")     
-        self.changeDueCards(language)
+        self.changeDueCards(language, firstTime)
         
-        log("self.resetLemmesChanged()") 
+        log("morphemesService.resetLemmesChanged()") 
         self.morphemesService.resetLemmesChanged()
         
-        log("self.resetNotesChanged()") 
+        log("notesService.resetNotesChanged()") 
         self.notesService.resetNotesChanged()
         
         log("col.save()")
         self.col.save()
     
-    def markNotes(self, language):
+    def markNotes(self, language, firstTime):
         notes = self.notesService.getAllChangedNotes()
         
         fields = { #FIXME
@@ -130,7 +144,7 @@ class LearnXMainController:
                 ankiNote = self.col.getNote(note.id)
             except Exception: continue
             
-            if int(ankiNote[fields[Deck.LEARNX_SCORE_KEY]]) == int(note.score):
+            if ankiNote[fields[Deck.LEARNX_SCORE_KEY]] != "" and int(ankiNote[fields[Deck.LEARNX_SCORE_KEY]]) == int(note.score):
                 continue
             
             tm = self.col.tags
@@ -186,25 +200,30 @@ class LearnXMainController:
         if len(ankiNotesId) > 0:
             self.col.updateFieldCache(ankiNotesId)
     
-    def changeDueCards(self, language):
+    def changeDueCards(self, language, firstTime):
         
-        now = intTime()
-        log("select")
-        cards = self.notesService.getAllChangedNotes()
+        if firstTime:
+            log("get all cards")
+            cardsId = self.notesService.getAllCards()
+        else:
+            log("getAllChangedNotes")
+            notes = self.notesService.getAllChangedNotes()
+            
+            log("get cards from notes")
+            cardsId = self.notesService.getCardsFromNotes(notes)
 
         log("get Cards")
         d = []
-        for card in cards:
+        now = intTime()
+        for cardId, score in cardsId:
             try:
-                ankiCard = self.col.getCard(card.id)
+                ankiCard = self.col.getCard(cardId)
             except Exception: continue
             
-            if card.score != 0 and ankiCard.due != card.score:
-                due = card.score
-                d.append(dict(now=now, due=due, usn=self.col.usn(), cid=card.id))
-                
+            if score != 0 and ankiCard.due != score and ankiCard.ivl == 0:
+                d.append(dict(now=now, due=score, usn=self.col.usn(), cid=cardId))
+                    
         log("update")
+        log(d)
         if len(d) > 0:
             self.col.db.executemany("update cards set due=:due, mod=:now, usn=:usn where id = :cid", d)
-
-

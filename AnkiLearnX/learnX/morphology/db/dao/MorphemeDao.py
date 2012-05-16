@@ -31,9 +31,9 @@ class MorphemeDao:
         
         c = db.cursor()
         for morpheme in morphemesToInsert:
-            t = (morpheme.noteId, morpheme.interval, morpheme.changed, morpheme.morphLemmeId)
-            c.execute("Insert into Morphemes(note_id, interval, changed, morph_lemme_id) "
-                      "Values (?,?,?,?)", t)
+            t = (morpheme.noteId, morpheme.interval, morpheme.morphLemmeId)
+            c.execute("Insert into Morphemes(note_id, interval, morph_lemme_id) "
+                      "Values (?,?,?)", t)
         db.commit()
         c.close()
         
@@ -71,64 +71,16 @@ class MorphemeDao:
         
         log("mark modified notes")
         c = db.cursor()
-        c.execute("Update Notes set changed = 1 "
-                  "Where id in (select note_id From Morphemes where morph_lemme_id in %s group by note_id)" % Utils.ids2str(morphemesModified))
-        c.close()   
-        
-        c = db.cursor()
-        log("update morphemes")
-        for lemmeId in morphemesModified:
-            t = (lemmeId, lemmeId)
-            c.execute("Update MorphemeLemmes set max_interval = "
-                      "(select max(interval) From Morphemes where morph_lemme_id = ? group by morph_lemme_id), "
-                      "changed = 1 "
-                      "where id = ?", t)
-        db.commit()
-        c.close()
-        
-        log("end update interval")
-        
-    def updateIntervalBis(self, cards):
-        
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        
-        log("update interval")
-        
-        for card in cards:
-            t = (card.interval, card.noteId)
-            c.execute("Update Morphemes Set interval = ? Where note_id = ?", t)
-        
-        db.commit()
-        c.close()
-        
-        log("select modified morphemes")
-        
-        c = db.cursor()
-        noteIds = set()
-        for card in cards:
-            noteIds.add(card.noteId)
-        noteIds = Utils.ids2str(noteIds)
-        
-        c.execute("Select morph_lemme_id From Morphemes where note_id in %s" % noteIds)
-        morphemesModified = set()
+        c.execute("Select note_id From Morphemes where morph_lemme_id in %s group by note_id" % Utils.ids2str(morphemesModified))
+        exNotesId = set()
         for row in c:
-            morphemesModified.add(row[0])
-        c.close()   
-        
-        log("mark modified notes")
-        c = db.cursor()
-        c.execute("Update Notes set changed = 1 "
-                  "Where id in (select note_id From Morphemes where morph_lemme_id in %s group by note_id)" % Utils.ids2str(morphemesModified))
-        c.close()   
-        
-        log("create temp tables")
+            exNotesId.add(row[0])
+        c.close()
         
         c = db.cursor()
-        c.execute("DROP TABLE IF EXISTS MorphemesMax")
-        c.execute(
-            "Create temporary table MorphemesMax AS select morph_lemme_id, max(interval) as max_interval "
-            "From Morphemes group by morph_lemme_id")
+        for exNoteId in exNotesId:
+            t = (exNoteId, )
+            c.execute("Insert Into ChangedEntities Values (?, 1)", t)
         db.commit()
         c.close()
         
@@ -137,11 +89,12 @@ class MorphemeDao:
         for lemmeId in morphemesModified:
             t = (lemmeId, lemmeId)
             c.execute("Update MorphemeLemmes set max_interval = "
-                      "(select max_interval From MorphemesMax where morph_lemme_id = ?), "
-                      "changed = 1 "
+                      "(select max(interval) From Morphemes where morph_lemme_id = ? group by morph_lemme_id) "
                       "where id = ?", t)
+            s = (lemmeId,)
+            c.execute("Insert Into ChangedEntities Values (?, 2)", s)
         db.commit()
         c.close()
         
         log("end update interval")
-        
+

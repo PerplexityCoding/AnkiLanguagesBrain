@@ -19,42 +19,15 @@ class NoteDao:
         
         c.execute("Select * From Notes Where id in (%s)" % ",".join(str(n.id) for n in notes))
         for row in c:
-            notesHash.pop(row[0]).__init__(row[0], row[1], row[2], row[3], row[4])
+            notesHash.pop(row[0]).__init__(row[0], row[1], row[2], row[3])
         c.close()
         
         if len(notesHash) > 0:
             c = db.cursor()
             for note in notesHash.values():
-                 t = (note.id, note.lastUpdated, note.expressionCsum, note.changed, note.score)
-                 c.execute("Insert into Notes(id, last_updated, expression_csum, changed, score)"
-                           "Values (?,?,?,?,?)", t)
-            db.commit()
-            c.close()
-        
-        return notes
-        
-    def persistNotesBis(self, notes):
-        
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        
-        notesHash = dict()
-        for note in notes:
-            notesHash[note.id] = note
-        
-        log("select")
-        c.execute("Select * From Notes Where id in (%s)" % ",".join(str(n.id) for n in notes))
-        for row in c:
-            notesHash.pop(row[0]).__init__(row[0], row[1], row[2], row[3], row[4])
-        c.close()
-        
-        if len(notesHash) > 0:
-            log("insert")
-            c = db.cursor()
-            for note in notesHash.values():
-                 t = (note.id, note.lastUpdated, note.expressionCsum, note.changed, note.score)
-                 c.execute("Insert into Notes(id, last_updated, expression_csum, changed, score)"
-                           "Values (?,?,?,?,?)", t)
+                 t = (note.id, note.lastUpdated, note.expressionCsum, note.score)
+                 c.execute("Insert into Notes(id, last_updated, expression_csum, score)"
+                           "Values (?,?,?,?)", t)
             db.commit()
             c.close()
         
@@ -64,8 +37,8 @@ class NoteDao:
         db = self.learnXdB.openDataBase()    
         c = db.cursor()
         for note in notes:
-            t = (note.lastUpdated, note.expressionCsum, note.changed, note.score, note.id)
-            c.execute("Update Notes Set last_updated = ?, expression_csum = ?, changed = ?, score = ? "
+            t = (note.lastUpdated, note.expressionCsum, note.score, note.id)
+            c.execute("Update Notes Set last_updated = ?, expression_csum = ?, score = ? "
                       "Where id = ?", t)
         db.commit()
         c.close()
@@ -81,7 +54,7 @@ class NoteDao:
         
         notes = []
         for row in c:
-            notes.append(Note(row[0], row[1], row[2], row[3], row[4]))
+            notes.append(Note(row[0], row[1], row[2], row[3]))
         c.close()
         
         return notes
@@ -91,11 +64,15 @@ class NoteDao:
         db = self.learnXdB.openDataBase()
         
         c = db.cursor()
-        c.execute("Select * From Notes where changed = 1")
+        
+        c.execute("Select id From ChangedEntities where typ = 1")
+        noteIds = ",".join(str(row[0]) for row in c)
+        
+        c.execute("Select * From Notes where id in (%s)" % noteIds)
         
         notes = []
         for row in c:
-            notes.append(Note(row[0], row[1], row[2], row[3], row[4]))
+            notes.append(Note(row[0], row[1], row[2], row[3]))
         c.close()
         
         return notes
@@ -103,7 +80,7 @@ class NoteDao:
     def resetNotesChanged(self):
         db = self.learnXdB.openDataBase()
         c = db.cursor()
-        c.execute("Update Notes set changed = 0 where changed = 1")
+        c.execute("Delete from ChangedEntities where typ = 1")
         db.commit()
         c.close()
         

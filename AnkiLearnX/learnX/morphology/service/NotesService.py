@@ -28,9 +28,8 @@ class NotesService:
         log("list all cards")
         notes = list()
         for ankiCard in ankiCards:
-            ankiNote = ankiCard.note()
-            note = Note(ankiNote.id)
-            note.ankiNote = ankiNote
+            note = Note(ankiCard.note.id)
+            note.ankiNote = ankiCard.note
             notes.append(note)
         
         log("persist")
@@ -38,17 +37,24 @@ class NotesService:
         
     def retrieveAllCards(self, deck, ankiCards):
         
+        log("list all cards")
         cards = list()
         for ankiCard in ankiCards:
-            note = ankiCard.note()
-            card = Card(ankiCard.id, deck.id, note.id)
+            card = Card(ankiCard.id, deck.id, ankiCard.note.id)
             card.ankiCard = ankiCard
             cards.append(card)
         
+        log("persist")
         return self.card_dao.persistCards(cards)    
         
     def getAllChangedNotes(self):
         return self.note_dao.selectAllChangedNotes()
+    
+    def getCardsFromNotes(self, notes):
+        return self.card_dao.selectAllCardsFromNotes(notes)
+    
+    def getAllCards(self):
+        return self.card_dao.selectAllCards()
     
     def computeNotesScore(self):
         
