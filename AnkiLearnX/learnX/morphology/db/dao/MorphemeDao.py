@@ -67,20 +67,43 @@ class MorphemeDao:
         morphemesModified = set()
         for row in c:
             morphemesModified.add(row[0])
-        c.close()   
-        
-        c = db.cursor()
-        log("update morphemes")
-        for lemmeId in morphemesModified:
-            t = (lemmeId, lemmeId)
-            c.execute("Update MorphemeLemmes set max_interval = "
-                      "(select max(interval) From Morphemes where morph_lemme_id = ? group by morph_lemme_id) "
-                      "where id = ?", t)
-            s = (lemmeId,)
-            c.execute("Insert Into ChangedEntities Values (?, 2)", s)
-        db.commit()
         c.close()
         
+        if len(morphemesModified) <= 0:
+            return
+        
+        log("Compute max interval " + str(len(morphemesModified)))
+        c = db.cursor()
+        c.execute("Select morph_lemme_id, max(interval) From Morphemes "
+                  "Where morph_lemme_id in (%s) "
+                  "group by morph_lemme_id" % ",".join(str(mid) for mid in morphemesModified))
+        morphesMaxes = dict()
+        for row in c:
+            morphesMaxes[row[0]] = row[1]
+        c.close()
+        
+        log("Select only morphemes changed by max " + str(len(morphesMaxes)))
+        c = db.cursor()
+        morphemesToUpdate = list()
+        
+        c.execute("Select id, max_interval "
+                  "From MorphemeLemmes where id in (%s)" % ",".join(str(mid) for mid, maxm in morphesMaxes.iteritems()))
+        for row in c:
+            if morphesMaxes[row[0]] != row[1]:
+                morphemesToUpdate.append((row[0], row[1]))
+        c.close()
+        
+        log("update morphemes changed by max " + str(len(morphemesToUpdate)))
+        if len(morphemesToUpdate) > 0:
+            c = db.cursor()
+            for lemmeId, maxInterval in morphemesToUpdate:
+                t = (maxInterval, lemmeId)
+                c.execute("Update MorphemeLemmes set max_interval = ? where id = ?", t)
+                s = (lemmeId,)
+                c.execute("Insert Into ChangedEntities Values (?, 2)", s)
+            db.commit()
+            c.close()
+
         log("end update interval")
 
     def markModifiedNotes(self, morphemesModified):
@@ -103,3 +126,9 @@ class MorphemeDao:
         db.commit()
         c.close()
 
+    def resetAllChanged(self):
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        c.execute("Delete From ChangedEntities")
+        db.commit()
+        c.close()

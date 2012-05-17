@@ -89,7 +89,7 @@ class JapaneseMorphemesService(MorphemesService):
         modifiedLemmes = list()
         for lemme in allLemmes:
             score = self.rankMorpheme(intervalDb, lemme.base, lemme.read, lemme.rank)
-            if lemme.score != score:
+            if int(lemme.score) != int(score): #dont modified the score if trunc are the same
                 lemme.score = score
                 modifiedLemmes.append(lemme)
         
@@ -101,6 +101,23 @@ class JapaneseMorphemesService(MorphemesService):
             self.morphemeDao.markModifiedNotes(modifiedLemmes)
         
         return modifiedLemmes
+    
+    def refreshLinkedMorphemes(self):
+        
+        allLemmes = self.lemmeDao.getAllModifiedLemmes()
+        if len(allLemmes) <= 0:
+            return None
+        
+        kanjis = set()
+        for lemme in allLemmes:
+            expr = lemme.base
+            for i, c in enumerate(expr):
+                # skip non-kanji
+                if c < u'\u4E00' or c > u'\u9FBF': continue
+                kanjis.add(c)
+        
+        if len(kanjis) > 0:
+            self.lemmeDao.markChangedAllMorphemesFromKanjis(kanjis)
     
     def filterMorphLemmes(self, morphLemmesList):
         # Do nothing

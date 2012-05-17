@@ -50,15 +50,18 @@ class NotesService:
     def getAllChangedNotes(self):
         return self.note_dao.selectAllChangedNotes()
     
-    def getCardsFromNotes(self, notes):
-        return self.card_dao.selectAllCardsFromNotes(notes)
-    
     def getAllCards(self):
         return self.card_dao.selectAllCards()
+    
+    def getAllChangedCards(self):
+        return self.card_dao.selectAllChangedCards()
     
     def computeNotesScore(self):
         
         notes = self.note_dao.selectAllChangedNotes()
+        log("Compute Notes " + str(len(notes)))
+        
+        modifiedNotes = list()
         for note in notes:
             lemmes = self.lemmeDao.getLemmeIntervalFromNote(note)
             score = 0
@@ -68,9 +71,18 @@ class NotesService:
             
                 factor = pow(2, -1.0 * maxInterval / 24.0) # number between 1 and 0; lim (itv -> +inf) -> 0
                 score += 1000 * factor + morphemeScore
-            note.score = score
             
-        self.note_dao.updateNotes(notes)
+            if int(note.score) != int(score): #dont modified the score if trunc are the same
+                note.score = score
+                modifiedNotes.append(note)
+        
+        log("Modified Notes " + str(len(modifiedNotes)))
+        if len(modifiedNotes) > 0:
+            self.note_dao.updateNotes(modifiedNotes)
 
     def resetNotesChanged(self):
         return self.note_dao.resetNotesChanged()
+
+    def resetCardsChanged(self):
+        return self.note_dao.resetCardsChanged()
+    

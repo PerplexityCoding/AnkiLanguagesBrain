@@ -61,17 +61,26 @@ class CardDao:
         
         return cards
     
-    def selectAllCardsFromNotes(self, notes):
+    def selectAllChangedCards(self):
         db = self.learnXdB.openDataBase()
         
         c = db.cursor()
         
-        notesId = ",".join(str(note.id) for note in notes)
-        c.execute("Select c.id, n.score From Cards c, Notes n Where c.note_id = n.id and n.id in (%s)" % notesId)
+        c.execute("Select id From ChangedEntities where typ = 3")
+        cardIds = ",".join(str(row[0]) for row in c)
+        
+        c.execute("Select * From Cards where id in (%s)" % cardIds)
         
         cards = list()
         for row in c:
-            cards.append((row[0], row[1]))
+            cards.append(Card(row[0], row[1], row[2], row[3], row[4]))
         c.close()
         
         return cards
+
+    def resetCardsChanged(self):
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        c.execute("Delete from ChangedEntities where typ = 3")
+        db.commit()
+        c.close()

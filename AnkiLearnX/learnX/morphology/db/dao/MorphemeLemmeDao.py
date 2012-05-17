@@ -129,3 +129,28 @@ class MorphemeLemmeDao:
         
         return lemmes
     
+    def markChangedAllMorphemesFromKanjis(self, kanjis):
+        
+        db = self.learnXdB.openDataBase()
+        c = db.cursor()
+        
+        c.execute("select id from MORPHEMELEMMES where %s"
+                  % " or ".join("base like '%%%s%%'" % k for k in kanjis))
+        morphemesId = set()
+        for row in c:
+            morphemesId.add(row[0])
+        c.close()
+        
+        log("Linked morphemes : " + str(len(morphemesId)))
+        
+        if len(morphemesId) > 0:
+            c = db.cursor()
+            for morphemeId in morphemesId:
+                 t = (morphemeId, )
+                 c.execute("Insert into ChangedEntities Values (?, 2)", t)
+            db.commit()
+            c.close()
+            
+        
+        
+    

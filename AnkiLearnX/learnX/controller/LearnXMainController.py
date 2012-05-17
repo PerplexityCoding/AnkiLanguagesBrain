@@ -101,9 +101,12 @@ class LearnXMainController:
         if len(modifiedCards) > 0:
             log("refreshInterval " + str(len(modifiedCards)))
             self.morphemesService.refreshInterval(modifiedCards)
-        
+            
     def processGlobal(self, language, firstTime):
-        
+
+        log("Refresh Linked Morphemes")
+        self.morphemesService.refreshLinkedMorphemes()
+                    
         log("Calculed morpheme Score Start")
         self.morphemesService.computeMorphemesScore()
         
@@ -116,11 +119,8 @@ class LearnXMainController:
         log("self.changeDueCards()")     
         self.changeDueCards(language, firstTime)
         
-        log("morphemesService.resetLemmesChanged()") 
-        self.morphemesService.resetLemmesChanged()
-        
-        log("notesService.resetNotesChanged()") 
-        self.notesService.resetNotesChanged()
+        log("morphemesService.resets") 
+        self.morphemesService.resetAllChanged()
         
         log("col.save()")
         self.col.save()
@@ -144,7 +144,11 @@ class LearnXMainController:
                 ankiNote = self.col.getNote(note.id)
             except Exception: continue
             
-            if ankiNote[fields[Deck.LEARNX_SCORE_KEY]] != "" and int(ankiNote[fields[Deck.LEARNX_SCORE_KEY]]) == int(note.score):
+            try:
+                ankiScore = int(ankiNote[fields[Deck.LEARNX_SCORE_KEY]])
+            except Exception: continue
+            
+            if ankiScore == int(note.score):
                 continue
             
             tm = self.col.tags
@@ -202,17 +206,10 @@ class LearnXMainController:
     
     def changeDueCards(self, language, firstTime):
         
-        if firstTime:
-            log("get all cards")
-            cardsId = self.notesService.getAllCards()
-        else:
-            log("getAllChangedNotes")
-            notes = self.notesService.getAllChangedNotes()
-            
-            log("get cards from notes")
-            cardsId = self.notesService.getCardsFromNotes(notes)
-
-        log("get Cards")
+        log("get all cards")
+        cardsId = self.notesService.getAllCards()
+        
+        log("choose cards " + str(len(cardsId)))
         d = []
         now = intTime()
         for cardId, score in cardsId:
@@ -224,6 +221,5 @@ class LearnXMainController:
                 d.append(dict(now=now, due=score, usn=self.col.usn(), cid=cardId))
                     
         log("update")
-        log(d)
         if len(d) > 0:
             self.col.db.executemany("update cards set due=:due, mod=:now, usn=:usn where id = :cid", d)

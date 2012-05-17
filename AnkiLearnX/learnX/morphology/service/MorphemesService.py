@@ -98,8 +98,12 @@ class MorphemesService:
         self.cardDao.updateCards(modifiedCards)
         self.morphemeDao.updateInterval(modifiedCards)
         
+        
     def resetLemmesChanged(self):
         return self.lemmeDao.resetLemmesChanged()
+    
+    def resetAllChanged(self):
+        return self.morphemeDao.resetAllChanged()
     
     def getLemmesFromNote(self, note):
         return self.lemmeDao.getLemmesFromNote(note)
