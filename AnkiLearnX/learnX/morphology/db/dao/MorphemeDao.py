@@ -2,6 +2,7 @@ from learnX.morphology.db.LearnXdB import *
 from learnX.morphology.db.dto.Morpheme import *
 from learnX.morphology.db.dto.MorphemeLemme import *
 from learnX.morphology.db.dto.Card import *
+from learnX.morphology.db.dto.Note import *
 
 from learnX.utils.Log import *
 from learnX.utils.Utils import *
@@ -15,31 +16,38 @@ class MorphemeDao:
     def persistMorphemes(self, morphemes):
         db = self.learnXdB.openDataBase()
         
-        log("select")
+        db.execute("PRAGMA journal_mode=MEMORY;")
+        db.execute("PRAGMA temp_store=MEMORY;")
+        db.execute("PRAGMA synchronous=OFF;")
+        db.execute("PRAGMA count_changes=OFF;")
         
+        log("Delete")
         c = db.cursor()
-        morphemesToInsert = list()
-        for morpheme in morphemes:
-            t = (morpheme.morphLemmeId, morpheme.noteId)
-            c.execute("Select id From Morphemes Where morph_lemme_id = ? and note_id = ?", t)
-            row = c.fetchone()
-            if row == None:
-                morphemesToInsert.append(morpheme)
-        c.close()
-        
-        log("insert")
-        
-        c = db.cursor()
-        for morpheme in morphemesToInsert:
-            t = (morpheme.noteId, morpheme.interval, morpheme.morphLemmeId)
-            c.execute("Insert into Morphemes(note_id, interval, morph_lemme_id) "
-                      "Values (?,?,?)", t)
+        c.execute("Delete From Morphemes where note_id in (%s)" %
+                  ",".join(str(noteId) for noteId, noteMorphemes in morphemes))
         db.commit()
         c.close()
         
-        log("end")
-    
-        return morphemes    
+        log("Get all")
+        c = db.cursor()
+        
+        allMorphemes = list()
+        for noteId, noteMorphemes in morphemes:
+            for morpheme in noteMorphemes:
+                allMorphemes.append((morpheme.noteId, morpheme.interval, morpheme.morphLemmeId))
+        
+        log("Insert")
+        
+        c.executemany("Insert into Morphemes(note_id, interval, morph_lemme_id) Values (?,?,?)", allMorphemes)
+        
+        db.commit()
+        
+        db.execute("PRAGMA journal_mode=DELETE;")
+        db.execute("PRAGMA temp_store=DEFAULT;")
+        db.execute("PRAGMA synchronous=ON;")
+        db.execute("PRAGMA count_changes=ON;")
+        
+        c.close()  
     
     def updateInterval(self, cards):
         
@@ -48,8 +56,21 @@ class MorphemeDao:
         
         log("update interval")
         
+        morphesInterval = dict()
         for card in cards:
-            t = (card.interval, card.noteId)
+            morphesInterval[card.noteId] = card.interval
+        
+        c.execute("Select note_id, interval "
+                  "From Morphemes where note_id in (%s)" % ",".join(str(card.noteId) for card in cards))
+        morphemesToUpdate = list()
+        for row in c:
+            if morphesInterval[row[0]] != row[1]:
+                morphemesToUpdate.append((row[0], morphesInterval[row[0]]))
+        c.close()
+        
+        c = db.cursor()
+        for noteId, interval in morphemesToUpdate:
+            t = (interval, noteId)
             c.execute("Update Morphemes Set interval = ? Where note_id = ?", t)
         
         db.commit()
@@ -85,12 +106,14 @@ class MorphemeDao:
         log("Select only morphemes changed by max " + str(len(morphesMaxes)))
         c = db.cursor()
         morphemesToUpdate = list()
+        lemmes = set()
         
-        c.execute("Select id, max_interval "
+        c.execute("Select id, base, max_interval "
                   "From MorphemeLemmes where id in (%s)" % ",".join(str(mid) for mid, maxm in morphesMaxes.iteritems()))
         for row in c:
-            if morphesMaxes[row[0]] != row[1]:
-                morphemesToUpdate.append((row[0], row[1]))
+            if morphesMaxes[row[0]] != row[2]:
+                morphemesToUpdate.append((row[0], morphesMaxes[row[0]]))
+                lemmes.add(MorphemeLemme(row[1], None, None, None, None, None, None, None, row[0]))
         c.close()
         
         log("update morphemes changed by max " + str(len(morphemesToUpdate)))
@@ -99,14 +122,14 @@ class MorphemeDao:
             for lemmeId, maxInterval in morphemesToUpdate:
                 t = (maxInterval, lemmeId)
                 c.execute("Update MorphemeLemmes set max_interval = ? where id = ?", t)
-                s = (lemmeId,)
-                c.execute("Insert Into ChangedEntities Values (?, 2)", s)
             db.commit()
             c.close()
 
         log("end update interval")
+        
+        return lemmes
 
-    def markModifiedNotes(self, morphemesModified):
+    def getModifiedNotes(self, morphemesModified):
 
         db = self.learnXdB.openDataBase()
         c = db.cursor()
@@ -118,17 +141,13 @@ class MorphemeDao:
         for row in c:
             exNotesId.add(row[0])
         c.close()
-        
-        c = db.cursor()
-        for exNoteId in exNotesId:
-            t = (exNoteId, )
-            c.execute("Insert Into ChangedEntities Values (?, 1)", t)
-        db.commit()
-        c.close()
 
-    def resetAllChanged(self):
-        db = self.learnXdB.openDataBase()
         c = db.cursor()
-        c.execute("Delete From ChangedEntities")
-        db.commit()
+        c.execute("Select * From Notes where id in %s" % Utils.ids2str(exNotesId))
+        
+        notes = list()
+        for row in c:
+            notes.append(Note(row[0], row[1], row[2], row[3]))
         c.close()
+        
+        return notes

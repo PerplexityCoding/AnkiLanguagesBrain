@@ -6,7 +6,6 @@ DROP TABLE IF EXISTS Definitions;
 DROP TABLE IF EXISTS Cards;
 DROP TABLE IF EXISTS Morphemes;
 DROP TABLE IF EXISTS MorphemeLemmes;
-DROP TABLE IF EXISTS ChangedEntities;
 
 CREATE TABLE Languages (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -71,11 +70,6 @@ CREATE TABLE MorphemeLemmes (
 	rank INTEGER,
 	max_interval INTEGER,
 	score INTEGER
-);
-
-CREATE TABLE ChangedEntities (
-	id NUMERIC,
-	typ INTEGER
 );
 
 CREATE INDEX morph_lemme_id_idx on Morphemes(morph_lemme_id);

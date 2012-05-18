@@ -76,11 +76,10 @@ class JapaneseMorphemesService(MorphemesService):
                 
                 lemme.rank += self.rankKanji(c)
             
-    def computeMorphemesScore(self):
+    def computeMorphemesScore(self, allLemmes):
         
         log("lemmeDao.getMorphemes() Start")
-        allLemmes = self.lemmeDao.getAllModifiedLemmes()
-        if len(allLemmes) <= 0:
+        if allLemmes == None or len(allLemmes) <= 0:
             return None
             
         log("Rank Morphemes Start: " + str(len(allLemmes)))
@@ -89,7 +88,7 @@ class JapaneseMorphemesService(MorphemesService):
         modifiedLemmes = list()
         for lemme in allLemmes:
             score = self.rankMorpheme(intervalDb, lemme.base, lemme.read, lemme.rank)
-            if int(lemme.score) != int(score): #dont modified the score if trunc are the same
+            if abs(int(lemme.score) - int(score)) >= 5:
                 lemme.score = score
                 modifiedLemmes.append(lemme)
         
@@ -98,15 +97,14 @@ class JapaneseMorphemesService(MorphemesService):
             self.lemmeDao.updateLemmesScore(modifiedLemmes)
         
             log("Mark Modified Notes")
-            self.morphemeDao.markModifiedNotes(modifiedLemmes)
+            return self.morphemeDao.getModifiedNotes(modifiedLemmes)
         
-        return modifiedLemmes
+        return None
     
-    def refreshLinkedMorphemes(self):
+    def refreshLinkedMorphemes(self, allLemmes):
         
-        allLemmes = self.lemmeDao.getAllModifiedLemmes()
         if len(allLemmes) <= 0:
-            return None
+            return set()
         
         kanjis = set()
         for lemme in allLemmes:
@@ -116,8 +114,9 @@ class JapaneseMorphemesService(MorphemesService):
                 if c < u'\u4E00' or c > u'\u9FBF': continue
                 kanjis.add(c)
         
-        if len(kanjis) > 0:
-            self.lemmeDao.markChangedAllMorphemesFromKanjis(kanjis)
+        if len(kanjis) < 0:
+            return allLemmes
+        return self.lemmeDao.getChangedAllMorphemesFromKanjis(kanjis)
     
     def filterMorphLemmes(self, morphLemmesList):
         # Do nothing

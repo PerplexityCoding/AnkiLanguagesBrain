@@ -48,36 +48,12 @@ class MorphemeLemmeDao:
         c.close()
             
         return lemmes
-    
-    def resetLemmesChanged(self):
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        c.execute("Delete from ChangedEntities where typ = 2")
-        db.commit()
-        c.close()
-    
+
     def getAllLemmes(self):
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
         c.execute("Select id, base, pos, sub_pos, read, rank, max_interval, score From MorphemeLemmes")
-
-        morphemes = list()
-        for row in c:
-            morphemes.append(MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], row[6], row[7], row[0]))
-        c.close()
-        
-        return morphemes
-    
-    def getAllModifiedLemmes(self):
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        
-        c.execute("Select id From ChangedEntities where typ = 2")
-        lemmesId = ",".join(str(row[0]) for row in c)
-
-        c.execute("Select id, base, pos, sub_pos, read, rank, max_interval, score From MorphemeLemmes "
-                  "Where id in (%s)" % lemmesId)
 
         morphemes = list()
         for row in c:
@@ -129,27 +105,21 @@ class MorphemeLemmeDao:
         
         return lemmes
     
-    def markChangedAllMorphemesFromKanjis(self, kanjis):
+    def getChangedAllMorphemesFromKanjis(self, kanjis):
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        c.execute("select id from MORPHEMELEMMES where %s"
+        c.execute("select id, base, pos, sub_pos, read, rank, max_interval, score from MorphemeLemmes where %s"
                   % " or ".join("base like '%%%s%%'" % k for k in kanjis))
-        morphemesId = set()
+        morphemes = set()
         for row in c:
-            morphemesId.add(row[0])
+            morphemes.add(MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], row[6], row[7], row[0]))
         c.close()
         
-        log("Linked morphemes : " + str(len(morphemesId)))
+        log("Linked morphemes : " + str(len(morphemes)))
         
-        if len(morphemesId) > 0:
-            c = db.cursor()
-            for morphemeId in morphemesId:
-                 t = (morphemeId, )
-                 c.execute("Insert into ChangedEntities Values (?, 2)", t)
-            db.commit()
-            c.close()
+        return morphemes
             
         
         

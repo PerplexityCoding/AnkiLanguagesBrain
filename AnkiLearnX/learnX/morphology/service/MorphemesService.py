@@ -70,20 +70,19 @@ class MorphemesService:
         log("Compute Notes <-> Morphemes")
         allMorphemes = list()
         for note in notes:
-            noteUniqueMorphemes = list()
+            noteUniqueMorphemes = set()
             for morphLemme in note.morphLemmes:
-                morpheme = Morpheme(note.id, -1, morphLemme.id, -1)
-                if morpheme not in noteUniqueMorphemes:    
-                    noteUniqueMorphemes.append(morpheme)
-                    allMorphemes.append(morpheme)
+                morpheme = Morpheme(note.id, 0, morphLemme.id, -1) 
+                noteUniqueMorphemes.add(morpheme)
+            allMorphemes.append((note.id, noteUniqueMorphemes))
             note.expressionCsum = Utils.fieldChecksum(note.ankiNote[deck.expressionField])
             note.lastUpdated = note.ankiNote.mod
             note.ankiNote = None
         
-        log("persist All Morphemes")
+        log("Persist All Morphemes " + str(len(allMorphemes)))
         self.morphemeDao.persistMorphemes(allMorphemes)
         
-        log("update All")
+        log("Update All")
         self.noteDao.updateNotes(notes) 
         
         for note in notes:
@@ -96,14 +95,7 @@ class MorphemesService:
             card.interval = card.ankiCard.ivl
             
         self.cardDao.updateCards(modifiedCards)
-        self.morphemeDao.updateInterval(modifiedCards)
-        
-        
-    def resetLemmesChanged(self):
-        return self.lemmeDao.resetLemmesChanged()
-    
-    def resetAllChanged(self):
-        return self.morphemeDao.resetAllChanged()
+        return self.morphemeDao.updateInterval(modifiedCards)
     
     def getLemmesFromNote(self, note):
         return self.lemmeDao.getLemmesFromNote(note)

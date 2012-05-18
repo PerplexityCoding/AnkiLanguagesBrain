@@ -40,7 +40,7 @@ class CardDao:
         
         for card in cards:            
             t = (card.deckId, card.noteId, card.interval, card.lastUpdated, card.id)
-            c.execute("Update Cards Set deck_id = ?, note_id = ?, interval = ?, last_updated = ?"
+            c.execute("Update Cards Set deck_id = ?, note_id = ?, interval = ?, last_updated = ? "
                       "Where id = ?", t)
             
         db.commit()
@@ -60,27 +60,3 @@ class CardDao:
         c.close()
         
         return cards
-    
-    def selectAllChangedCards(self):
-        db = self.learnXdB.openDataBase()
-        
-        c = db.cursor()
-        
-        c.execute("Select id From ChangedEntities where typ = 3")
-        cardIds = ",".join(str(row[0]) for row in c)
-        
-        c.execute("Select * From Cards where id in (%s)" % cardIds)
-        
-        cards = list()
-        for row in c:
-            cards.append(Card(row[0], row[1], row[2], row[3], row[4]))
-        c.close()
-        
-        return cards
-
-    def resetCardsChanged(self):
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        c.execute("Delete from ChangedEntities where typ = 3")
-        db.commit()
-        c.close()

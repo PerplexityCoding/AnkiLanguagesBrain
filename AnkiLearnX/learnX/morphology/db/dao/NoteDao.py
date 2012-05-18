@@ -58,29 +58,4 @@ class NoteDao:
         c.close()
         
         return notes
-    
-    def selectAllChangedNotes(self):
-        
-        db = self.learnXdB.openDataBase()
-        
-        c = db.cursor()
-        
-        c.execute("Select id From ChangedEntities where typ = 1")
-        noteIds = ",".join(str(row[0]) for row in c)
-        
-        c.execute("Select * From Notes where id in (%s)" % noteIds)
-        
-        notes = []
-        for row in c:
-            notes.append(Note(row[0], row[1], row[2], row[3]))
-        c.close()
-        
-        return notes
-    
-    def resetNotesChanged(self):
-        db = self.learnXdB.openDataBase()
-        c = db.cursor()
-        c.execute("Delete from ChangedEntities where typ = 1")
-        db.commit()
-        c.close()
-        
+

@@ -23,10 +23,10 @@ class LearnXMainController:
         
     def analyze(self, deck):
         log("Start")
-        self.analyzeDeck(deck)
+        modifiedLemmes = self.analyzeDeck(deck)
         
         log("Process Notes Start")
-        self.processGlobal(deck.language, deck.firstTime)
+        self.processGlobal(deck.language, deck.firstTime, modifiedLemmes)
         
         if deck.firstTime:
             log("decksService.resetFirstTime()") 
@@ -42,15 +42,16 @@ class LearnXMainController:
         decks = self.decksService.listDecksByLanguage(language)
         
         firstTimeDecks = list()
+        modifiedLemmes = set()
         firstTime = False
         for deck in decks:
-            self.analyzeDeck(deck)
+            modifiedLemmes.update(self.analyzeDeck(deck))
             if deck.firstTime == True:
                 firstTimeDecks.append(deck)
                 firstTime = True
                 
         log("Process Notes Start")
-        self.processGlobal(language, firstTime)
+        self.processGlobal(language, firstTime, modifiedLemmes)
         
         log("decksService.resetFirstTime()") 
         for ftd in firstTimeDecks:
@@ -98,35 +99,36 @@ class LearnXMainController:
                 continue
             modifiedCards.append(card)
         
-        if len(modifiedCards) > 0:
-            log("refreshInterval " + str(len(modifiedCards)))
-            self.morphemesService.refreshInterval(modifiedCards)
+        if len(modifiedCards) <= 0:
+            return set()
             
-    def processGlobal(self, language, firstTime):
+        log("refreshInterval " + str(len(modifiedCards)))
+        return self.morphemesService.refreshInterval(modifiedCards)    
+            
+    def processGlobal(self, language, firstTime, modifiedLemmes):
 
         log("Refresh Linked Morphemes")
-        self.morphemesService.refreshLinkedMorphemes()
+        lemmes = self.morphemesService.refreshLinkedMorphemes(modifiedLemmes)
                     
         log("Calculed morpheme Score Start")
-        self.morphemesService.computeMorphemesScore()
+        notes = self.morphemesService.computeMorphemesScore(lemmes)
         
         log("Calculed notes Score Start")
-        self.notesService.computeNotesScore()
+        notes = self.notesService.computeNotesScore(notes)
         
         log("self.markNotes()")     
-        self.markNotes(language, firstTime)
+        self.markNotes(notes)
         
         log("self.changeDueCards()")     
-        self.changeDueCards(language, firstTime)
-        
-        log("morphemesService.resets") 
-        self.morphemesService.resetAllChanged()
+        self.changeDueCards(notes)
         
         log("col.save()")
         self.col.save()
     
-    def markNotes(self, language, firstTime):
-        notes = self.notesService.getAllChangedNotes()
+    def markNotes(self, notes):
+        
+        if not notes:
+            return
         
         fields = { #FIXME
             Deck.LEARNX_SCORE_KEY : "LearnXScore",
@@ -148,7 +150,7 @@ class LearnXMainController:
                 ankiScore = int(ankiNote[fields[Deck.LEARNX_SCORE_KEY]])
             except Exception: continue
             
-            if ankiScore == int(note.score):
+            if abs(ankiScore - int(note.score)) >= 15:
                 continue
             
             tm = self.col.tags
@@ -198,13 +200,14 @@ class LearnXMainController:
                 modifiedFields.append(dict(nid=ankiNote.id, flds=flds, tags=tags, u=self.col.usn(), m=intTime()))
             ankiNotesId.append(ankiNote.id)
     
+        log ("update fields notes " + str(len(modifiedFields)))
         if len(modifiedFields) > 0:
             self.col.tags.register([u'LxReview', u'LxToLearn', u'LxTooDifficult'])
             self.col.db.executemany("update notes set flds=:flds, tags=:tags, mod=:m,usn=:u where id=:nid", modifiedFields)
         if len(ankiNotesId) > 0:
             self.col.updateFieldCache(ankiNotesId)
     
-    def changeDueCards(self, language, firstTime):
+    def changeDueCards(self, notes):
         
         log("get all cards")
         cardsId = self.notesService.getAllCards()
