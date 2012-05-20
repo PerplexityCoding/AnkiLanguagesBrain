@@ -1,5 +1,25 @@
 from hashlib import sha1
 
+import time
+
+class Timer:
+    
+    timer = dict()
+    
+    @staticmethod
+    def start(i):
+        if i not in Timer.timer:
+            Timer.timer[i] = [0, 0]
+        Timer.timer[i][1] = time.clock()
+
+    @staticmethod
+    def stop(i):
+        Timer.timer[i][0] += time.clock() - Timer.timer[i][1]
+    
+    @staticmethod    
+    def display(i):
+        return "Timer (" + str(i) + ") : " + str(Timer.timer[i][0])
+
 class Utils:
     
     @staticmethod

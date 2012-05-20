@@ -150,7 +150,7 @@ class LearnXMainController:
                 ankiScore = int(ankiNote[fields[Deck.LEARNX_SCORE_KEY]])
             except Exception: continue
             
-            if abs(ankiScore - int(note.score)) >= 15:
+            if abs(ankiScore - int(note.score)) <= 15:
                 continue
             
             tm = self.col.tags
@@ -204,6 +204,8 @@ class LearnXMainController:
         if len(modifiedFields) > 0:
             self.col.tags.register([u'LxReview', u'LxToLearn', u'LxTooDifficult'])
             self.col.db.executemany("update notes set flds=:flds, tags=:tags, mod=:m,usn=:u where id=:nid", modifiedFields)
+        
+        log ("update fields cache " + str(len(ankiNotesId)))
         if len(ankiNotesId) > 0:
             self.col.updateFieldCache(ankiNotesId)
     

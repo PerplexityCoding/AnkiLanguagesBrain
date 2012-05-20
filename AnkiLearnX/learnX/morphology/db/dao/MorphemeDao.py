@@ -42,7 +42,7 @@ class MorphemeDao:
         
         db.commit()
         
-        db.execute("PRAGMA journal_mode=DELETE;")
+        db.execute("PRAGMA journal_mode=WAL;")
         db.execute("PRAGMA temp_store=DEFAULT;")
         db.execute("PRAGMA synchronous=ON;")
         db.execute("PRAGMA count_changes=ON;")

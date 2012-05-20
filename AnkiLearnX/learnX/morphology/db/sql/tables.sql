@@ -75,4 +75,4 @@ CREATE TABLE MorphemeLemmes (
 CREATE INDEX morph_lemme_id_idx on Morphemes(morph_lemme_id);
 
 PRAGMA encoding = "UTF-8";
-
+PRAGMA journal_mode=WAL;
