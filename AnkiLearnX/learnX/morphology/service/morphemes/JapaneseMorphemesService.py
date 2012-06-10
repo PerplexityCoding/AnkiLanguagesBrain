@@ -9,21 +9,19 @@ class JapaneseMorphemesService(MorphemesService):
         
         self.initFactors()
     
-    # return a Rank between 0 and 100
+    # return a Rank between 0 and 500
     def rankKanji(self, kanji):
         kanjiFreq, kanjiStrokeCount = KanjiHelper.getKanjiInfo(kanji)
         
-        freqScore = math.exp(kanjiFreq / 600.0)
-        freqScore = freqScore / 1.5
-        if freqScore > 100:
-            freqScore = 100
+        freqScore =  pow(2, kanjiFreq / 900) * 35.0
+        if freqScore > 350:
+            freqScore = 350.0
         
-        strokeScore = kanjiStrokeCount * 100.0 / 28.0
-        if strokeScore > 100:
-            strokeScore = 100
+        strokeScore = kanjiStrokeCount * 150.0 / 28.0
+        if strokeScore > 150:
+            strokeScore = 150.0
         
-        kanjiScore = ((freqScore + strokeScore) / 2.0) * 2.0
-        return kanjiScore
+        return freqScore + strokeScore
 
     def initFactors(self):
         self.cachePow = dict()
@@ -51,13 +49,13 @@ class JapaneseMorphemesService(MorphemesService):
                 for (e,r), ivl in intervalDb.iteritems():
                     # has same kanji
                     if c in e:
-                        if npow > -0.5: npow -= 0.1
+                        if npow > -1.0: npow -= 0.25
                         # has same kanji at same pos
                         if len(e) > i and c == e[i]:
-                            if npow > -1.0: npow -= 0.1
+                            if npow > -1.5: npow -= 0.2
                             # has same kanji at same pos with similar reading
                             if i == 0 and read[0] == r[0] or i == len(expr)-1 and read[-1] == r[-1]:
-                                npow -= 0.8
+                                npow -= 1.0
                         npow = npow * (1.0 - self.getFactor(ivl))
                 score *= pow(2, npow)
         return score
