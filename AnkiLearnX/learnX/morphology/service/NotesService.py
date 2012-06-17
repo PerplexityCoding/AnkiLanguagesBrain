@@ -68,7 +68,7 @@ class NotesService:
                 factor = pow(2, -1.0 * maxInterval / 24.0) # number between 1 and 0; lim (itv -> +inf) -> 0
                 score += 1000 * factor + morphemeScore
             
-            if abs(int(note.score) - int(score)) >= 15:
+            if note.score == 0 or note.score == None or abs(int(note.score) - int(score)) >= 15:
                 note.score = score
                 modifiedNotes.append(note)
         

@@ -108,12 +108,12 @@ class MorphemeDao:
         morphemesToUpdate = list()
         lemmes = set()
         
-        c.execute("Select id, base, max_interval "
+        c.execute("Select id, base, pos, sub_pos, read, rank, max_interval, score "
                   "From MorphemeLemmes where id in (%s)" % ",".join(str(mid) for mid, maxm in morphesMaxes.iteritems()))
         for row in c:
-            if morphesMaxes[row[0]] != row[2]:
+            if morphesMaxes[row[0]] != row[6]:
                 morphemesToUpdate.append((row[0], morphesMaxes[row[0]]))
-                lemmes.add(MorphemeLemme(row[1], None, None, None, None, None, None, None, row[0]))
+            lemmes.add(MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], morphesMaxes[row[0]], row[7], row[0]))
         c.close()
         
         log("update morphemes changed by max " + str(len(morphemesToUpdate)))
@@ -145,9 +145,9 @@ class MorphemeDao:
         c = db.cursor()
         c.execute("Select * From Notes where id in %s" % Utils.ids2str(exNotesId))
         
-        notes = list()
+        notes = set()
         for row in c:
-            notes.append(Note(row[0], row[1], row[2], row[3]))
+            notes.add(Note(row[0], row[1], row[2], row[3]))
         c.close()
         
         return notes

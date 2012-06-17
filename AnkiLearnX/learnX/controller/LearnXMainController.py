@@ -23,10 +23,10 @@ class LearnXMainController:
         
     def analyze(self, deck):
         log("Start")
-        modifiedLemmes = self.analyzeDeck(deck)
+        modifiedLemmes, newNotes = self.analyzeDeck(deck)
         
         log("Process Notes Start")
-        self.processGlobal(deck.language, deck.firstTime, modifiedLemmes)
+        self.processGlobal(deck.language, deck.firstTime, modifiedLemmes, newNotes)
         
         if deck.firstTime:
             log("decksService.resetFirstTime()") 
@@ -43,15 +43,18 @@ class LearnXMainController:
         
         firstTimeDecks = list()
         modifiedLemmes = set()
+        newNotes = set()
         firstTime = False
         for deck in decks:
-            modifiedLemmes.update(self.analyzeDeck(deck))
+            ml, nn = self.analyzeDeck(deck)
+            modifiedLemmes.update(ml)
+            newNotes.update(nn)
             if deck.firstTime == True:
                 firstTimeDecks.append(deck)
                 firstTime = True
                 
         log("Process Notes Start")
-        self.processGlobal(language, firstTime, modifiedLemmes)
+        self.processGlobal(language, firstTime, modifiedLemmes, newNotes)
         
         log("decksService.resetFirstTime()") 
         for ftd in firstTimeDecks:
@@ -71,9 +74,9 @@ class LearnXMainController:
         
         log("Retrieve All Notes : " + str(len(ankiCards)) + " cards")
         
-        notes = self.notesService.retrieveAllNotes(ankiCards)
+        newNotes, notes = self.notesService.retrieveAllNotes(ankiCards)
         
-        log("Determine Modified Notes : " + str(len(notes)))
+        log("Determine Modified Notes : " + str(len(notes)) + " , new notes : " + str(len(newNotes)))
         
         modifiedNotes = []
         for note in notes:
@@ -100,27 +103,33 @@ class LearnXMainController:
             modifiedCards.append(card)
         
         if len(modifiedCards) <= 0:
-            return set()
+            return set(), newNotes
             
         log("refreshInterval " + str(len(modifiedCards)))
-        return self.morphemesService.refreshInterval(modifiedCards)    
-            
-    def processGlobal(self, language, firstTime, modifiedLemmes):
+        return self.morphemesService.refreshInterval(modifiedCards), newNotes
 
-        log("Refresh Linked Morphemes")
-        lemmes = self.morphemesService.refreshLinkedMorphemes(modifiedLemmes)
-                    
-        log("Calculed morpheme Score Start")
-        notes = self.morphemesService.computeMorphemesScore(lemmes)
+    def processGlobal(self, language, firstTime, modifiedLemmes, newNotes):
+
+        log("Get Linked Morphemes: " + str(len(modifiedLemmes)))
+        modifiedLemmes.update(self.morphemesService.getLinkedMorphemes(modifiedLemmes))
         
-        log("Calculed notes Score Start")
-        notes = self.notesService.computeNotesScore(notes)
+        log("Calculed morpheme Score Start: " + str(len(modifiedLemmes)))
+        notes = self.morphemesService.computeMorphemesScore(modifiedLemmes)
+
+        # add new notes here, force to compute score for new notes
+        # fixme : duplicate in set why ? check equals
+        notes.update(newNotes)
+
+        if len(notes) > 0:
+            log("Calculed notes Score Start: " + str(len(notes)))
+            notes = self.notesService.computeNotesScore(notes)
         
-        log("self.markNotes()")     
-        self.markNotes(notes)
-        
-        log("self.changeDueCards()")     
-        self.changeDueCards(notes)
+            if notes != None:
+                log("self.markNotes() " + str(len(notes)))
+                self.markNotes(notes)
+            
+                log("self.changeDueCards()")
+                self.changeDueCards(notes)
         
         log("col.save()")
         self.col.save()
@@ -148,10 +157,9 @@ class LearnXMainController:
             
             try:
                 ankiScore = int(ankiNote[fields[Deck.LEARNX_SCORE_KEY]])
-            except Exception: continue
-            
-            if abs(ankiScore - int(note.score)) <= 15:
-                continue
+                
+                if abs(ankiScore - int(note.score)) <= 15: continue
+            except Exception: pass
             
             tm = self.col.tags
             origFlds = joinFields(ankiNote.fields)

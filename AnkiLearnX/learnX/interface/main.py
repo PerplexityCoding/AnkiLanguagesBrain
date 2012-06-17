@@ -47,7 +47,7 @@ class LearnX(QDialog):
         self.setupMain()
         self.setupDecks()
         self.setupLanguages()
-        self.setupBrowserForMorphemes()
+        #self.setupBrowserForMorphemes()
         #self.setupToolbar()
         
     def refreshAll(self):

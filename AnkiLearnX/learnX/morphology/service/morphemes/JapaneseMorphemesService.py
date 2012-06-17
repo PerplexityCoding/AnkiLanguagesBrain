@@ -35,6 +35,9 @@ class JapaneseMorphemesService(MorphemesService):
     def rankMorpheme(self, intervalDb, expr, read, rank):
         score = rank
         
+        if read == None or rank == None:
+            return 0
+        
         if (expr, read) in intervalDb:
             interval = intervalDb[(expr, read)]
             score = score * self.getFactor(interval)
@@ -78,7 +81,7 @@ class JapaneseMorphemesService(MorphemesService):
         
         log("lemmeDao.getMorphemes() Start")
         if allLemmes == None or len(allLemmes) <= 0:
-            return None
+            return set()
             
         log("Rank Morphemes Start: " + str(len(allLemmes)))
         intervalDb = self.lemmeDao.getKnownLemmesIntervalDB()
@@ -86,7 +89,7 @@ class JapaneseMorphemesService(MorphemesService):
         modifiedLemmes = list()
         for lemme in allLemmes:
             score = self.rankMorpheme(intervalDb, lemme.base, lemme.read, lemme.rank)
-            if abs(int(lemme.score) - int(score)) >= 5:
+            if lemme.score == None or lemme.score == 0 or abs(int(lemme.score) - int(score)) >= 5:
                 lemme.score = score
                 modifiedLemmes.append(lemme)
         
@@ -94,12 +97,14 @@ class JapaneseMorphemesService(MorphemesService):
         if len(modifiedLemmes) > 0:
             self.lemmeDao.updateLemmesScore(modifiedLemmes)
         
-            log("Mark Modified Notes")
-            return self.morphemeDao.getModifiedNotes(modifiedLemmes)
+            log("Mark Modified Notes: " + str(len(modifiedLemmes)))
+            notes = self.morphemeDao.getModifiedNotes(modifiedLemmes)
+            log("getModifiedNotes() : " + str(len(modifiedLemmes)))
+            return notes
         
-        return None
+        return set()
     
-    def refreshLinkedMorphemes(self, allLemmes):
+    def getLinkedMorphemes(self, allLemmes):
         
         if len(allLemmes) <= 0:
             return set()
@@ -111,7 +116,7 @@ class JapaneseMorphemesService(MorphemesService):
                 # skip non-kanji
                 if c < u'\u4E00' or c > u'\u9FBF': continue
                 kanjis.add(c)
-        
+
         if len(kanjis) < 0:
             return allLemmes
         return self.lemmeDao.getChangedAllMorphemesFromKanjis(kanjis)

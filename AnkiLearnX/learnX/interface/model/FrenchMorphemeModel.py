@@ -25,7 +25,7 @@ class FrenchMorphemeModel(QAbstractTableModel):
             self.deck = deck
             decksId.append(deck.id)
         
-        self.morphemes = self.morphemesService.getMorphemes(None, decksId)
+        self.morphemes = self.morphemesService.getAllLemmes()
         self.initMorphemesLen = len(self.morphemes)
         self.currentMorphemesLen = len(self.morphemes)
         

@@ -22,16 +22,18 @@ class NoteDao:
             notesHash.pop(row[0]).__init__(row[0], row[1], row[2], row[3])
         c.close()
         
+        newNotes = set()
         if len(notesHash) > 0:
             c = db.cursor()
             for note in notesHash.values():
                  t = (note.id, note.lastUpdated, note.expressionCsum, note.score)
                  c.execute("Insert into Notes(id, last_updated, expression_csum, score)"
                            "Values (?,?,?,?)", t)
+                 newNotes.add(note)
             db.commit()
             c.close()
         
-        return notes
+        return newNotes, notes
     
     def updateNotes(self, notes):
         db = self.learnXdB.openDataBase()    
