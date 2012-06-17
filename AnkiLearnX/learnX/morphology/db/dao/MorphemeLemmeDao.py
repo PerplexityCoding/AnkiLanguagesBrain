@@ -105,16 +105,30 @@ class MorphemeLemmeDao:
         
         return lemmes
     
-    def getChangedAllMorphemesFromKanjis(self, kanjis):
+    def getChangedAllMorphemesFromKanjis(self, allkanjis):
         
         db = self.learnXdB.openDataBase()
         c = db.cursor()
         
-        c.execute("select id, base, pos, sub_pos, read, rank, max_interval, score from MorphemeLemmes where %s"
-                  % " or ".join("base like '%%%s%%'" % k for k in kanjis))
+        remind = list(allkanjis)
+        
         morphemes = set()
-        for row in c:
-            morphemes.add(MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], row[6], row[7], row[0]))
+        while remind != None:
+
+            if len(remind) > 1000:
+                kanjis = remind[:999]
+                remind = remind[1000:]
+            else:
+                kanjis = remind
+                remind = None
+            
+            c.execute("select id, base, pos, sub_pos, read, rank, max_interval, score from MorphemeLemmes where %s"
+                      % " or ".join("base like '%%%s%%'" % k for k in kanjis))
+            for row in c:
+                morphemes.add(MorphemeLemme(row[1], None, row[2], row[3], row[4], row[5], row[6], row[7], row[0]))
+            
+            log("Morphemes: " + str(len(morphemes)))
+            
         c.close()
         
         log("Linked morphemes : " + str(len(morphemes)))

@@ -99,3 +99,6 @@ class MorphemesService:
     
     def getLemmesFromNote(self, note):
         return self.lemmeDao.getLemmesFromNote(note)
+
+    def getAllLemmes(self):
+        return self.lemmeDao.getAllLemmes()
