@@ -25,11 +25,11 @@ class JapaneseMorphemeModel(QAbstractTableModel):
             self.deck = deck
             decksId.append(deck.id)
         
-        self.morphemes = self.morphemesService.getMorphemes(None, decksId)
+        self.morphemes = self.morphemesService.getAllLemmes()
         self.initMorphemesLen = len(self.morphemes)
         self.currentMorphemesLen = len(self.morphemes)
         
-        self.columns = ["Expression", "Reading", "Part of Speech", "Sub P-o-S", "Status", "Changed", "Notes Count", "Score"]
+        self.columns = ["Expression", "Reading", "Part of Speech", "Sub P-of-S", "Rank", "Interval", "Score"]
         
     # Model interface
     ######################################################################
@@ -38,50 +38,44 @@ class JapaneseMorphemeModel(QAbstractTableModel):
         return len(self.morphemes)
 
     def columnCount(self, index):
-        return 8
+        return len(self.columns)
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Vertical:
-            return QVariant()
+            return None
         elif role == Qt.DisplayRole:
-            return QVariant(self.columns[section])
+            return self.columns[section]
         elif role == Qt.FontRole:
             f = QFont()
             f.setPixelSize(12)
-            return QVariant(f)
+            return f
         else:
-            return QVariant()
+            return None
 
     def data(self, index, role):
         if role == Qt.DisplayRole or role == Qt.EditRole:
             
             morpheme = self.morphemes[index.row()]
-            morphemeLemme = morpheme.morphLemme
             
             s = ""
             columnId = index.column()
             if columnId == 0:
-                s = morphemeLemme.base
+                s = morpheme.base
             elif columnId == 1:
-                s = morphemeLemme.read
+                s = morpheme.read
             elif columnId == 2:
-                s = morphemeLemme.pos
+                s = morpheme.pos
             elif columnId == 3:
-                s = morphemeLemme.subPos
+                s = morpheme.subPos
             elif columnId == 4:
-                s = morpheme.getStatusName()
+                s = int(morpheme.rank)  
             elif columnId == 5:
-                if morpheme.statusChanged:
-                    s = "yes"
-                else:
-                    s = "no"
+                s = int(morpheme.maxInterval)   
             elif columnId == 6:
-                s = morpheme.notesCount  
-            elif columnId == 7:
-                s = int(morpheme.score)          
-            return QVariant(s)
+                s = int(morpheme.score)            
+            return s
         else:
-            return QVariant()
+            return None
         
     def showMatching(self, force=True):
         

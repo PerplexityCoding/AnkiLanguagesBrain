@@ -8,6 +8,7 @@ from learnX.morphology.service.ServicesLocator import *
 from learnX.interface.LanguageChooser import *
 from learnX.interface.LanguageConfig import *
 from learnX.interface.DeckConfig import *
+from learnX.interface.IntegratedMorphemesBrowser import *
 
 from learnX.controller.LearnXMainController import *
 from learnX.controller.MorphemesBrowserController import *
@@ -46,6 +47,7 @@ class LearnX(QDialog):
         self.setupMain()
         self.setupDecks()
         self.setupLanguages()
+        self.setupBrowserForMorphemes()
         #self.setupToolbar()
         
     def refreshAll(self):
@@ -245,6 +247,13 @@ class LearnX(QDialog):
         toolBarLayout.addWidget(QPushButton("Run All"))
         
         mainVBox.addWidget(toolBarFrame)
+    
+    def setupBrowserForMorphemes(self):
+        
+        browser = IntegratedMorphemesBrowser()    
+
+    
+    # do somethingss
     
 def openWindows():
     mw.toolbar.learnX = LearnX(mw)
