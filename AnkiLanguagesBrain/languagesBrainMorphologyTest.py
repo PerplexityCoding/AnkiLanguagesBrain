@@ -8,7 +8,7 @@ from languagesBrain.morphology.service.DecksService import *
 from languagesBrain.morphology.service.LanguagesService import *
 from languagesBrain.morphology.service.MorphemesService import *
 from languagesBrain.morphology.service.FactsService import *
-from languagesBrain.morphology.db.LanguagesBrainDB. import *
+from languagesBrain.morphology.db.LanguagesBrainDB import *
 from languagesBrain.utils.Log import *
 from languagesBrain.morphology.db.dao.MorphemeLemmeDao import *
 from languagesBrain.morphology.db.dto.Deck import *

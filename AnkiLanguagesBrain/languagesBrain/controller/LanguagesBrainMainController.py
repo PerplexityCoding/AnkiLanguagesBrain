@@ -189,16 +189,16 @@ class LanguagesBrainMainController:
             try: ankiNote[fields[Deck.KNOWNS_KEY]] = u','.join(u for u in knownMorphemes)
             except KeyError: pass
             
-            ankiNote.tags = tm.split(tm.remFromStr(u'LxReview LxToLearn LxTooDifficult', tm.join(ankiNote.tags)))
+            ankiNote.tags = tm.split(tm.remFromStr(u'LBReview LBToLearn LBTooDifficult', tm.join(ankiNote.tags)))
             
             if len(unknownMorphemes) == 1:
                 try: ankiNote[fields[Deck.COPY_UNKNOWN_1_TO_KEY]] = u','.join(u for u in unknownMorphemes)
                 except KeyError: pass
-                tag = u'LxToLearn'
+                tag = u'LBToLearn'
             elif len(unknownMorphemes) == 0:
-                tag = u'LxReview'
+                tag = u'LBReview'
             else:
-                tag = u'LxTooDifficult'
+                tag = u'LBTooDifficult'
             ankiNote.tags = tm.split(tm.addToStr(tag, tm.join(ankiNote.tags)))
             
             flds = joinFields(ankiNote.fields)
@@ -210,7 +210,7 @@ class LanguagesBrainMainController:
     
         log ("update fields notes " + str(len(modifiedFields)))
         if len(modifiedFields) > 0:
-            self.col.tags.register([u'LxReview', u'LxToLearn', u'LxTooDifficult'])
+            self.col.tags.register([u'LBReview', u'LBToLearn', u'LBTooDifficult'])
             self.col.db.executemany("update notes set flds=:flds, tags=:tags, mod=:m,usn=:u where id=:nid", modifiedFields)
         
         log ("update fields cache " + str(len(ankiNotesId)))
