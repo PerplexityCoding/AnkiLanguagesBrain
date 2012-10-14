@@ -1,6 +1,7 @@
 ﻿#-*- coding: utf-8 -*-
 
 from aqt import mw
+from aqt.utils import showInfo
 
 from languagesBrain.utils.Log import *
 from languagesBrain.morphology.service.ServicesLocator import *
@@ -264,6 +265,8 @@ def init():
     a.setText("Morphemes")
     mw.form.menuTools.addAction(a)
     mw.connect(a, SIGNAL("triggered()"), openWindows)
+
+showInfo("test")
 
 log("OK")
 init()
