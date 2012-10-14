@@ -8,9 +8,9 @@ from languagesBrain.utils.Globals import *
 
 class StanfordPosTagger():
     def __init__(self, posOptions):
-        self.path = Globals.LearnXPath
+        self.path = Globals.LanguagesBrainPath
         
-        self.stanfordPath = self.path + "\\learnX\\morphology\\posTagger\\stanford\\"
+        self.stanfordPath = self.path + "\\languagesBrain\\morphology\\posTagger\\stanford\\"
         self.jarPath = self.stanfordPath + "\\lib\\stanford-postagger.jar"
         self.modelPath = self.stanfordPath + "\\data\\french\\model\\"
         self.frenchModel = self.modelPath + "french.tagger"

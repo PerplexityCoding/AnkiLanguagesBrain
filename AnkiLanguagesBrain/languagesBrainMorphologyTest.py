@@ -33,7 +33,7 @@ languagesService = serviceLocator.getLanguagesService()
 decks = serviceLocator.getDecksService().listDecks()
 #for deck in decks:
 #    deck.fields = {
-#        Deck.LB_SCORE_KEY : ("LearnXScore", False, True),
+#        Deck.LB_SCORE_KEY : ("LBScore", False, True),
 #        Deck.VOCAB_SCORE_KEY : ("VocabScore", False, True),
 #        Deck.UNKNOWNS_KEY : ("UnknownMorphemes", False, False),
 #        Deck.LEARNTS_KEY : ("LearntMorphemes", False, False),

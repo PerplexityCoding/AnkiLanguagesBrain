@@ -5,7 +5,7 @@ import datetime, os
 import codecs
 from languagesBrain.utils.Globals import *
 
-logPath = os.path.join(Globals.LearnXPath, 'learnX', 'log', 'main.log')
+logPath = os.path.join(Globals.LanguagesBrainPath, 'languagesBrain', 'log', 'main.log')
 
 VERBOSE = False
 NO_LOG = False

@@ -1,7 +1,7 @@
 
 class Deck:
     
-    LB_SCORE_KEY = "LearnXScore"
+    LB_SCORE_KEY = "LBScore"
     VOCAB_SCORE_KEY = "VocabScore"
     UNKNOWNS_KEY = "Unknown"
     KNOWNS_KEY = "Knowns"
@@ -24,7 +24,7 @@ class Deck:
             self.fields = fields
         else:
             self.fields = {
-                self.LB_SCORE_KEY : ("LearnXScore", False, True),
+                self.LB_SCORE_KEY : ("LBScore", False, True),
                 self.VOCAB_SCORE_KEY : ("VocabScore", False, True),
                 self.UNKNOWNS_KEY : ("UnknownMorphemes", False, False),
                 self.KNOWNS_KEY : ("KnownMorphemes", False, False),

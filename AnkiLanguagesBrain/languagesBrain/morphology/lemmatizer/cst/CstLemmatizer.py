@@ -8,8 +8,8 @@ from languagesBrain.utils.Globals import *
 
 class CstLemmatizer:
     def __init__(self):
-        self.path = Globals.LearnXPath
-        self.lemmatizer = self.path + "\\learnX\\morphology\\lemmatizer\\cst\\"
+        self.path = Globals.LanguagesBrainPath
+        self.lemmatizer = self.path + "\\languagesBrain\\morphology\\lemmatizer\\cst\\"
         self.bin = self.lemmatizer + "bin\\cstlemma.exe"
         
         self.data = self.lemmatizer + "data\\french\\"

@@ -22,7 +22,7 @@ class LanguagesBrainDB:
         lbPath = Globals.LanguagesBrainPath
         
         self.dbPath = os.path.join(lbPathDb, 'collection.morphemes.db')
-        self.sqlPath = os.path.join(lbPath, 'learnX', 'morphology', 'db', 'sql', 'tables.sql')
+        self.sqlPath = os.path.join(lbPath, 'languagesBrain', 'morphology', 'db', 'sql', 'tables.sql')
         if os.path.exists(self.dbPath) == False:
             self.createDataBase()
         
