@@ -6,23 +6,23 @@ from languagesBrain.utils.Globals import *
 
 from aqt import mw
 
-class LearnXdB:
+class LanguagesBrainDB:
     
     instance = None
 
     @staticmethod
     def getInstance():
-       if LearnXdB.instance == None:
-           LearnXdB.instance = LearnXdB()
-       return LearnXdB.instance
+       if LanguagesBraindB.instance == None:
+           LanguagesBraindB.instance = LanguagesBraindB()
+       return LanguagesBraindB.instance
        
     def __init__(self):
 
-        learnXPathDb = mw.pm.profileFolder()
-        learnXPath = Globals.LearnXPath
+        lbPathDb = mw.pm.profileFolder()
+        lbPath = Globals.LanguagesBrainPath
         
-        self.dbPath = os.path.join(learnXPathDb, 'collection.morphemes.db')
-        self.sqlPath = os.path.join(learnXPath, 'learnX', 'morphology', 'db', 'sql', 'tables.sql')
+        self.dbPath = os.path.join(lbPathDb, 'collection.morphemes.db')
+        self.sqlPath = os.path.join(lbPath, 'learnX', 'morphology', 'db', 'sql', 'tables.sql')
         if os.path.exists(self.dbPath) == False:
             self.createDataBase()
         

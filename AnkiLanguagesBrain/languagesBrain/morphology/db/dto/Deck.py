@@ -1,7 +1,7 @@
 
 class Deck:
     
-    LEARNX_SCORE_KEY = "LearnXScore"
+    LB_SCORE_KEY = "LearnXScore"
     VOCAB_SCORE_KEY = "VocabScore"
     UNKNOWNS_KEY = "Unknown"
     KNOWNS_KEY = "Knowns"
@@ -24,14 +24,14 @@ class Deck:
             self.fields = fields
         else:
             self.fields = {
-                self.LEARNX_SCORE_KEY : ("LearnXScore", False, True),
+                self.LB_SCORE_KEY : ("LearnXScore", False, True),
                 self.VOCAB_SCORE_KEY : ("VocabScore", False, True),
                 self.UNKNOWNS_KEY : ("UnknownMorphemes", False, False),
                 self.KNOWNS_KEY : ("KnownMorphemes", False, False),
                 self.COPY_UNKNOWN_1_TO_KEY : ("VocabExpression", False, False),
                 self.DEFINITION_SCORE_KEY : ("DefinitionScore", False, False)
             }
-        self.fieldsList = [self.LEARNX_SCORE_KEY, self.VOCAB_SCORE_KEY, self.UNKNOWNS_KEY,
+        self.fieldsList = [self.LB_SCORE_KEY, self.VOCAB_SCORE_KEY, self.UNKNOWNS_KEY,
                            self.KNOWNS_KEY, self.COPY_UNKNOWN_1_TO_KEY, self.DEFINITION_SCORE_KEY]
         self.totalMorphemes = total
         self.knownMorphemes = known

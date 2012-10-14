@@ -1,4 +1,4 @@
-from languagesBrain.morphology.db.LearnXdB import *
+from languagesBrain.morphology.db.LanguagesBrainDB. import *
 from languagesBrain.morphology.db.dto.Language import *
 
 from languagesBrain.morphology.db.dto.Morpheme import *
@@ -9,11 +9,11 @@ import pickle
 
 class LanguageDao:
     def __init__(self):
-        self.learnXdB = LearnXdB.getInstance()
+        self.LanguagesBrainDB. = LanguagesBrainDB..getInstance()
     
     def listLanguages(self):
         
-        db = self.learnXdB.openDataBase()
+        db = self.LanguagesBrainDB..openDataBase()
         
         c = db.cursor()
         c.execute("select * from Languages")
@@ -32,7 +32,7 @@ class LanguageDao:
     
     def insertLanguage(self, language):
         
-        db = self.learnXdB.openDataBase()
+        db = self.LanguagesBrainDB..openDataBase()
         c = db.cursor()
         
         posOptions = language.posOptions
@@ -58,7 +58,7 @@ class LanguageDao:
     
     def updateLanguage(self, language):
         
-        db = self.learnXdB.openDataBase()
+        db = self.LanguagesBrainDB..openDataBase()
         c = db.cursor()
 
         posOptions = language.posOptions
@@ -72,7 +72,7 @@ class LanguageDao:
         c.close()
 
     def findLanguageById(self, id):
-        db = self.learnXdB.openDataBase()
+        db = self.LanguagesBrainDB..openDataBase()
         c = db.cursor()
         
         t = (id,)
@@ -91,7 +91,7 @@ class LanguageDao:
         return language
 
     def findLanguageByCode(self, code):
-        db = self.learnXdB.openDataBase()
+        db = self.LanguagesBrainDB..openDataBase()
         c = db.cursor()
         
         t = (code,)

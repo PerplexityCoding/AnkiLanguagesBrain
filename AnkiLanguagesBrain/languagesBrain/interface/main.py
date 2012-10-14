@@ -23,11 +23,11 @@ from anki import Collection
 
 import datetime, os
 
-class LearnX(QDialog):
+class LanguagesBrain(QDialog):
     def __init__(self, parent=None):
-        super(LearnX, self).__init__(parent)
+        super(LanguagesBrain, self).__init__(parent)
         self.mw = parent
-        self.setWindowTitle('LearnX')
+        self.setWindowTitle('LanguagesBrain')
         self.resize(600, 0)
         
         self.servicesLocator = ServicesLocator.getInstance()
@@ -256,7 +256,7 @@ class LearnX(QDialog):
     # do somethingss
     
 def openWindows():
-    mw.toolbar.learnX = LearnX(mw)
+    mw.toolbar.LanguagesBrain = LanguagesBrain(mw)
     mw.toolbar.languagesBrain.show()
 
 def init():

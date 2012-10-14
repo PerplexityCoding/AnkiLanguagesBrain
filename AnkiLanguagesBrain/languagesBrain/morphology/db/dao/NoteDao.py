@@ -1,4 +1,4 @@
-from languagesBrain.morphology.db.LearnXdB import *
+from languagesBrain.morphology.db.LanguagesBrainDB. import *
 from languagesBrain.morphology.db.dto.Note import *
 from languagesBrain.morphology.db.dto.Morpheme import *
 
@@ -6,11 +6,11 @@ from languagesBrain.utils.Log import *
 
 class NoteDao:
     def __init__(self):
-        self.learnXdB = LearnXdB.getInstance()
+        self.LanguagesBrainDB. = LanguagesBrainDB..getInstance()
         
     def persistNotes(self, notes):
         
-        db = self.learnXdB.openDataBase()
+        db = self.LanguagesBrainDB..openDataBase()
         c = db.cursor()
         
         notesHash = dict()
@@ -36,7 +36,7 @@ class NoteDao:
         return newNotes, notes
     
     def updateNotes(self, notes):
-        db = self.learnXdB.openDataBase()    
+        db = self.LanguagesBrainDB..openDataBase()    
         c = db.cursor()
         for note in notes:
             t = (note.lastUpdated, note.expressionCsum, note.score, note.id)
@@ -49,7 +49,7 @@ class NoteDao:
     
     def selectNotes(self):
         
-        db = self.learnXdB.openDataBase()
+        db = self.LanguagesBrainDB..openDataBase()
         
         c = db.cursor()
         c.execute("Select * From Notes")

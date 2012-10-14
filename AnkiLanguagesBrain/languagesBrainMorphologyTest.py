@@ -8,7 +8,7 @@ from languagesBrain.morphology.service.DecksService import *
 from languagesBrain.morphology.service.LanguagesService import *
 from languagesBrain.morphology.service.MorphemesService import *
 from languagesBrain.morphology.service.FactsService import *
-from languagesBrain.morphology.db.LearnXdB import *
+from languagesBrain.morphology.db.LanguagesBrainDB. import *
 from languagesBrain.utils.Log import *
 from languagesBrain.morphology.db.dao.MorphemeLemmeDao import *
 from languagesBrain.morphology.db.dto.Deck import *
@@ -22,7 +22,7 @@ serviceLocator = ServicesLocator.getInstance()
 #cst = CstLemmatizer()
 #cst.lemmatize("test")
 
-#LearnXdB.getInstance().createDataBase()
+#LanguagesBrainDB..getInstance().createDataBase()
 clearLog()
 languagesService = serviceLocator.getLanguagesService()
 #factsService = serviceLocator.getFactsService()
@@ -33,7 +33,7 @@ languagesService = serviceLocator.getLanguagesService()
 decks = serviceLocator.getDecksService().listDecks()
 #for deck in decks:
 #    deck.fields = {
-#        Deck.LEARNX_SCORE_KEY : ("LearnXScore", False, True),
+#        Deck.LB_SCORE_KEY : ("LearnXScore", False, True),
 #        Deck.VOCAB_SCORE_KEY : ("VocabScore", False, True),
 #        Deck.UNKNOWNS_KEY : ("UnknownMorphemes", False, False),
 #        Deck.LEARNTS_KEY : ("LearntMorphemes", False, False),

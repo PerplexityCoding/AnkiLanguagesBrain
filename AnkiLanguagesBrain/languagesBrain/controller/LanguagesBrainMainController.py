@@ -140,7 +140,7 @@ class LanguagesBrainMainController:
             return
         
         fields = { #FIXME
-            Deck.LEARNX_SCORE_KEY : "LearnXScore",
+            Deck.LB_SCORE_KEY : "LBScore",
             Deck.VOCAB_SCORE_KEY : "VocabScore",
             Deck.UNKNOWNS_KEY : "UnknownMorphemes",
             Deck.KNOWNS_KEY : "KnownMorphemes",
@@ -156,7 +156,7 @@ class LanguagesBrainMainController:
             except Exception: continue
             
             try:
-                ankiScore = int(ankiNote[fields[Deck.LEARNX_SCORE_KEY]])
+                ankiScore = int(ankiNote[fields[Deck.LB_SCORE_KEY]])
                 
                 if abs(ankiScore - int(note.score)) <= 15: continue
             except Exception: pass
@@ -177,7 +177,7 @@ class LanguagesBrainMainController:
                     unknownMorphemes.append(lemme.base)
                 morphemesScore += lemme.score
             
-            try: ankiNote[fields[Deck.LEARNX_SCORE_KEY]] = u'%d' % int(note.score)
+            try: ankiNote[fields[Deck.LB_SCORE_KEY]] = u'%d' % int(note.score)
             except KeyError: pass
             
             try: ankiNote[fields[Deck.VOCAB_SCORE_KEY]] = u'%d' % int(morphemesScore)
