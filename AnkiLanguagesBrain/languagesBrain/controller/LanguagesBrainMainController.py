@@ -9,7 +9,7 @@ from languagesBrain.utils.Log import *
 
 from anki.utils import intTime, joinFields, ids2str
 
-class LearnXMainController:
+class LanguagesBrainMainController:
     def __init__(self, interface):
         self.interface = interface
         

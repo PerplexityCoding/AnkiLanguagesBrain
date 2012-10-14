@@ -10,7 +10,7 @@ from languagesBrain.interface.LanguageConfig import *
 from languagesBrain.interface.DeckConfig import *
 from languagesBrain.interface.IntegratedMorphemesBrowser import *
 
-from languagesBrain.controller.LearnXMainController import *
+from languagesBrain.controller.LanguagesBrainMainController import *
 from languagesBrain.controller.MorphemesBrowserController import *
 from languagesBrain.controller.LanguageConfigController import *
 
@@ -39,7 +39,7 @@ class LearnX(QDialog):
         self.deckManager = self.mw.col.decks
         self.modelManager = self.mw.col.models
         
-        self.mainController = LearnXMainController(self)
+        self.mainController = LanguagesBrainMainController(self)
         self.morphemesController = MorphemesBrowserController()
         
         self.mainVBox = mainVBox = QVBoxLayout(self)
