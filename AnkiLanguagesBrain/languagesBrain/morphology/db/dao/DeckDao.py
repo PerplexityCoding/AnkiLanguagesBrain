@@ -1,4 +1,4 @@
-from languagesBrain.morphology.db.LanguagesBrainDB. import *
+from languagesBrain.morphology.db.LanguagesBrainDB import *
 from languagesBrain.morphology.db.dto.Deck import *
 
 from languagesBrain.morphology.db.dto.Morpheme import *
@@ -9,11 +9,11 @@ import pickle
 
 class DeckDao:
     def __init__(self):
-        self.LanguagesBrainDB. = LanguagesBrainDB..getInstance()
+        self.LanguagesBrainDB = LanguagesBrainDB.getInstance()
 
     def listDecksByLanguage(self, languageId):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         c = db.cursor()
         t = (languageId,)
@@ -33,7 +33,7 @@ class DeckDao:
         return decks
         
     def insertDeck(self, deck):
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         deckFields = deck.fields
@@ -55,7 +55,7 @@ class DeckDao:
         
     def updateDeck(self, deck):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         if deck.language:
@@ -79,7 +79,7 @@ class DeckDao:
         
     def resetFirstTime(self, deck):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         t = (deck.id,)
@@ -89,7 +89,7 @@ class DeckDao:
         c.close()
         
     def findDeckById(self, id):
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         t = (id,)

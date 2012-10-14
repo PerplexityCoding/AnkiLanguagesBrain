@@ -1,4 +1,4 @@
-from languagesBrain.morphology.db.LanguagesBrainDB. import *
+from languagesBrain.morphology.db.LanguagesBrainDB import *
 from languagesBrain.morphology.db.dto.Card import *
 
 from languagesBrain.utils.Log import *
@@ -6,11 +6,11 @@ from languagesBrain.utils.Utils import *
 
 class CardDao:
     def __init__(self):
-        self.LanguagesBrainDB. = LanguagesBrainDB..getInstance()
+        self.LanguagesBrainDB = LanguagesBrainDB.getInstance()
     
     def persistCards(self, cards):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         cardsHash = dict()
@@ -34,7 +34,7 @@ class CardDao:
         return cards
 
     def updateCards(self, cards):
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         c = db.cursor()
         
@@ -49,7 +49,7 @@ class CardDao:
         return cards
     
     def selectAllCards(self):
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         c = db.cursor()
         c.execute("Select c.id, n.score From Cards c, Notes n Where c.note_id = n.id")

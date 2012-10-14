@@ -1,6 +1,6 @@
 ﻿#-*- coding: utf-8 -*-
 
-from languagesBrain.morphology.db.LanguagesBrainDB. import *
+from languagesBrain.morphology.db.LanguagesBrainDB import *
 from languagesBrain.morphology.db.dto.MorphemeLemme import *
 from languagesBrain.morphology.db.dto.Morpheme import *
 
@@ -9,10 +9,10 @@ from languagesBrain.utils.Utils import *
 
 class MorphemeLemmeDao:
     def __init__(self):
-        self.LanguagesBrainDB. = LanguagesBrainDB..getInstance()
+        self.LanguagesBrainDB = LanguagesBrainDB.getInstance()
     
     def persistLemmes(self, lemmes):
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         lemmesToInsert = list()
@@ -37,7 +37,7 @@ class MorphemeLemmeDao:
         return lemmes
     
     def updateLemmesScore(self, lemmes):
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         c = db.cursor()
@@ -50,7 +50,7 @@ class MorphemeLemmeDao:
         return lemmes
 
     def getAllLemmes(self):
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         c.execute("Select id, base, pos, sub_pos, read, rank, max_interval, score From MorphemeLemmes")
@@ -64,7 +64,7 @@ class MorphemeLemmeDao:
     
     def getKnownLemmesIntervalDB(self):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         c.execute("Select base, read, max_interval From MorphemeLemmes where max_interval > 0")
@@ -76,7 +76,7 @@ class MorphemeLemmeDao:
         
     def getLemmesFromNote(self, note):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         t = (note.id,)
@@ -92,7 +92,7 @@ class MorphemeLemmeDao:
         
     def getLemmeIntervalFromNote(self, note):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         t = (note.id,)
@@ -107,7 +107,7 @@ class MorphemeLemmeDao:
     
     def getChangedAllMorphemesFromKanjis(self, allkanjis):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         remind = list(allkanjis)

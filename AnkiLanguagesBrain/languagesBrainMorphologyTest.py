@@ -22,7 +22,7 @@ serviceLocator = ServicesLocator.getInstance()
 #cst = CstLemmatizer()
 #cst.lemmatize("test")
 
-#LanguagesBrainDB..getInstance().createDataBase()
+#LanguagesBrainDBgetInstance().createDataBase()
 clearLog()
 languagesService = serviceLocator.getLanguagesService()
 #factsService = serviceLocator.getFactsService()

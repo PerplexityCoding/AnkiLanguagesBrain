@@ -12,9 +12,9 @@ class LanguagesBrainDB:
 
     @staticmethod
     def getInstance():
-       if LanguagesBraindB.instance == None:
-           LanguagesBraindB.instance = LanguagesBraindB()
-       return LanguagesBraindB.instance
+       if LanguagesBrainDBinstance == None:
+           LanguagesBrainDBinstance = LanguagesBraindB()
+       return LanguagesBrainDBinstance
        
     def __init__(self):
 

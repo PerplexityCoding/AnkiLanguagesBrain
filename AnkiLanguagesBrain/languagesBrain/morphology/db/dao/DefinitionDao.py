@@ -1,13 +1,13 @@
-from languagesBrain.morphology.db.LanguagesBrainDB. import *
+from languagesBrain.morphology.db.LanguagesBrainDB import *
 from languagesBrain.morphology.db.dto.Definition import *
 
 class DefinitionDao:
     def __init__(self):
-        self.LanguagesBrainDB. = LanguagesBrainDB..getInstance()
+        self.LanguagesBrainDB = LanguagesBrainDB.getInstance()
         
     def getDefinition(self, noteId):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         t = (noteId,)
@@ -40,7 +40,7 @@ class DefinitionDao:
     
     def getDefinitions(self, notes):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         result = list()
@@ -80,7 +80,7 @@ class DefinitionDao:
     
     def updateDefinitionMorphemes(self, definition, morphemes):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         c = db.cursor()
         t = (definition.id,)
@@ -99,7 +99,7 @@ class DefinitionDao:
         c.close()
         
     def updateAllDefinitionsMorphemes(self, definitions):
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         c = db.cursor()
         for definition in definitions:
@@ -120,7 +120,7 @@ class DefinitionDao:
         
     def updateDefinitionKeyMorphemes(self, definition, morphemes):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         c = db.cursor()
         t = (definition.id,)
@@ -140,7 +140,7 @@ class DefinitionDao:
         
     def updateAllDefinitionsKeysMorphemes(self, definitions):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         c = db.cursor()
         for definition in definitions:
@@ -161,7 +161,7 @@ class DefinitionDao:
         
     def getAllDefinitionMorphemes(self, definition):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         c = db.cursor()
         t = (definition.id,)
@@ -178,7 +178,7 @@ class DefinitionDao:
     
     def getAllDefinitionKeyMorphemes(self, definition):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         c = db.cursor()
         t = (definition.id,)
@@ -195,7 +195,7 @@ class DefinitionDao:
     
     def update(self, definition):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         c = db.cursor()
         t = (definition.definitionHash, definition.definitionKeyHash, definition.id)
@@ -206,7 +206,7 @@ class DefinitionDao:
         
     def updateAll(self, definitions):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         c = db.cursor()
         for definition in definitions:

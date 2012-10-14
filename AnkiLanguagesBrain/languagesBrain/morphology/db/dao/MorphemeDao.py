@@ -1,4 +1,4 @@
-from languagesBrain.morphology.db.LanguagesBrainDB. import *
+from languagesBrain.morphology.db.LanguagesBrainDB import *
 from languagesBrain.morphology.db.dto.Morpheme import *
 from languagesBrain.morphology.db.dto.MorphemeLemme import *
 from languagesBrain.morphology.db.dto.Card import *
@@ -11,10 +11,10 @@ import math
 
 class MorphemeDao:
     def __init__(self):
-        self.LanguagesBrainDB. = LanguagesBrainDB..getInstance()
+        self.LanguagesBrainDB = LanguagesBrainDB.getInstance()
     
     def persistMorphemes(self, morphemes):
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         
         db.execute("PRAGMA journal_mode=MEMORY;")
         db.execute("PRAGMA temp_store=MEMORY;")
@@ -51,7 +51,7 @@ class MorphemeDao:
     
     def updateInterval(self, cards):
         
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         log("update interval")
@@ -131,7 +131,7 @@ class MorphemeDao:
 
     def getModifiedNotes(self, morphemesModified):
 
-        db = self.LanguagesBrainDB..openDataBase()
+        db = self.LanguagesBrainDB.openDataBase()
         c = db.cursor()
         
         morphemesId = ",".join(str(m.id) for m in morphemesModified)
