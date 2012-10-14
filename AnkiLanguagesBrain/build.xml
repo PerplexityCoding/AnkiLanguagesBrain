@@ -7,8 +7,8 @@
 		<copy todir="${anki.plugin.path}">
 			<fileset file="${basedir}/languagesBrain.py" />
 		</copy>
-		<copy todir="${anki.plugin.path}/learnX">
-			<fileset dir="${basedir}/learnX" />
+		<copy todir="${anki.plugin.path}/languagesBrain">
+			<fileset dir="${basedir}/languagesBrain" />
 		</copy>
 	</target>
 
