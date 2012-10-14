@@ -1,9 +1,9 @@
-from learnX.morphology.db.LearnXdB import *
-from learnX.morphology.db.dto.Language import *
+from languagesBrain.morphology.db.LearnXdB import *
+from languagesBrain.morphology.db.dto.Language import *
 
-from learnX.morphology.db.dto.Morpheme import *
+from languagesBrain.morphology.db.dto.Morpheme import *
 
-from learnX.utils.Log import *
+from languagesBrain.utils.Log import *
 
 import pickle
 

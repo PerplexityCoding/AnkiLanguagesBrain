@@ -1,7 +1,7 @@
 
 from aqt import browser
 
-from learnX.utils.Log import *
+from languagesBrain.utils.Log import *
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *

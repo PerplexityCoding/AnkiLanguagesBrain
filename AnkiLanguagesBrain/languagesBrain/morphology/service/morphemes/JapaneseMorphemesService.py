@@ -1,5 +1,5 @@
 
-from learnX.morphology.service.MorphemesService import *
+from languagesBrain.morphology.service.MorphemesService import *
 
 
 class JapaneseMorphemesService(MorphemesService):

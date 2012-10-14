@@ -1,18 +1,18 @@
 ﻿#-*- coding: utf-8 -*-
 
-from learnX.morphology.db.dao.LanguageDao import *
-from learnX.morphology.db.dao.DeckDao import *
+from languagesBrain.morphology.db.dao.LanguageDao import *
+from languagesBrain.morphology.db.dao.DeckDao import *
 
-from learnX.morphology.db.dto.Language import *
+from languagesBrain.morphology.db.dto.Language import *
 
-from learnX.morphology.posTagger.Mecab import *
-from learnX.morphology.posTagger.stanford.StanfordPosTagger import *
+from languagesBrain.morphology.posTagger.Mecab import *
+from languagesBrain.morphology.posTagger.stanford.StanfordPosTagger import *
 
-from learnX.morphology.lemmatizer.cst.CstLemmatizer import *
+from languagesBrain.morphology.lemmatizer.cst.CstLemmatizer import *
 
 from collections import defaultdict
 
-from learnX.utils.Log import *
+from languagesBrain.utils.Log import *
 
 class LanguagesService:
     

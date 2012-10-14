@@ -1,11 +1,11 @@
-from learnX.morphology.db.LearnXdB import *
-from learnX.morphology.db.dto.Morpheme import *
-from learnX.morphology.db.dto.MorphemeLemme import *
-from learnX.morphology.db.dto.Card import *
-from learnX.morphology.db.dto.Note import *
+from languagesBrain.morphology.db.LearnXdB import *
+from languagesBrain.morphology.db.dto.Morpheme import *
+from languagesBrain.morphology.db.dto.MorphemeLemme import *
+from languagesBrain.morphology.db.dto.Card import *
+from languagesBrain.morphology.db.dto.Note import *
 
-from learnX.utils.Log import *
-from learnX.utils.Utils import *
+from languagesBrain.utils.Log import *
+from languagesBrain.utils.Utils import *
 
 import math
 

@@ -3,8 +3,8 @@
 import os, subprocess, sys, time
 import unicodedata, codecs
 
-from learnX.utils.Log import *
-from learnX.utils.Globals import *
+from languagesBrain.utils.Log import *
+from languagesBrain.utils.Globals import *
 
 class CstLemmatizer:
     def __init__(self):

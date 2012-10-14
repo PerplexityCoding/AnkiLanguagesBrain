@@ -2,9 +2,9 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from learnX.morphology.service.ServicesLocator import *
+from languagesBrain.morphology.service.ServicesLocator import *
 
-from learnX.utils.Log import *
+from languagesBrain.utils.Log import *
 
 class FrenchMorphemeModel(QAbstractTableModel):
     def __init__(self, deck, language, allDecks):

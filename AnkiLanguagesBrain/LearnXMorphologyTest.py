@@ -2,18 +2,18 @@
 from sys import *
 
 
-from learnX.morphology.service.ServicesLocator import *
+from languagesBrain.morphology.service.ServicesLocator import *
 
-from learnX.morphology.service.DecksService import *
-from learnX.morphology.service.LanguagesService import *
-from learnX.morphology.service.MorphemesService import *
-from learnX.morphology.service.FactsService import *
-from learnX.morphology.db.LearnXdB import *
-from learnX.utils.Log import *
-from learnX.morphology.db.dao.MorphemeLemmeDao import *
-from learnX.morphology.db.dto.Deck import *
+from languagesBrain.morphology.service.DecksService import *
+from languagesBrain.morphology.service.LanguagesService import *
+from languagesBrain.morphology.service.MorphemesService import *
+from languagesBrain.morphology.service.FactsService import *
+from languagesBrain.morphology.db.LearnXdB import *
+from languagesBrain.utils.Log import *
+from languagesBrain.morphology.db.dao.MorphemeLemmeDao import *
+from languagesBrain.morphology.db.dto.Deck import *
 
-from learnX.morphology.service.FactsService import *
+from languagesBrain.morphology.service.FactsService import *
 
 serviceLocator = ServicesLocator.getInstance()
 

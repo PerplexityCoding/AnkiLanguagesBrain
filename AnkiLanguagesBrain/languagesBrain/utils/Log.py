@@ -3,7 +3,7 @@
 #from aqt import mw, forms, ui
 import datetime, os
 import codecs
-from learnX.utils.Globals import *
+from languagesBrain.utils.Globals import *
 
 logPath = os.path.join(Globals.LearnXPath, 'learnX', 'log', 'main.log')
 

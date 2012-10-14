@@ -1,14 +1,14 @@
 #-*- coding: utf-8 -*-
 
-from learnX.morphology.db.dao.NoteDao import *
-from learnX.morphology.db.dao.CardDao import *
-from learnX.morphology.db.dao.MorphemeDao import *
-from learnX.morphology.db.dao.MorphemeLemmeDao import *
-from learnX.morphology.db.dao.DeckDao import *
-from learnX.morphology.db.dao.DefinitionDao import *
+from languagesBrain.morphology.db.dao.NoteDao import *
+from languagesBrain.morphology.db.dao.CardDao import *
+from languagesBrain.morphology.db.dao.MorphemeDao import *
+from languagesBrain.morphology.db.dao.MorphemeLemmeDao import *
+from languagesBrain.morphology.db.dao.DeckDao import *
+from languagesBrain.morphology.db.dao.DefinitionDao import *
 
-from learnX.morphology.db.dto.Morpheme import *
-from learnX.morphology.db.dto.Note import *
+from languagesBrain.morphology.db.dto.Morpheme import *
+from languagesBrain.morphology.db.dto.Note import *
 
 class NotesService:
     def __init__(self, serviceLocator):

@@ -1,8 +1,8 @@
 ﻿#-*- coding: utf-8 -*-
 
-from learnX.morphology.db.dao.DeckDao import *
+from languagesBrain.morphology.db.dao.DeckDao import *
 
-from learnX.utils.Log import *
+from languagesBrain.utils.Log import *
 
 
 class DecksService:

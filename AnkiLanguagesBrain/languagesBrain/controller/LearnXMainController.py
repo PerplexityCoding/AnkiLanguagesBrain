@@ -1,11 +1,11 @@
 
-from learnX.morphology.service.ServicesLocator import *
+from languagesBrain.morphology.service.ServicesLocator import *
 
-from learnX.morphology.db.dto.Deck import *
-from learnX.morphology.db.dto.Card import *
+from languagesBrain.morphology.db.dto.Deck import *
+from languagesBrain.morphology.db.dto.Card import *
 
-from learnX.utils.AnkiHelper import *
-from learnX.utils.Log import *
+from languagesBrain.utils.AnkiHelper import *
+from languagesBrain.utils.Log import *
 
 from anki.utils import intTime, joinFields, ids2str
 

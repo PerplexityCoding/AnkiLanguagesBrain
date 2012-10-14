@@ -2,17 +2,17 @@
 
 from aqt import mw
 
-from learnX.utils.Log import *
-from learnX.morphology.service.ServicesLocator import *
+from languagesBrain.utils.Log import *
+from languagesBrain.morphology.service.ServicesLocator import *
 
-from learnX.interface.LanguageChooser import *
-from learnX.interface.LanguageConfig import *
-from learnX.interface.DeckConfig import *
-from learnX.interface.IntegratedMorphemesBrowser import *
+from languagesBrain.interface.LanguageChooser import *
+from languagesBrain.interface.LanguageConfig import *
+from languagesBrain.interface.DeckConfig import *
+from languagesBrain.interface.IntegratedMorphemesBrowser import *
 
-from learnX.controller.LearnXMainController import *
-from learnX.controller.MorphemesBrowserController import *
-from learnX.controller.LanguageConfigController import *
+from languagesBrain.controller.LearnXMainController import *
+from languagesBrain.controller.MorphemesBrowserController import *
+from languagesBrain.controller.LanguageConfigController import *
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -257,7 +257,7 @@ class LearnX(QDialog):
     
 def openWindows():
     mw.toolbar.learnX = LearnX(mw)
-    mw.toolbar.learnX.show()
+    mw.toolbar.languagesBrain.show()
 
 def init():
     a = QAction(mw)

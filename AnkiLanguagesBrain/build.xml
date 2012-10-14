@@ -5,7 +5,7 @@
 
 	<target name="all" depends="">
 		<copy todir="${anki.plugin.path}">
-			<fileset file="${basedir}/LearnX.py" />
+			<fileset file="${basedir}/languagesBrain.py" />
 		</copy>
 		<copy todir="${anki.plugin.path}/learnX">
 			<fileset dir="${basedir}/learnX" />

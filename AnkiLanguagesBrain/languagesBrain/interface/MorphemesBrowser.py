@@ -3,11 +3,11 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from learnX.morphology.service.ServicesLocator import *
-from learnX.morphology.db.dto.Language import *
+from languagesBrain.morphology.service.ServicesLocator import *
+from languagesBrain.morphology.db.dto.Language import *
 
-from learnX.interface.model.JapaneseMorphemeModel import *
-from learnX.interface.model.FrenchMorphemeModel import *
+from languagesBrain.interface.model.JapaneseMorphemeModel import *
+from languagesBrain.interface.model.FrenchMorphemeModel import *
 
 class MorphemesBrowser(QDialog):
     

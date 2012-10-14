@@ -1,11 +1,11 @@
 ﻿#-*- coding: utf-8 -*-
 
-from learnX.morphology.db.LearnXdB import *
-from learnX.morphology.db.dto.MorphemeLemme import *
-from learnX.morphology.db.dto.Morpheme import *
+from languagesBrain.morphology.db.LearnXdB import *
+from languagesBrain.morphology.db.dto.MorphemeLemme import *
+from languagesBrain.morphology.db.dto.Morpheme import *
 
-from learnX.utils.Log import *
-from learnX.utils.Utils import *
+from languagesBrain.utils.Log import *
+from languagesBrain.utils.Utils import *
 
 class MorphemeLemmeDao:
     def __init__(self):

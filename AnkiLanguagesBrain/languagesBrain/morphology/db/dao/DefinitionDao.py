@@ -1,5 +1,5 @@
-from learnX.morphology.db.LearnXdB import *
-from learnX.morphology.db.dto.Definition import *
+from languagesBrain.morphology.db.LearnXdB import *
+from languagesBrain.morphology.db.dto.Definition import *
 
 class DefinitionDao:
     def __init__(self):

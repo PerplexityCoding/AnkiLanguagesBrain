@@ -1,5 +1,5 @@
-from learnX.utils.Log import *
-from learnX.interface.MorphemesBrowser import *
+from languagesBrain.utils.Log import *
+from languagesBrain.interface.MorphemesBrowser import *
 
 class MorphemesBrowserController:
     def __init__(self):

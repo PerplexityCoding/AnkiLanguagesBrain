@@ -1,10 +1,10 @@
 
 import os, subprocess, sys, time, re
 
-from learnX.utils.Log import *
-from learnX.morphology.db.dto.MorphemeLemme import *
+from languagesBrain.utils.Log import *
+from languagesBrain.morphology.db.dto.MorphemeLemme import *
 
-from learnX.utils.Globals import *
+from languagesBrain.utils.Globals import *
 
 class StanfordPosTagger():
     def __init__(self, posOptions):

@@ -1,4 +1,4 @@
-from learnX.utils.Log import *
+from languagesBrain.utils.Log import *
 
 class Morpheme:
     

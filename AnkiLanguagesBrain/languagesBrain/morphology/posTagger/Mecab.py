@@ -6,8 +6,8 @@
 import sys, os, platform, re, subprocess
 from anki.utils import stripHTML, isWin, isMac
 
-from learnX.utils.Utils import *
-from learnX.morphology.db.dto.MorphemeLemme import *
+from languagesBrain.utils.Utils import *
+from languagesBrain.morphology.db.dto.MorphemeLemme import *
 
 class Mecab:
 

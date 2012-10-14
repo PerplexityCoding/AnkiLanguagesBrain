@@ -3,7 +3,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from learnX.utils.Log import *
+from languagesBrain.utils.Log import *
 
 from aqt import mw
 

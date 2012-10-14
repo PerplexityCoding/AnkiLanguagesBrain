@@ -1,4 +1,4 @@
-from learnX.utils.Log import *
+from languagesBrain.utils.Log import *
 
 class MorphemeLemme:
     def __init__(self, base, inflected, pos, subPos, read, rank = 0, maxInterval = 0, score = 0, id = -1):

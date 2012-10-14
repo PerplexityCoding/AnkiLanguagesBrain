@@ -1,13 +1,13 @@
 
-from learnX.morphology.service.NotesService import *
-from learnX.morphology.service.DecksService import *
-from learnX.morphology.service.LanguagesService import *
-from learnX.morphology.service.MorphemesService import *
+from languagesBrain.morphology.service.NotesService import *
+from languagesBrain.morphology.service.DecksService import *
+from languagesBrain.morphology.service.LanguagesService import *
+from languagesBrain.morphology.service.MorphemesService import *
 
-from learnX.morphology.db.dto.Language import *
+from languagesBrain.morphology.db.dto.Language import *
 
-from learnX.morphology.service.morphemes.JapaneseMorphemesService import *
-from learnX.morphology.service.morphemes.FrenchMorphemesService import *
+from languagesBrain.morphology.service.morphemes.JapaneseMorphemesService import *
+from languagesBrain.morphology.service.morphemes.FrenchMorphemesService import *
 
 class ServicesLocator:
     

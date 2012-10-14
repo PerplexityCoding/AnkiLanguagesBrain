@@ -3,9 +3,9 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from learnX.utils.Log import *
-from learnX.controller.DeckConfigController import *
-from learnX.morphology.service.ServicesLocator import *
+from languagesBrain.utils.Log import *
+from languagesBrain.controller.DeckConfigController import *
+from languagesBrain.morphology.service.ServicesLocator import *
 
 from aqt import mw
 #from anki.models import FieldModel

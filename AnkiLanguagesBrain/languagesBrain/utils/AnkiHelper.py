@@ -1,5 +1,5 @@
 
-from learnX.utils.Log import *
+from languagesBrain.utils.Log import *
 
 from aqt import mw
 

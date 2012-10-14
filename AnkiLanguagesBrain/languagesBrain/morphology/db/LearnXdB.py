@@ -1,8 +1,8 @@
 import os
 import sqlite3
 
-from learnX.utils.Log import *
-from learnX.utils.Globals import *
+from languagesBrain.utils.Log import *
+from languagesBrain.utils.Globals import *
 
 from aqt import mw
 
