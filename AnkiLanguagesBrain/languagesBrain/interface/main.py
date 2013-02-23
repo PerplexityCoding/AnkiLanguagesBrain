@@ -259,6 +259,9 @@ def openWindows():
     mw.toolbar.languagesBrain = LanguagesBrain(mw)
     mw.toolbar.languagesBrain.show()
     
+    #open new webview
+    
+    
 def init():
     a = QAction(mw)
     a.setText("Languages Brain")
