@@ -17,10 +17,9 @@ from languagesBrain.controller.LanguageConfigController import *
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from PyQt4.QtWebKit import *
 
 from anki import Collection
-
-#from anki.deck import DeckStorage
 
 import datetime, os
 
@@ -28,7 +27,7 @@ class LanguagesBrain(QDialog):
     def __init__(self, parent=None):
         super(LanguagesBrain, self).__init__(parent)
         self.mw = parent
-        self.setWindowTitle('LanguagesBrain')
+        self.setWindowTitle('Languages Brain')
         self.resize(600, 0)
         
         self.servicesLocator = ServicesLocator.getInstance()
@@ -257,16 +256,14 @@ class LanguagesBrain(QDialog):
     # do somethingss
     
 def openWindows():
-    mw.toolbar.LanguagesBrain = LanguagesBrain(mw)
+    mw.toolbar.languagesBrain = LanguagesBrain(mw)
     mw.toolbar.languagesBrain.show()
-
+    
 def init():
     a = QAction(mw)
-    a.setText("Morphemes")
+    a.setText("Languages Brain")
     mw.form.menuTools.addAction(a)
     mw.connect(a, SIGNAL("triggered()"), openWindows)
-
-showInfo("test")
 
 log("OK")
 init()
