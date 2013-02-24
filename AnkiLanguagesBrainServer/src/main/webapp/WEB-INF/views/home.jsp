@@ -6,12 +6,43 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Home</title>
         
+        <link href="resources/css/normalize.css" rel="stylesheet"> 
+        <link href="resources/css/style.css" rel="stylesheet"> 
+        
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"></script>
         
+        <script src="resources/js/utils/utils.js"></script>
+        
+        <script src="resources/js/languagesBrain/LanguagesBrainWindows.js"></script>
+        
+        <script>
+        	$(function () {
+        		var windows = new $.LanguagesBrainWindows("#mainWindows");
+        		
+        		windows.show();   
+        		
+        		
+        		$("#mainWindows").draggable();
+        		$("#mainWindows").resizable();
+        	});
+        </script>
+        
     </head>
     <body>
-        
-        
+        <div id="mainWindows">
+        	<aside>
+        		<ul id="menu" class="hidden">
+        			<li id="info">Info</li>
+        			<li id="browser">Morphemes Browser</li>
+        		</ul>        	
+        		<ul id="languages">
+        		</ul>
+        		<div id="addNewLanguageBtn">
+        			Add a new Language
+        		</div>        		
+        	</aside>
+        	<section></section>
+        </div>
     </body>
 </html>

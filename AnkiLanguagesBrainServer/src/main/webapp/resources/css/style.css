@@ -1,0 +1,97 @@
+* {
+	box-sizing: border-box;
+}
+
+ul {
+	margin: 0;
+    padding: 0;
+    display: block;
+}
+
+li {
+    display: block;
+}
+
+.hidden {
+	display: none;
+}
+
+
+
+#mainWindows {
+	display: table;
+	table-layout: fixed;
+	min-width: 700px;
+	width: 700px;
+	background-color: #1E1E1E;
+	color: white;
+}
+
+#mainWindows > aside {
+	display: table-cell;
+	min-width: 200px;
+	width: 33.3333333%;
+	padding: 1em;
+	height: 400px;
+}
+
+#mainWindows > aside ul#languages {
+	display: block;
+	background-color: #3A3329;
+	border-radius: 0.2em;
+	cursor: pointer;
+}
+
+#mainWindows > aside ul#languages > li {
+	/*margin-bottom: 0.2em;*/
+	padding: 0.5em;
+}
+
+#mainWindows > aside ul#languages > li.active:first-child {
+	padding-top: 0.2em;
+}
+
+
+#mainWindows > aside ul#languages > li:hover {
+	border-radius: 0.2em;
+	background-color: #847560;
+}
+
+/*#mainWindows > aside ul#languages > li:last-child {
+	margin-bottom: 0;
+}*/
+
+#mainWindows > aside ul#languages > li.active {
+	padding-top: 0.2em;
+	background-color: #4C3B24;
+	border-radius: 0.2em;
+}
+
+#mainWindows > aside ul#languages ul#menu {
+	margin-left: 0.5em;
+}
+
+#mainWindows > aside ul#languages ul#menu li:hover {
+	color: #FFAE3D;
+}
+
+
+
+#mainWindows > aside #addNewLanguageBtn {
+    background-color: #4C3B24;
+    border-radius: 0.2em 0.2em 0.2em 0.2em;
+    margin: 0.5em;
+    padding: 0.5em;
+    cursor: pointer;
+}
+
+#mainWindows > aside #addNewLanguageBtn:hover {
+	background-color: #847560;
+}
+
+
+#mainWindows > section {
+	display: table-cell;
+	background-color: #3A3329;
+	width: 66.666666%;
+}
