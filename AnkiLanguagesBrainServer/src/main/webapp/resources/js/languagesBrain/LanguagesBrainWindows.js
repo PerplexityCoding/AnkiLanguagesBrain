@@ -31,6 +31,8 @@ $(function () {
 	
 	$.LanguagesBrainSideMenu = function(parent, elem, data) {
 		
+		var instance = this;
+		
 		this.languages = languages = [];
 		data.languages.forEach(function (d){languages.push(new $.Language(d))});
 			
@@ -46,10 +48,31 @@ $(function () {
 		this.final("infoElem", this.menuElem.find("#info"));
 		this.final("browserElem", this.menuElem.find("#browser"));
 		
-		this.addNewLanguageBtn.click(function () {
-			console.log("hellow");
+		this.final("newLanguageDone", elem.find("#newLanguageDone"));
+		this.final("newLanguageCancel", elem.find("#newLanguageCancel"));
+		
+		this.addNewLanguageBtn.click(function (e) {
+			$("#newLanguageMenu").show();
 			return false;
 		});
+		
+		this.newLanguageDone.click(function (e) {
+			$("#newLanguageMenu").hide();
+			
+			var language = instance.addNewLanguage(5, "Dutch");
+			instance.currentLanguage = language;
+			instance.show();		
+			return false;
+		});
+		
+		this.newLanguageCancel.click(function (e) {
+			$("#newLanguageMenu").hide();
+			return false;
+		});
+		
+		console.log(this.newLanguageDone);
+		
+
 		
 		this.browserElem.click(function () {
 			console.log("hellow");
