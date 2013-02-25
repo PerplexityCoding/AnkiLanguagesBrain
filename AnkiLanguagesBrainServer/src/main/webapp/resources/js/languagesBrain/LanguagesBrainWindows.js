@@ -1,29 +1,25 @@
 
 $(function () {
 	
-	"strict mode";
+	"use strict";
 	
 	$.LanguagesBrainWindows = function(id) {
+		
+		this.loadData();
 		
 		this.final("id", id);
 		this.final("root", $(id));
 		
-		this.final("menu", new $.LanguagesBrainSideMenu(this, this.root.find("aside")));
+		this.final("menu", new $.LanguagesBrainSideMenu(this, this.root.find("aside"), this.data));
 		this.final("contentElem", this.root.find("> section"));
-		
-		this.loadData();
 		
 		Object.preventExtensions(this);
 	};
 	
 	$.LanguagesBrainWindows.prototype.loadData = function() {
-		this.rowData = "{\"languages\":[{\"id\":1,\"name\":\"English\"},{\"id\":2,\"name\":\"\u65E5\u672C\u8A9E\"}]}";
+		this.rowData = "{\"languages\":[{\"id\":1,\"name\":\"English\",\"deck\":{\"name\":\"Sentences\",\"desc\":\"Sentences list\"}},{\"id\":2,\"name\":\"\u65E5\u672C\u8A9E\"}],\"settings\":[[1,2],[\"4\",\"6\"],[{\"id\":3}]]}";
 		this.data = JSON.parse(this.rowData);
-		
-		this.menu.load(this.data.languages);
 	};
-	
-
 	
 	$.LanguagesBrainWindows.prototype.show = function() {
 		this.menu.show();
@@ -33,12 +29,14 @@ $(function () {
 	 * Menu
 	 */
 	
-	$.LanguagesBrainSideMenu = function(parent, elem) {
+	$.LanguagesBrainSideMenu = function(parent, elem, data) {
 		
+		this.languages = languages = [];
+		data.languages.forEach(function (d){languages.push(new $.Language(d))});
+			
 		this.final("parent", parent);
 		this.final("elem", elem);
 		
-		this.final("languages", []);
 		this.currentLanguage = null;
 		
 		this.final("languagesElem", elem.find("#languages"));
@@ -66,21 +64,12 @@ $(function () {
 		Object.preventExtensions(this);
 	};
 	
-	$.LanguagesBrainSideMenu.prototype.load = function(languagesData) {
-		var len,
-		i,
-		language;
-		
-		for (i = 0, len = languagesData.length; i < len; i += 1) {
-			language = new $.Language();
-			language.load(languagesData[i]);
-			this.languages.push(language);
-		}
-		
-		if (this.languages.length === 1) {
-			this.currentLanguage = this.languages[0];
-		}
+	$.LanguagesBrainSideMenu.prototype.addNewLanguage = function(id, name) {
+		var language = new $.Language({"id" : id, "name" : name});
+		this.languages.push(language);			
+		return language;
 	};
+	
 	
 	$.LanguagesBrainSideMenu.prototype.removeMenu = function() {
 		this.menuElem.hide();
@@ -133,18 +122,20 @@ $(function () {
 	 * Language
 	 */
 	
-	$.Language = function() {
+	$.Language = function(data) {
 		
-		this.id = null;
-		this.name = null;
+		if (!(this instanceof $.Language)) {
+			return new $.Language(data);
+		}
+		
+		this.final("id", data.id);
+		this.final("name", data.name);
 		
 		Object.preventExtensions(this);
 	};
+
 	
-	$.Language.prototype.load = function(data) {
-		this.id = data.id;
-		this.name = data.name;
-	};
 	
+
 	
 });
