@@ -17,7 +17,7 @@ $(function () {
 	};
 	
 	$.LanguagesBrainWindows.prototype.loadData = function() {
-		this.rowData = "{\"languages\":[{\"id\":1,\"name\":\"English\",\"deck\":{\"name\":\"Sentences\",\"desc\":\"Sentences list\"}},{\"id\":2,\"name\":\"\u65E5\u672C\u8A9E\"}],\"settings\":[[1,2],[\"4\",\"6\"],[{\"id\":3}]]}";
+		this.rowData = "{\"languages\":[{\"id\":1,\"name\":\"English\"},{\"id\":2,\"name\":\"\u65E5\u672C\u8A9E\"},{\"id\":3,\"name\":\"French\"},{\"id\":4,\"name\":\"Dutch\"}],\"current_languages\":[1,2],\"available_languages\":[3,4]}";
 		this.data = JSON.parse(this.rowData);
 	};
 	
@@ -31,10 +31,17 @@ $(function () {
 	
 	$.LanguagesBrainSideMenu = function(parent, elem, data) {
 		
-		var instance = this;
+		var that = this;
 		
-		this.languages = languages = [];
-		data.languages.forEach(function (d){languages.push(new $.Language(d))});
+		this.languages = {};
+		data.languages.forEach(function (e){that.languages[e.id] = new $.Language(e);});
+		
+		this.currentLanguages = [];
+		data.current_languages.forEach(function (d){that.currentLanguages.push(that.languages[d]);});
+		
+		this.availableLanguages = [];
+		data.available_languages.forEach(function (d){that.availableLanguages.push(that.languages[d]);});
+		
 			
 		this.final("parent", parent);
 		this.final("elem", elem);
@@ -51,29 +58,31 @@ $(function () {
 		this.final("newLanguageDone", elem.find("#newLanguageDone"));
 		this.final("newLanguageCancel", elem.find("#newLanguageCancel"));
 		
+		this.final("newLanguageMenu", elem.find("#newLanguageMenu"));
+		this.final("newLanguageMenuSelect", this.newLanguageMenu.find("select"));
+		
 		this.addNewLanguageBtn.click(function (e) {
-			$("#newLanguageMenu").show();
+			that.newLanguageMenu.show();
 			return false;
 		});
 		
 		this.newLanguageDone.click(function (e) {
-			$("#newLanguageMenu").hide();
-			
-			var language = instance.addNewLanguage(5, "Dutch");
-			instance.currentLanguage = language;
-			instance.show();		
+			var language = that.newLanguageMenuSelect.find("option:selected").data("language");
+			if (language) {
+				that.newLanguageMenu.hide();
+	
+				that.addNewLanguage(language);
+				that.currentLanguage = language;
+				that.show();						
+			}
 			return false;
 		});
 		
 		this.newLanguageCancel.click(function (e) {
-			$("#newLanguageMenu").hide();
+			that.newLanguageMenu.hide();
 			return false;
 		});
-		
-		console.log(this.newLanguageDone);
-		
-
-		
+			
 		this.browserElem.click(function () {
 			console.log("hellow");
 			return false;
@@ -87,10 +96,16 @@ $(function () {
 		Object.preventExtensions(this);
 	};
 	
-	$.LanguagesBrainSideMenu.prototype.addNewLanguage = function(id, name) {
-		var language = new $.Language({"id" : id, "name" : name});
-		this.languages.push(language);			
-		return language;
+	$.LanguagesBrainSideMenu.prototype.addNewLanguage = function(language) {
+		this.currentLanguages.push(language);
+		
+		var i, len;
+		for (i = 0, len = this.availableLanguages; i < len; i += 1) {
+			if (language.id === this.availableLanguages[i].id) {
+				break;
+			}
+		}
+		this.availableLanguages.splice(i, 1);
 	};
 	
 	
@@ -105,13 +120,30 @@ $(function () {
 			i,
 			span,
 			li,
+			option,
 			language;
 		
 		this.removeMenu();
 		this.languagesElem.html("");
+		this.newLanguageMenuSelect.html("");
 		
-		for (i = 0, len = this.languages.length; i < len; i += 1) {
-			language = this.languages[i];
+		if (this.availableLanguages.length > 0) {
+			for (i = 0, len = this.availableLanguages.length; i < len; i += 1) {
+				language = this.availableLanguages[i];
+				
+				option = $("<option />");
+				option.attr("val", language.id);
+				option.html(language.name);
+				option.data("language", language);
+				
+				this.newLanguageMenuSelect.append(option);
+			}
+		} else {
+			this.newLanguageMenuSelect.append("<option>No language Available</option>");
+		}
+		
+		for (i = 0, len = this.currentLanguages.length; i < len; i += 1) {
+			language = this.currentLanguages[i];
 			
 			li = $("<li />");
 			span = li.append($("<span />"));
@@ -123,6 +155,8 @@ $(function () {
 			if (this.currentLanguage && this.currentLanguage.id === language.id) {
 				li.addClass("active");
 				li.append(this.menuElem);
+				
+				this.menuElem.find("li:first-child").addClass("active");
 
 				this.menuElem.show();
 			} 

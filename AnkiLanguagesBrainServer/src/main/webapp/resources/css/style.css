@@ -92,7 +92,11 @@ li {
 	margin-left: 0.5em;
 }
 
-#mainWindows > aside ul#languages ul#menu li:hover {
+#mainWindows > aside ul#languages ul#menu li.active {
+	color: #B25F20;
+}
+
+#mainWindows > aside ul#menu li:hover {
 	color: #FFAE3D;
 }
 

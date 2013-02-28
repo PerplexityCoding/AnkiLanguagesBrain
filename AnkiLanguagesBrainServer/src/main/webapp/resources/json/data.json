@@ -7,6 +7,20 @@
 		{
 			"id" : 2,
 			"name" : "日本語"
+		},
+		{
+			"id" : 3,
+			"name" : "French"
+		},
+		{
+			"id" : 4,
+			"name" : "Dutch"
 		}
 	],
+	"current_languages" : [
+		1, 2
+	],
+	"available_languages" : [
+		3, 4
+	]
 }

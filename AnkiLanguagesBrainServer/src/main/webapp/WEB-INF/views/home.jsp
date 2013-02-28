@@ -21,8 +21,7 @@
         		var windows = new $.LanguagesBrainWindows("#mainWindows");
         		
         		windows.show();   
-        		
-        		
+         		
         		$("#mainWindows").draggable();
         		$("#mainWindows").resizable();
         	});
@@ -35,6 +34,8 @@
         		<ul id="menu" class="hidden">
         			<li id="info">Info</li>
         			<li id="browser">Morphemes Browser</li>
+        			<li id="options">Options</li>
+        			<li id="stats">Stats</li>
         		</ul>        	
         		<ul id="languages">
         		</ul>
@@ -42,8 +43,6 @@
         			<span>Add a new Language</span>
         			<div id="newLanguageMenu" class="hidden">
         				<select>
-        					<option value="1">English</option>
-        					<option value="2">Dutch</option>
         				</select>
         				<span class="button bKO" id="newLanguageCancel">Cancel</span>
         				<span class="button bOK" id="newLanguageDone">Done</span>
